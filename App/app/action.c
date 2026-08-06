@@ -20,6 +20,10 @@
 #include "app/action.h"
 #include "app/app.h"
 #include "app/chFrScanner.h"
+#ifdef ENABLE_RX_ONLY
+    #include "app/rx_feature_state.h"
+    #include "app/rx_scan_skip.h"
+#endif
 #include "app/common.h"
 #include "app/dtmf.h"
 #ifdef ENABLE_FLASHLIGHT
@@ -326,6 +330,17 @@ void ACTION_Handle(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
         return;
     }
 
+#ifdef ENABLE_RX_ONLY
+    if (gScanStateDir != SCAN_OFF && Key == KEY_SIDE1 && bKeyPressed && !bKeyHeld)
+    {
+        const RX_SCAN_SKIP_Result_t result = RX_SCAN_SKIP_Add(gRxVfo->freq_config_RX.Frequency);
+        gBeepToPlay = result == RX_SCAN_SKIP_ADDED ? BEEP_1KHZ_60MS_OPTIONAL :
+                      BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
+        gUpdateDisplay = true;
+        return;
+    }
+#endif
+
     enum ACTION_OPT_t func = ACTION_OPT_NONE;
     switch(Key) {
         case KEY_SIDE1:
@@ -536,6 +551,13 @@ void ACTION_Update(void)
 
 void ACTION_RxMode(void)
 {
+#ifdef ENABLE_RX_ONLY
+    gEeprom.DUAL_WATCH = DUAL_WATCH_OFF;
+    gEeprom.CROSS_BAND_RX_TX = CROSS_BAND_OFF;
+    gFlagReconfigureVfos = true;
+    gUpdateStatus = true;
+    return;
+#endif
     static bool cycle = 0;
 
     if (cycle) {
@@ -550,6 +572,13 @@ void ACTION_RxMode(void)
 
 void ACTION_MainOnly(void)
 {
+#ifdef ENABLE_RX_ONLY
+    gEeprom.DUAL_WATCH = DUAL_WATCH_OFF;
+    gEeprom.CROSS_BAND_RX_TX = CROSS_BAND_OFF;
+    gFlagReconfigureVfos = true;
+    gUpdateStatus = true;
+    return;
+#endif
     static bool cycle = 0;
     static uint8_t dw = 0;
     static uint8_t cb = 0;
@@ -583,6 +612,9 @@ void ACTION_RxA(void)
 
 void ACTION_Ptt(void)
 {
+#ifdef ENABLE_RX_ONLY
+    return;
+#endif
     gSetting_set_ptt_session = !gSetting_set_ptt_session;
 
     ACTION_Update();
@@ -590,6 +622,48 @@ void ACTION_Ptt(void)
 
 void ACTION_Wn(void)
 {
+#ifdef ENABLE_RX_ONLY
+    VFO_Info_t *const pVfo = FUNCTION_IsRx() ? gRxVfo : gTxVfo;
+    if (pVfo->CHANNEL_BANDWIDTH == BANDWIDTH_WIDE)
+    {
+        if (pVfo->WIDE_PLUS)
+        {
+            pVfo->CHANNEL_BANDWIDTH = BANDWIDTH_NARROW;
+            pVfo->WIDE_PLUS = false;
+        }
+        else
+            pVfo->WIDE_PLUS = true;
+    }
+    else
+    {
+        pVfo->CHANNEL_BANDWIDTH = BANDWIDTH_WIDE;
+        pVfo->WIDE_PLUS = false;
+    }
+
+    // WIDE+ is meaningful only for the wide filter.  Keep the stored state
+    // normalized even if a caller changes bandwidth outside this action.
+    if (pVfo->CHANNEL_BANDWIDTH != BANDWIDTH_WIDE)
+        pVfo->WIDE_PLUS = false;
+
+    BK4819_FilterBandwidth_t bandwidth = pVfo->CHANNEL_BANDWIDTH == BANDWIDTH_NARROW ?
+        BK4819_FILTER_BW_NARROW : BK4819_FILTER_BW_WIDE;
+#ifdef ENABLE_FEAT_F4HWN_NARROWER
+    if (bandwidth == BK4819_FILTER_BW_NARROW && gSetting_set_nfm == 1)
+        bandwidth = BK4819_FILTER_BW_NARROWER;
+#endif
+    bool weakNoDifferent = false;
+#ifdef ENABLE_AM_FIX
+    weakNoDifferent = true;
+#endif
+    if (pVfo->CHANNEL_BANDWIDTH == BANDWIDTH_WIDE)
+        weakNoDifferent = pVfo->WIDE_PLUS;
+    BK4819_SetFilterBandwidth(bandwidth, weakNoDifferent);
+    if (IS_MR_CHANNEL(pVfo->CHANNEL_SAVE))
+        RX_FEATURE_STATE_SetWidePlus(pVfo->CHANNEL_SAVE, pVfo->WIDE_PLUS);
+    gRequestSaveChannel = 1;
+    RX_FEATURE_STATE_Save();
+    return;
+#else
     const bool isRx = FUNCTION_IsRx();
     VFO_Info_t *pVfo = isRx ? gRxVfo : gTxVfo;
 
@@ -615,6 +689,7 @@ void ACTION_Wn(void)
     #else
         BK4819_SetFilterBandwidth(bw, false);
     #endif
+#endif
 }
 
 void ACTION_BackLight(void)

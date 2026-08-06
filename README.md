@@ -233,6 +233,31 @@ more tolerant and should remain more usable.
 
 But, they are nice toys for the price, fun to play with.
 
+## Japanese receive-only build
+
+The `JpRxOnly` CMake preset builds the Japanese receive-only edition for UV-K1 and UV-K5 V3.
+
+It provides:
+
+* transmit paths disabled, including PTT transmission, DTMF/FSK/tail tones and TX-only menus;
+* PTT assigned to monitor operation;
+* selectable single-VFO receive mode with bank filtering for memory channels;
+* persistent WIDE+, WIDE and NARROW bandwidth selection;
+* receive band presets for air, maritime, public-safety, amateur, navigation, 351 MHz digital and domestic FM broadcast use;
+* domestic FM broadcast limits of 76.0--95.0 MHz;
+* Japanese menu labels and Japanese glyphs in both large and small text paths.
+
+Build it from a configured host toolchain with:
+
+```bash
+cmake --preset JpRxOnly
+cmake --build --preset JpRxOnly -j2
+```
+
+The generated files are placed under `build/JpRxOnly` and use the `f4hwn.jp-rx-only` target name.
+
+The additional receive-only settings use the external flash area beginning at `0x00B000`; this is outside the stock settings, channel names and calibration regions.
+
 ## Compiling and Building from Docker
 
 This project provides a Docker-based build system to compile the Fusion firmware for the UV-K1 and UV-K5 V3. Everything is handled through the `compile-with-docker.sh` helper script.

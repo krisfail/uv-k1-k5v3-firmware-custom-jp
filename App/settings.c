@@ -18,6 +18,9 @@
 #include <string.h>
 
 #include "app/dtmf.h"
+#ifdef ENABLE_RX_ONLY
+    #include "app/rx_feature_state.h"
+#endif
 #ifdef ENABLE_FMRADIO
     #include "app/fm.h"
 #endif
@@ -234,6 +237,11 @@ gEeprom.FreqChannel[1]   = IS_FREQ_CHANNEL(Data16[5]) ? Data16[5] : (FREQ_CHANNE
         PY25Q16_ReadBuffer(0x00A020, &fmCfg, 4);
 
         gEeprom.FM_Band = fmCfg.band;
+#ifdef ENABLE_RX_ONLY
+        // Domestic FM broadcast receive range: 76.0--95.0 MHz.
+        // Keep the persisted hardware band at the BK1080 76--108 MHz mode.
+        gEeprom.FM_Band = 1;
+#endif
         //gEeprom.FM_Space = fmCfg.space;
 
         uint16_t freqLoLimit = BK1080_GetFreqLoLimit(gEeprom.FM_Band);
@@ -1209,6 +1217,11 @@ void SETTINGS_SaveChannel(uint16_t Channel, uint8_t VFO, const VFO_Info_t *pVFO,
 #endif
 
         PY25Q16_WriteBuffer(OffsetVFO, Buf, 0x10, false);
+
+#ifdef ENABLE_RX_ONLY
+        if (IS_MR_CHANNEL(Channel))
+            RX_FEATURE_STATE_SetWidePlus(Channel, pVFO->WIDE_PLUS);
+#endif
 
         SETTINGS_UpdateChannel(Channel, pVFO, true, true, true);
 

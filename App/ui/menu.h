@@ -41,6 +41,10 @@ enum
     MENU_OFFSET,
     MENU_TOT,
     MENU_W_N,
+#ifdef ENABLE_RX_ONLY
+    MENU_RX_BANK,
+    MENU_RX_BANK_SET,
+#endif
 #ifndef ENABLE_FEAT_F4HWN
     MENU_SCR,
 #endif
@@ -174,11 +178,21 @@ extern const t_menu_item MenuList[];
 
 extern const char* const            gSubMenu_TXP[8];
 extern const char* const            gSubMenu_SFT_D[3];
+#ifdef ENABLE_RX_ONLY
+extern const char* const            gSubMenu_W_N[3];
+extern const char* const            gSubMenu_RX_BANK[9];
+extern const char* const            gSubMenu_RX_BANK_SET[9];
+#else
 extern const char* const            gSubMenu_W_N[2];
+#endif
 extern const char* const            gSubMenu_OFF_ON[2];
 extern const char*                  gSubMenu_NA;
 extern const char* const            gSubMenu_TOT[11];
+#ifdef ENABLE_RX_ONLY
+extern const char* const            gSubMenu_RXMode[3];
+#else
 extern const char* const            gSubMenu_RXMode[4];
+#endif
 
 #ifdef ENABLE_VOICE
     extern const char* const        gSubMenu_VOICE[3];

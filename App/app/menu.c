@@ -21,6 +21,9 @@
 #endif
 #include "app/dtmf.h"
 #include "app/generic.h"
+#ifdef ENABLE_RX_ONLY
+    #include "app/rx_feature_state.h"
+#endif
 #include "app/menu.h"
 #include "app/scanner.h"
 #include "audio.h"
@@ -116,7 +119,11 @@ int MENU_GetLimits(uint8_t menu_id, int32_t *pMin, int32_t *pMax)
     {
         case MENU_SQL:
             //*pMin = 0;
+#ifdef ENABLE_RX_ONLY
+            *pMax = 10;
+#else
             *pMax = 9;
+#endif
             break;
 
         case MENU_STEP:
@@ -161,7 +168,11 @@ int MENU_GetLimits(uint8_t menu_id, int32_t *pMin, int32_t *pMax)
 
         case MENU_TDR:
             //*pMin = 0;
+#ifdef ENABLE_RX_ONLY
+            *pMax = 2;
+#else
             *pMax = ARRAY_SIZE(gSubMenu_RXMode) - 1;
+#endif
             break;
 
         #ifdef ENABLE_VOICE
@@ -203,6 +214,13 @@ int MENU_GetLimits(uint8_t menu_id, int32_t *pMin, int32_t *pMax)
             //*pMin = 0;
             *pMax = ARRAY_SIZE(gSubMenu_W_N) - 1;
             break;
+
+#ifdef ENABLE_RX_ONLY
+        case MENU_RX_BANK:
+        case MENU_RX_BANK_SET:
+            *pMax = RX_FEATURE_BANK_MAX;
+            break;
+#endif
 
         #ifdef ENABLE_ALARM
             case MENU_AL_MOD:
@@ -518,7 +536,21 @@ void MENU_AcceptSetting(void)
             return;
 
         case MENU_SQL:
+#ifdef ENABLE_RX_ONLY
+            if (gSubMenuSelection == 10)
+            {
+                RX_FEATURE_STATE_SetAutoSquelch(true);
+                if (gEeprom.SQUELCH_LEVEL > 9)
+                    gEeprom.SQUELCH_LEVEL = 5;
+            }
+            else
+            {
+                RX_FEATURE_STATE_SetAutoSquelch(false);
+                gEeprom.SQUELCH_LEVEL = gSubMenuSelection;
+            }
+#else
             gEeprom.SQUELCH_LEVEL = gSubMenuSelection;
+#endif
             gVfoConfigureMode     = VFO_CONFIGURE;
             #ifdef ENABLE_FEAT_F4HWN
                 gSquelchLevelOriginal = 10;
@@ -593,9 +625,34 @@ void MENU_AcceptSetting(void)
             return;
 
         case MENU_W_N:
+#ifdef ENABLE_RX_ONLY
+            gTxVfo->CHANNEL_BANDWIDTH = gSubMenuSelection == 2 ? BANDWIDTH_NARROW : BANDWIDTH_WIDE;
+            gTxVfo->WIDE_PLUS = gSubMenuSelection == 1;
+            if (IS_MR_CHANNEL(gTxVfo->CHANNEL_SAVE))
+                RX_FEATURE_STATE_SetWidePlus(gTxVfo->CHANNEL_SAVE, gTxVfo->WIDE_PLUS);
+#else
             gTxVfo->CHANNEL_BANDWIDTH = gSubMenuSelection;
+#endif
             gRequestSaveChannel       = 1;
             return;
+
+#ifdef ENABLE_RX_ONLY
+        case MENU_RX_BANK:
+            RX_FEATURE_STATE_SetSelectedBank(gSubMenuSelection);
+            RX_FEATURE_STATE_Save();
+            gVfoConfigureMode = VFO_CONFIGURE_RELOAD;
+            gFlagResetVfos = true;
+            gFlagReconfigureVfos = true;
+            gUpdateStatus = true;
+            break;
+
+        case MENU_RX_BANK_SET:
+            if (IS_MR_CHANNEL(gTxVfo->CHANNEL_SAVE))
+                RX_FEATURE_STATE_SetChannelBank(gTxVfo->CHANNEL_SAVE, gSubMenuSelection);
+            RX_FEATURE_STATE_Save();
+            gUpdateStatus = true;
+            break;
+#endif
 
 #ifndef ENABLE_FEAT_F4HWN
         case MENU_SCR:
@@ -682,8 +739,15 @@ void MENU_AcceptSetting(void)
             break;
 
         case MENU_TDR:
+#ifdef ENABLE_RX_ONLY
+            RX_FEATURE_STATE_SetSingleVfo(gSubMenuSelection == 2);
+            gEeprom.DUAL_WATCH = gSubMenuSelection == 1 ? gEeprom.TX_VFO + 1 : DUAL_WATCH_OFF;
+            gEeprom.CROSS_BAND_RX_TX = CROSS_BAND_OFF;
+            RX_FEATURE_STATE_Save();
+#else
             gEeprom.DUAL_WATCH = (gEeprom.TX_VFO + 1) * (gSubMenuSelection & 1);
             gEeprom.CROSS_BAND_RX_TX = (gEeprom.TX_VFO + 1) * ((gSubMenuSelection & 2) > 0);
+#endif
 
             #ifdef ENABLE_FEAT_F4HWN
                 gDW = gEeprom.DUAL_WATCH;
@@ -1072,7 +1136,11 @@ void MENU_ShowCurrentSetting(void)
     switch (UI_MENU_GetCurrentMenuId())
     {
         case MENU_SQL:
+#ifdef ENABLE_RX_ONLY
+            gSubMenuSelection = RX_FEATURE_STATE_IsAutoSquelch() ? 10 : gEeprom.SQUELCH_LEVEL;
+#else
             gSubMenuSelection = gEeprom.SQUELCH_LEVEL;
+#endif
             break;
 
         case MENU_VOL:
@@ -1152,8 +1220,24 @@ void MENU_ShowCurrentSetting(void)
             break;
 
         case MENU_W_N:
+#ifdef ENABLE_RX_ONLY
+            gSubMenuSelection = gTxVfo->CHANNEL_BANDWIDTH == BANDWIDTH_NARROW ? 2 :
+                (gTxVfo->WIDE_PLUS ? 1 : 0);
+#else
             gSubMenuSelection = gTxVfo->CHANNEL_BANDWIDTH;
+#endif
             break;
+
+#ifdef ENABLE_RX_ONLY
+        case MENU_RX_BANK:
+            gSubMenuSelection = RX_FEATURE_STATE_GetSelectedBank();
+            break;
+
+        case MENU_RX_BANK_SET:
+            gSubMenuSelection = IS_MR_CHANNEL(gTxVfo->CHANNEL_SAVE) ?
+                RX_FEATURE_STATE_GetChannelBank(gTxVfo->CHANNEL_SAVE) : RX_FEATURE_BANK_ALL;
+            break;
+#endif
 
 #ifndef ENABLE_FEAT_F4HWN
         case MENU_SCR:
@@ -1215,7 +1299,12 @@ void MENU_ShowCurrentSetting(void)
             break;
 
         case MENU_TDR:
+#ifdef ENABLE_RX_ONLY
+            gSubMenuSelection = RX_FEATURE_STATE_IsSingleVfo() ? 2 :
+                (gEeprom.DUAL_WATCH != DUAL_WATCH_OFF ? 1 : 0);
+#else
             gSubMenuSelection = (gEeprom.DUAL_WATCH != DUAL_WATCH_OFF) + (gEeprom.CROSS_BAND_RX_TX != CROSS_BAND_OFF) * 2;
+#endif
             break;
 
         case MENU_BEEP:

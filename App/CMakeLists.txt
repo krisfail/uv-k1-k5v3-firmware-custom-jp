@@ -52,6 +52,24 @@ target_sources(App INTERFACE
     external/printf/printf.c
 )
 
+if(ENABLE_RX_ONLY)
+    target_compile_definitions(App INTERFACE ENABLE_RX_ONLY)
+    target_sources(App INTERFACE
+        app/rx_band_presets.c
+        app/rx_feature_state.c
+        app/rx_scan_skip.c
+    )
+endif()
+
+if(ENABLE_RX_AGC_GUARD)
+    target_compile_definitions(App INTERFACE ENABLE_RX_AGC_GUARD)
+endif()
+
+if(ENABLE_JAPANESE)
+    target_compile_definitions(App INTERFACE ENABLE_JAPANESE)
+    target_sources(App INTERFACE japanese_font.c)
+endif()
+
 
 macro(enable_feature feature)
     if(${feature})

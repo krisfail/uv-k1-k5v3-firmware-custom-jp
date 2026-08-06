@@ -39,6 +39,9 @@
 #include "app/generic.h"
 #include "app/main.h"
 #include "app/menu.h"
+#ifdef ENABLE_RX_ONLY
+    #include "app/rx_feature_state.h"
+#endif
 #ifdef ENABLE_FEAT_F4HWN_RXTX_LOG
     #include "app/rxtx_log.h"
 #endif
@@ -1579,6 +1582,11 @@ void CheckKeys(void)
 void APP_TimeSlice10ms(void)
 {
     gNextTimeslice = false;
+
+#ifdef ENABLE_RX_ONLY
+    RX_FEATURE_STATE_Save();
+    RX_FEATURE_STATE_ProcessAgcGuard();
+#endif
 
     SETTINGS_SaveVfoIndicesFlush();
 

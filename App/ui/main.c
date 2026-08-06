@@ -19,6 +19,9 @@
 
 #include "app/app.h"
 #include "app/chFrScanner.h"
+#ifdef ENABLE_RX_ONLY
+    #include "app/rx_band_presets.h"
+#endif
 #include "app/dtmf.h"
 
 #ifdef ENABLE_FEAT_F4HWN_BEAM
@@ -1273,6 +1276,15 @@ void UI_DisplayMain(void)
         return;
     }
 
+#ifdef ENABLE_RX_ONLY
+    if (RX_BAND_PRESETS_IsOpen())
+    {
+        RX_BAND_PRESETS_Draw();
+        ST7565_BlitFullScreen();
+        return;
+    }
+#endif
+
 #ifndef ENABLE_FEAT_F4HWN
     if (gEeprom.KEY_LOCK && gKeypadLocked > 0)
     {   // tell user how to unlock the keyboard
@@ -2116,26 +2128,58 @@ void UI_DisplayMain(void)
                 narrower = 1;
             }
 
+            #ifdef ENABLE_RX_ONLY
+                const uint8_t bandwidthIndex = displayBandwidth == BANDWIDTH_WIDE
+                    ? (vfoInfo->WIDE_PLUS ? 1 : 0)
+                    : (2 + narrower);
+            #else
+                const uint8_t bandwidthIndex = displayBandwidth + narrower;
+            #endif
+
             if (gSetting_set_gui)
             {
-                const char *bandWidthNames[] = {"W", "N", "N+"};
-                UI_PrintStringSmallNormal(bandWidthNames[displayBandwidth + narrower], LCD_WIDTH + 80, 0, line + 1);
+                #ifdef ENABLE_RX_ONLY
+                    const char *bandWidthNames[] = {"W", "W+", "N", "N+"};
+                #else
+                    const char *bandWidthNames[] = {"W", "N", "N+"};
+                #endif
+                UI_PrintStringSmallNormal(bandWidthNames[bandwidthIndex], LCD_WIDTH + 80, 0, line + 1);
             }
             else
             {
-                const char *bandWidthNames[] = {"WIDE", "NAR", "NAR+"};
-                GUI_DisplaySmallest(bandWidthNames[displayBandwidth + narrower], 91, line == 0 ? 17 : 49, false, true);
+                #ifdef ENABLE_RX_ONLY
+                    const char *bandWidthNames[] = {"WIDE", "WIDE+", "NAR", "NAR+"};
+                #else
+                    const char *bandWidthNames[] = {"WIDE", "NAR", "NAR+"};
+                #endif
+                GUI_DisplaySmallest(bandWidthNames[bandwidthIndex], 91, line == 0 ? 17 : 49, false, true);
             }
         #else
+            #ifdef ENABLE_RX_ONLY
+                const uint8_t bandwidthIndex = displayBandwidth == BANDWIDTH_NARROW
+                    ? 2
+                    : (vfoInfo->WIDE_PLUS ? 1 : 0);
+            #else
+                const uint8_t bandwidthIndex = displayBandwidth;
+            #endif
+
             if (gSetting_set_gui)
             {
-                const char *bandWidthNames[] = {"W", "N"};
-                UI_PrintStringSmallNormal(bandWidthNames[displayBandwidth], LCD_WIDTH + 80, 0, line + 1);
+                #ifdef ENABLE_RX_ONLY
+                    const char *bandWidthNames[] = {"W", "W+", "N"};
+                #else
+                    const char *bandWidthNames[] = {"W", "N"};
+                #endif
+                UI_PrintStringSmallNormal(bandWidthNames[bandwidthIndex], LCD_WIDTH + 80, 0, line + 1);
             }
             else
             {
-                const char *bandWidthNames[] = {"WIDE", "NAR"};
-                GUI_DisplaySmallest(bandWidthNames[displayBandwidth], 91, line == 0 ? 17 : 49, false, true);
+                #ifdef ENABLE_RX_ONLY
+                    const char *bandWidthNames[] = {"WIDE", "WIDE+", "NAR"};
+                #else
+                    const char *bandWidthNames[] = {"WIDE", "NAR"};
+                #endif
+                GUI_DisplaySmallest(bandWidthNames[bandwidthIndex], 91, line == 0 ? 17 : 49, false, true);
             }
         #endif
 #else

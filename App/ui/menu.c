@@ -47,30 +47,69 @@
 const t_menu_item MenuList[] =
 {
 //   text,          menu ID
+ #ifdef ENABLE_JAPANESE
+    {{0xBD, 0xC3, 0xAF, 0xCC, 0xDF}, MENU_STEP}, // ステップ
+ #else
     {"Step",        MENU_STEP          },
+ #endif
+ #ifndef ENABLE_RX_ONLY
     {"Power",       MENU_TXP           }, // was "TXP"
+ #endif
+ #ifdef ENABLE_JAPANESE
+    {{0x80, 0x81, 'D', 'C', 'S'}, MENU_R_DCS}, // 受信DCS
+    {{0x80, 0x81, 'C', 'T', 'C', 'S'}, MENU_R_CTCS}, // 受信CTCS
+ #else
     {"RxDCS",       MENU_R_DCS         }, // was "R_DCS"
     {"RxCTCS",      MENU_R_CTCS        }, // was "R_CTCS"
+ #endif
+ #ifndef ENABLE_RX_ONLY
     {"TxDCS",       MENU_T_DCS         }, // was "T_DCS"
     {"TxCTCS",      MENU_T_CTCS        }, // was "T_CTCS"
     {"TxODir",      MENU_SFT_D         }, // was "SFT_D"
     {"TxOffs",      MENU_OFFSET        }, // was "OFFSET"
+ #endif
     {"W/N",         MENU_W_N           },
+#ifdef ENABLE_RX_ONLY
+    {"Bank",        MENU_RX_BANK       },
+    {"BnkSet",      MENU_RX_BANK_SET   },
+#endif
 #ifndef ENABLE_FEAT_F4HWN
     {"Scramb",      MENU_SCR           }, // was "SCR"
 #endif
+ #ifndef ENABLE_RX_ONLY
     {"BusyCL",      MENU_BCL           }, // was "BCL"
+ #endif
     {"Compnd",      MENU_COMPAND       },
+ #ifdef ENABLE_JAPANESE
+    {{0x82, 0x83}, MENU_AM}, // 変調
+ #else
     {"Mode",        MENU_AM            }, // was "AM"
+ #endif
 #ifdef ENABLE_FEAT_F4HWN
+ #ifndef ENABLE_RX_ONLY
     {"TXLock",      MENU_TX_LOCK       }, 
+ #endif
 #endif
+#ifdef ENABLE_JAPANESE
+    {{'C', 'H', 0xD8, 0xBD, 0xC4}, MENU_LIST_CH}, // CHリスト
+#else
     {"ChList",      MENU_LIST_CH       },
+#endif
+ #ifdef ENABLE_JAPANESE
+    {{'C', 'H', 0x86, 0x87}, MENU_MEM_CH}, // CH保存
+    {{'C', 'H', 0x88, 0x89}, MENU_DEL_CH}, // CH削除
+    {{'C', 'H', 0x8A}, MENU_MEM_NAME}, // CH名
+ #else
     {"ChSave",      MENU_MEM_CH        }, // was "MEM-CH"
     {"ChDele",      MENU_DEL_CH        }, // was "DEL-CH"
     {"ChName",      MENU_MEM_NAME      },
+ #endif
 
+#ifdef ENABLE_JAPANESE
+    {{'S', 0xD8, 0xBD, 0xC4}, MENU_S_LIST}, // Sリスト
+#else
     {"ScList",       MENU_S_LIST       },
+#endif
     {"ScPri",        MENU_S_PRI        },
     {"PriCh1",       MENU_S_PRI_CH_1   },
     {"PriCh2",       MENU_S_PRI_CH_2   },
@@ -80,79 +119,153 @@ const t_menu_item MenuList[] =
         {"NOAA-S",      MENU_NOAA_S    },
     #endif
 #endif
+ #ifdef ENABLE_JAPANESE
+    {{'F', '1', 0x8C, 0x8D}, MENU_F1SHRT}, // F1短押
+    {{'F', '1', 0x8B, 0x8D}, MENU_F1LONG}, // F1長押
+    {{'F', '2', 0x8C, 0x8D}, MENU_F2SHRT}, // F2短押
+    {{'F', '2', 0x8B, 0x8D}, MENU_F2LONG}, // F2長押
+    {{'M', 0x8B, 0x8D}, MENU_MLONG}, // M長押
+ #else
     {"F1Shrt",      MENU_F1SHRT        },
     {"F1Long",      MENU_F1LONG        },
     {"F2Shrt",      MENU_F2SHRT        },
     {"F2Long",      MENU_F2LONG        },
     {"M Long",      MENU_MLONG         },
+ #endif
 
+ #ifdef ENABLE_JAPANESE
+    {{0xB7, '-', 0xDB, 0xAF, 0xB8}, MENU_AUTOLK}, // キーロック
+ #else
     {"KeyLck",      MENU_AUTOLK        }, // was "AUTOLk"
+ #endif
+#ifndef ENABLE_RX_ONLY
     {"TxTOut",      MENU_TOT           }, // was "TOT"
+#endif
     {"BatSav",      MENU_SAVE          }, // was "SAVE"
+ #ifdef ENABLE_JAPANESE
+    {{0x8F, 0x92, '%', 0x93, 0x94}, MENU_BAT_TXT}, // 電圧/%表示
+ #else
     {"BatTxt",      MENU_BAT_TXT       },
+#endif
+#ifndef ENABLE_RX_ONLY
     {"Mic",         MENU_MIC           },
     {"MicBar",      MENU_MIC_BAR       },
+#endif
+ #ifdef ENABLE_JAPANESE
+    {{'C', 'H', 0x93, 0x94}, MENU_MDF}, // CH表示
+    {{'O', 'N', 0x95, 0x96}, MENU_PONMSG}, // ON画面
+ #else
     {"ChDisp",      MENU_MDF           }, // was "MDF"
     {"POnMsg",      MENU_PONMSG        },
+ #endif
+#ifdef ENABLE_JAPANESE
+    {{0x95, 0x96, 0x93, 0x94}, MENU_ABR}, // 画面表示
+    {{0x95, 0x96, 'M', 'i', 'n'}, MENU_ABR_MIN}, // 画面Min
+    {{0x95, 0x96, 'M', 'a', 'x'}, MENU_ABR_MAX}, // 画面Max
+#else
     {"BLTime",      MENU_ABR           }, // was "ABR"
     {"BLMin",       MENU_ABR_MIN       },
     {"BLMax",       MENU_ABR_MAX       },
+#endif
+#ifndef ENABLE_RX_ONLY
     {"BLTxRx",      MENU_ABR_ON_TX_RX  },
+#endif
+ #ifdef ENABLE_JAPANESE
+    {{0xB7, '-', 0x8E}, MENU_BEEP}, // キー音
+ #else
     {"Beep",        MENU_BEEP          },
+ #endif
 #ifdef ENABLE_VOICE
     {"Voice",       MENU_VOICE         },
 #endif
+#ifndef ENABLE_RX_ONLY
     {"Roger",       MENU_ROGER         },
     {"STE",         MENU_STE           },
     {"RP STE",      MENU_RP_STE        },
     {"1 Call",      MENU_1_CALL        },
+#endif
 #ifdef ENABLE_ALARM
+#ifndef ENABLE_RX_ONLY
     {"AlarmT",      MENU_AL_MOD        },
 #endif
+#endif
 #ifdef ENABLE_DTMF_CALLING
+#ifndef ENABLE_RX_ONLY
     {"ANI ID",      MENU_ANI_ID        },
 #endif
+#endif
+#ifndef ENABLE_RX_ONLY
     {"UPCode",      MENU_UPCODE        },
     {"DWCode",      MENU_DWCODE        },
     {"PTT ID",      MENU_PTT_ID        },
     {"D ST",        MENU_D_ST          },
+#endif
 #ifdef ENABLE_DTMF_CALLING
+#ifndef ENABLE_RX_ONLY
     {"D Resp",      MENU_D_RSP         },
     {"D Hold",      MENU_D_HOLD        },
 #endif
+#endif
+#ifndef ENABLE_RX_ONLY
     {"D Prel",      MENU_D_PRE         },
+#endif
 #ifdef ENABLE_DTMF_CALLING
+#ifndef ENABLE_RX_ONLY
     {"D Decd",      MENU_D_DCD         },
     {"D List",      MENU_D_LIST        },
+#endif
 #endif
     {"D Live",      MENU_D_LIVE_DEC    }, // live DTMF decoder
 #ifndef ENABLE_FEAT_F4HWN
     #ifdef ENABLE_AM_FIX
         {"AM Fix",      MENU_AM_FIX        },
-    #endif
 #endif
+#endif
+#ifndef ENABLE_RX_ONLY
     {"VOX",         MENU_VOX           },
+#endif
 #ifdef ENABLE_FEAT_F4HWN
     {"SysInf",      MENU_VOL           }, // was "VOL"
 #else
+#ifdef ENABLE_JAPANESE
+    {{0xCA, 0xDE, 0xAF, 0xC3, 0xD8, '-'}, MENU_VOL}, // バッテリー
+#else
     {"BatVol",      MENU_VOL           }, // was "VOL"
 #endif
+#endif
+ #ifdef ENABLE_JAPANESE
+    {{0x80, 0x81, 0xD3, '-', 0xC4, 0xDE}, MENU_TDR}, // 受信モード
+    {{0xBD, 0xB9, 0xD9, 0xC1}, MENU_SQL}, // スケルチ
+ #else
     {"RxMode",      MENU_TDR           },
     {"Sql",         MENU_SQL           },
+ #endif
 #ifdef ENABLE_FEAT_F4HWN
+#ifndef ENABLE_RX_ONLY
     {"SetPwr",      MENU_SET_PWR       },
     {"SetPTT",      MENU_SET_PTT       },
     {"SetTOT",      MENU_SET_TOT       },
     {"SetEOT",      MENU_SET_EOT       },
+#endif
     {"SetCtr",      MENU_SET_CTR       },
     {"SetInv",      MENU_SET_INV       },
+ #ifdef ENABLE_JAPANESE
+    {{0xB7, '-', 0xDB, 0xAF, 0xB8}, MENU_SET_LCK}, // キーロック
+ #else
     {"SetLck",      MENU_SET_LCK       },
+ #endif
     {"SetMet",      MENU_SET_MET       },
+ #ifdef ENABLE_JAPANESE
+    {{0x95, 0x96}, MENU_SET_GUI}, // 画面
+ #else
     {"SetGUI",      MENU_SET_GUI       },
+ #endif
 #ifdef ENABLE_FEAT_F4HWN_AUDIO    
     {"SetRxA",      MENU_SET_AUD       },
 #endif
+#ifndef ENABLE_RX_ONLY
     {"SetTmr",      MENU_SET_TMR       },
+#endif
 #ifdef ENABLE_FEAT_F4HWN_SLEEP
     {"SetOff",       MENU_SET_OFF      },
 #endif
@@ -178,12 +291,14 @@ const t_menu_item MenuList[] =
     // hidden menu items from here on
     // enabled if pressing both the PTT and upper side button at power-on
     {"F Lock",      MENU_F_LOCK        },
+#ifndef ENABLE_RX_ONLY
 #ifndef ENABLE_FEAT_F4HWN
     {"Tx 200",      MENU_200TX         }, // was "200TX"
     {"Tx 350",      MENU_350TX         }, // was "350TX"
     {"Tx 500",      MENU_500TX         }, // was "500TX"
 #endif
     {"350 En",      MENU_350EN         }, // was "350EN"
+#endif
 #ifndef ENABLE_FEAT_F4HWN
     {"ScraEn",      MENU_SCREN         }, // was "SCREN"
 #endif
@@ -222,8 +337,23 @@ const char* const gSubMenu_SFT_D[] =
 const char* const gSubMenu_W_N[] =
 {
     "WIDE",
+#ifdef ENABLE_RX_ONLY
+    "WIDE+",
+#endif
     "NARROW"
 };
+
+#ifdef ENABLE_RX_ONLY
+const char* const gSubMenu_RX_BANK[] =
+{
+    "ALL", "B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8"
+};
+
+const char* const gSubMenu_RX_BANK_SET[] =
+{
+    "NONE", "B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8"
+};
+#endif
 
 const char* const gSubMenu_OFF_ON[] =
 {
@@ -235,10 +365,16 @@ const char* gSubMenu_NA = "N/A";
 
 const char* const gSubMenu_RXMode[] =
 {
+#ifdef ENABLE_RX_ONLY
+    "MAIN\nONLY",
+    "DUAL RX",
+    "SINGLE",
+#else
     "MAIN\nONLY",       // TX and RX on main only
     "DUAL RX\nRESPOND", // Watch both and respond
     "CROSS\nBAND",      // TX on main, RX on secondary
     "MAIN TX\nDUAL RX"  // always TX on main, but RX on both
+#endif
 };
 
 #ifdef ENABLE_VOICE
@@ -737,7 +873,14 @@ void UI_DisplayMenu(void)
     switch (m)
     {
         case MENU_SQL:
+#ifdef ENABLE_RX_ONLY
+            if (gSubMenuSelection == 10)
+                strcpy(String, "AUTO");
+            else
+                sprintf(String, "%d", gSubMenuSelection);
+#else
             sprintf(String, "%d", gSubMenuSelection);
+#endif
             break;
 
         case MENU_MIC:

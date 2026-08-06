@@ -24,6 +24,9 @@
 
 #include "audio.h"
 #include "board.h"
+#ifdef ENABLE_RX_ONLY
+    #include "app/rx_feature_state.h"
+#endif
 #ifdef ENABLE_FEAT_F4HWN_RXTX_LOG
     #include "app/rxtx_log.h"
 #endif
@@ -101,6 +104,10 @@ void Main(void)
     BOARD_ADC_GetBatteryInfo(&gBatteryCurrentVoltage, &gBatteryCurrent);
 
     SETTINGS_InitEEPROM();
+
+#ifdef ENABLE_RX_ONLY
+    RX_FEATURE_STATE_Init();
+#endif
 
 #ifdef ENABLE_FEAT_F4HWN_RXTX_LOG
     RXTX_LOG_Init();

@@ -115,6 +115,9 @@ typedef struct VFO_Info_t
 
     uint8_t        SCRAMBLING_TYPE;
     uint8_t        CHANNEL_BANDWIDTH;
+#ifdef ENABLE_RX_ONLY
+    bool           WIDE_PLUS;
+#endif
 
     uint8_t        SCANLIST_PARTICIPATION;
 

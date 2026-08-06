@@ -17,6 +17,9 @@
 #include <string.h>
 
 #include "app/dtmf.h"
+#ifdef ENABLE_RX_ONLY
+    #include "app/rx_feature_state.h"
+#endif
 #if defined(ENABLE_FMRADIO)
     #include "app/fm.h"
 #endif
@@ -144,6 +147,10 @@ void FUNCTION_PowerSave() {
 
 void FUNCTION_Transmit()
 {
+#ifdef ENABLE_RX_ONLY
+    RADIO_SetupRegisters(true);
+    return;
+#endif
     // if DTMF is enabled when TX'ing, it changes the TX audio filtering !! .. 1of11
     BK4819_DisableDTMF();
 
@@ -239,6 +246,10 @@ void FUNCTION_Transmit()
 
 void FUNCTION_Select(FUNCTION_Type_t Function)
 {
+#ifdef ENABLE_RX_ONLY
+    if (Function == FUNCTION_TRANSMIT)
+        Function = FUNCTION_FOREGROUND;
+#endif
     const FUNCTION_Type_t PreviousFunction = gCurrentFunction;
     const bool bWasPowerSave = PreviousFunction == FUNCTION_POWER_SAVE;
 

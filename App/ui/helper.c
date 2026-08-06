@@ -72,10 +72,26 @@ void UI_PrintStringBuffer(const char *pString, uint8_t * buffer, uint32_t char_w
     const size_t Length = strlen(pString);
     const unsigned int char_spacing = char_width + 1;
     for (size_t i = 0; i < Length; i++) {
-        const unsigned int index = pString[i] - ' ' - 1;
-        if (pString[i] > ' ' && pString[i] < 127) {
+        const uint8_t code = (uint8_t)pString[i];
+#ifdef ENABLE_JAPANESE
+        const bool is_small_font =
+            font == (const uint8_t *)gFontSmall
+#ifdef ENABLE_SMALL_BOLD
+            || font == (const uint8_t *)gFontSmallBold
+#endif
+            ;
+        const bool is_extended_small = is_small_font && code >= 0x7F && code <= FONT_CODE_MAX;
+#else
+        const bool is_extended_small = false;
+#endif
+        if (code > ' ' && (code < 127 || is_extended_small)) {
             const uint32_t offset = i * char_spacing + 1;
-            memcpy(buffer + offset, font + index * char_width, char_width);
+#ifdef ENABLE_JAPANESE
+            if (is_extended_small)
+                memcpy(buffer + offset, gFontSmallJapanese[code - 0x7F], char_width);
+            else
+#endif
+                memcpy(buffer + offset, font + (code - ' ' - 1) * char_width, char_width);
         }
     }
 }
@@ -91,11 +107,25 @@ void UI_PrintString(const char *pString, uint8_t Start, uint8_t End, uint8_t Lin
     for (i = 0; i < Length; i++)
     {
         const unsigned int ofs   = (unsigned int)Start + (i * Width);
-        if (pString[i] > ' ' && pString[i] < 127)
+        const uint8_t code = (uint8_t)pString[i];
+        if (code > ' ' && code < 127)
         {
-            const unsigned int index = pString[i] - ' ' - 1;
+            const unsigned int index = code - ' ' - 1;
             memcpy(gFrameBuffer[Line + 0] + ofs, &gFontBig[index][0], 7);
             memcpy(gFrameBuffer[Line + 1] + ofs, &gFontBig[index][7], 7);
+#ifdef ENABLE_JAPANESE
+        }
+        else if (code >= 0x7F && code <= FONT_CODE_MAX)
+        {
+            const uint8_t *glyph = gFontBigJapanese[code - 0x7F];
+            for (uint8_t column = 0; column < 7; ++column)
+            {
+                const uint8_t page0 = glyph[column];
+                const uint8_t page1 = glyph[column + 7];
+                gFrameBuffer[Line + 0][ofs + column] = (uint8_t)((page0 >> 1) | (page1 << 7));
+                gFrameBuffer[Line + 1][ofs + column] = (uint8_t)(page1 >> 1);
+            }
+#endif
         }
     }
 }

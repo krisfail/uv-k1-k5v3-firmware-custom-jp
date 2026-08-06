@@ -1,6 +1,9 @@
 #include "app/chFrScanner.h"
 #include "audio.h"
 #include "functions.h"
+#ifdef ENABLE_RX_ONLY
+    #include "app/rx_feature_state.h"
+#endif
 #include "misc.h"
 #include "settings.h"
 #include "ui/inputbox.h"
@@ -25,6 +28,13 @@ void COMMON_KeypadLockToggle()
 
 void COMMON_SwitchVFOs()
 {
+#ifdef ENABLE_RX_ONLY
+    if (RX_FEATURE_STATE_IsSingleVfo())
+    {
+        gBeepToPlay = BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
+        return;
+    }
+#endif
 #ifdef ENABLE_SCAN_RANGES    
     gScanRangeStart = 0;
 #endif

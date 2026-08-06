@@ -1071,6 +1071,14 @@ void BK4819_PlayToneRaw(const unsigned int tone_Hz, const unsigned int delay) {
 // level 0 ~ 127
 void BK4819_PlaySingleTone(const unsigned int tone_Hz, const unsigned int delay, const unsigned int level, const bool play_speaker)
 {
+#ifdef ENABLE_RX_ONLY
+    (void)tone_Hz;
+    (void)delay;
+    (void)level;
+    (void)play_speaker;
+    return;
+#endif
+
     BK4819_EnterTxMute();
 
     if (play_speaker)
@@ -1221,6 +1229,10 @@ void BK4819_ExitBypass(void)
 
 void BK4819_PrepareTransmit(void)
 {
+#ifdef ENABLE_RX_ONLY
+    return;
+#endif
+
     BK4819_ExitBypass();
     BK4819_ExitTxMute();
     BK4819_TxOn_Beep();
@@ -1228,6 +1240,10 @@ void BK4819_PrepareTransmit(void)
 
 void BK4819_TxOn_Beep(void)
 {
+#ifdef ENABLE_RX_ONLY
+    return;
+#endif
+
     BK4819_WriteRegister(BK4819_REG_36, 0);
     BK4819_WriteRegister(BK4819_REG_37, 0x9D1F);
     BK4819_WriteRegister(BK4819_REG_52, 0x028F);
@@ -1288,6 +1304,11 @@ void BK4819_Conditional_RX_TurnOn_and_GPIO6_Enable(void)
 
 void BK4819_EnterDTMF_TX(bool bLocalLoopback)
 {
+#ifdef ENABLE_RX_ONLY
+    (void)bLocalLoopback;
+    return;
+#endif
+
     BK4819_EnableDTMF();
     BK4819_EnterTxMute();
     BK4819_SetAF(bLocalLoopback ? BK4819_AF_BEEP : BK4819_AF_MUTE);
@@ -1304,6 +1325,11 @@ void BK4819_EnterDTMF_TX(bool bLocalLoopback)
 
 void BK4819_ExitDTMF_TX(bool bKeep)
 {
+#ifdef ENABLE_RX_ONLY
+    (void)bKeep;
+    return;
+#endif
+
     BK4819_EnterTxMute();
     BK4819_SetAF(BK4819_AF_MUTE);
     BK4819_WriteRegister(BK4819_REG_70, 0x0000);
@@ -1315,6 +1341,9 @@ void BK4819_ExitDTMF_TX(bool bKeep)
 
 void BK4819_EnableTXLink(void)
 {
+#ifdef ENABLE_RX_ONLY
+    return;
+#else
     BK4819_WriteRegister(BK4819_REG_30,
         BK4819_REG_30_ENABLE_VCO_CALIB |
         BK4819_REG_30_ENABLE_UNKNOWN   |
@@ -1326,10 +1355,15 @@ void BK4819_EnableTXLink(void)
         BK4819_REG_30_DISABLE_MIC_ADC  |
         BK4819_REG_30_ENABLE_TX_DSP    |
         BK4819_REG_30_DISABLE_RX_DSP);
+#endif
 }
 
 void BK4819_PlayDTMF(char Code)
 {
+#ifdef ENABLE_RX_ONLY
+    (void)Code;
+    return;
+#endif
 
     struct DTMF_TonePair {
         uint16_t tone1;
@@ -1374,6 +1408,15 @@ void BK4819_PlayDTMF(char Code)
 
 void BK4819_PlayDTMFString(const char *pString, bool bDelayFirst, uint16_t FirstCodePersistTime, uint16_t HashCodePersistTime, uint16_t CodePersistTime, uint16_t CodeInternalTime)
 {
+#ifdef ENABLE_RX_ONLY
+    (void)pString;
+    (void)bDelayFirst;
+    (void)FirstCodePersistTime;
+    (void)HashCodePersistTime;
+    (void)CodePersistTime;
+    (void)CodeInternalTime;
+    return;
+#else
     unsigned int i;
 
     if (pString == NULL)
@@ -1395,10 +1438,17 @@ void BK4819_PlayDTMFString(const char *pString, bool bDelayFirst, uint16_t First
         BK4819_EnterTxMute();
         SYSTEM_DelayMs(CodeInternalTime);
     }
+#endif
 }
 
 void BK4819_TransmitTone(bool bLocalLoopback, uint32_t Frequency)
 {
+#ifdef ENABLE_RX_ONLY
+    (void)bLocalLoopback;
+    (void)Frequency;
+    return;
+#endif
+
     BK4819_EnterTxMute();
 
     // REG_70
@@ -1484,13 +1534,21 @@ void BK4819_GenTail(uint8_t Tail)
 
 void BK4819_PlayCDCSSTail(void)
 {
+#ifdef ENABLE_RX_ONLY
+    return;
+#endif
+
     BK4819_GenTail(0);     // CTC134
     BK4819_WriteRegister(BK4819_REG_51, 0x8040); // 1 0 0 0 0 0 0 0  0  1001010
 }
 
 void BK4819_PlayCTCSSTail(void)
 {
-    #ifdef ENABLE_CTCSS_TAIL_PHASE_SHIFT
+#ifdef ENABLE_RX_ONLY
+    return;
+#endif
+
+#ifdef ENABLE_CTCSS_TAIL_PHASE_SHIFT
         BK4819_GenTail(2);       // 180° phase shift
     #else
         BK4819_GenTail(4);       // 55Hz tone freq
@@ -1713,6 +1771,10 @@ uint8_t BK4819_GetCTCType(void)
 
 void BK4819_SendFSKData(uint16_t *pData)
 {
+#ifdef ENABLE_RX_ONLY
+    (void)pData;
+    return;
+#else
     unsigned int i;
     uint8_t Timeout = 200;
 
@@ -1737,6 +1799,7 @@ void BK4819_SendFSKData(uint16_t *pData)
     SYSTEM_DelayMs(30);
 
     BK4819_ResetFSK();
+#endif
 }
 
 void BK4819_PrepareFSKReceive(void)
@@ -1853,6 +1916,11 @@ void BK4819_PlayRogerMDC(void)
 
 void BK4819_PlayRoger(BK4819_FilterBandwidth_t Bandwidth)
 {
+#ifdef ENABLE_RX_ONLY
+    (void)Bandwidth;
+    return;
+#endif
+
     if (gEeprom.ROGER == ROGER_MODE_ROGER) {
         BK4819_PlayRogerNormal(Bandwidth);
     } else if (gEeprom.ROGER == ROGER_MODE_MDC) {
@@ -1862,6 +1930,10 @@ void BK4819_PlayRoger(BK4819_FilterBandwidth_t Bandwidth)
 
 void BK4819_Enable_AfDac_DiscMode_TxDsp(void)
 {
+#ifdef ENABLE_RX_ONLY
+    return;
+#endif
+
     BK4819_WriteRegister(BK4819_REG_30, 0x0000);
     BK4819_WriteRegister(BK4819_REG_30, 0x0302);
 }
@@ -1878,6 +1950,12 @@ void BK4819_SetScrambleFrequencyControlWord(uint32_t Frequency)
 
 void BK4819_PlayDTMFEx(bool bLocalLoopback, char Code)
 {
+#ifdef ENABLE_RX_ONLY
+    (void)bLocalLoopback;
+    (void)Code;
+    return;
+#endif
+
     BK4819_EnableDTMF();
     BK4819_EnterTxMute();
 
