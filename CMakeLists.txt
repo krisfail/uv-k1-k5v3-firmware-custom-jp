@@ -74,7 +74,7 @@ else()
 endif()
 
 if(DEV)
-    if(NOT "${TARGET}" STREQUAL "f4hwn.fusion")
+    if(NOT "${TARGET}" STREQUAL "uv-k1-fusion")
         message(FATAL_ERROR "DEV is only supported for the Fusion target")
     endif()
     set(DISPLAY_VERSION_STRING_2 "${VERSION_STRING_2} Dev")
@@ -128,8 +128,8 @@ if(DEV)
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 "${CMAKE_CURRENT_BINARY_DIR}/${EXE_NAME}.bin"
-                "${CMAKE_SOURCE_DIR}/archive/f4hwn.fusion.development.bin"
-        COMMENT "Preparing archive/f4hwn.fusion.development.bin"
+                "${CMAKE_SOURCE_DIR}/archive/uv-k1-fusion.development.bin"
+        COMMENT "Preparing archive/uv-k1-fusion.development.bin"
     )
 endif()
 

@@ -10,6 +10,16 @@ def source(path: str) -> str:
 
 
 class K1ReceiveOnlyStaticTests(unittest.TestCase):
+    def test_build_outputs_use_project_names(self):
+        cmake = source("CMakePresets.json")
+        lists = source("CMakeLists.txt")
+
+        self.assertIn('"TARGET": "wrx-jp"', cmake)
+        self.assertIn('"TARGET": "uv-k1-custom"', cmake)
+        self.assertNotIn('"TARGET": "f4hwn.', cmake)
+        self.assertIn("archive/uv-k1-fusion.development.bin", lists)
+        self.assertNotIn("archive/f4hwn.fusion.development.bin", lists)
+
     def test_dedicated_preset_keeps_rx_only_and_japanese_flags(self):
         cmake = source("CMakePresets.json")
         self.assertIn('"name": "JpRxOnly"', cmake)

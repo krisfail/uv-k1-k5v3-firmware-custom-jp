@@ -4,7 +4,9 @@
 
 # F4HWN firmware port for the UV-K1 and UV-K5 V3 using the PY32F071 MCU
 
-This repository is a fork of the [F4HWN custom firmware](https://github.com/armel/uv-k5-firmware-custom), who was a fork of [Egzumer custom firmware](https://github.com/egzumer/uv-k5-firmware-custom). It extends the work done for the UV-K5 V1, based on the DP32G030 MCU, and adapts it to the newer UV-K1 and UV-K5 V3 built around the PY32F071 MCU. It is the result of the joint work of [@muzkr](https://github.com/muzkr) and [@armel](https://github.com/armel).
+日本語版の案内は[README.ja.md](README.ja.md)、実機操作とビルドコマンドの一覧は[CHEATSHEET.ja.md](CHEATSHEET.ja.md)を参照してください。
+
+This repository is the downstream fork [krisfail/uv-k1-k5v3-firmware-custom-jp](https://github.com/krisfail/uv-k1-k5v3-firmware-custom-jp), with [armel/uv-k1-k5v3-firmware-custom](https://github.com/armel/uv-k1-k5v3-firmware-custom) as its upstream. It is derived from the [F4HWN custom firmware](https://github.com/armel/uv-k5-firmware-custom), which in turn builds on [Egzumer custom firmware](https://github.com/egzumer/uv-k5-firmware-custom). It extends the work done for the UV-K5 V1, based on the DP32G030 MCU, and adapts it to the newer UV-K1 and UV-K5 V3 built around the PY32F071 MCU.
 
 A big thanks to DualTachyon, who paved the way by releasing the very first open-source [firmware](https://github.com/DualTachyon/uv-k5-firmware) for the UV-K5 V1. None of this would have been possible without that initial work !
 
@@ -39,6 +41,12 @@ Anyway, have fun.
 > EN - I recommend backing up your calibration data with [UV Studio](https://armel.github.io/uvstudio/#dump-calib) immediately after flashing this firmware. It is a good habit to adopt.
 >
 > _FR - Je recommande de sauvegarder vos données de calibration avec [UV Studio](https://armel.github.io/uvstudio/#dump-calib) juste après avoir flashé ce firmware. C'est un bon réflexe à adopter._
+
+## Project status and safety
+
+This is an independent fork and is not an official Quansheng, F4HWN, or armel release. Parts of the code analysis, implementation, testing support, and documentation were produced with AI assistance and then reviewed against the source, tests, builds, and available hardware results. AI assistance does not replace maintainer review or user testing.
+
+The firmware is provided **as is**, without warranty. The maintainers are not responsible for damage to a radio, loss of calibration or configuration data, failed flashing, loss of EEPROM contents, recovery failure, or use that violates local radio regulations. Back up calibration data and any relevant memory before flashing, use an image for the exact hardware model, and keep a recovery method available.
 
 # Donations
 
@@ -336,12 +344,41 @@ It provides:
 
 Build it from a configured host toolchain with:
 
-```bash
+Run the following commands from the repository root. On a fresh checkout, or
+after removing the build directory, run the configure command first. Running
+`cmake --build --preset JpRxOnly` without `cmake --preset JpRxOnly` fails when
+`build/JpRxOnly` does not exist.
+
+```powershell
 cmake --preset JpRxOnly
 cmake --build --preset JpRxOnly -j2
 ```
 
-The generated files are placed under `build/JpRxOnly` and use the `f4hwn.jp-rx-only` target name.
+The generated files are placed under `build/JpRxOnly` and use the
+`wrx-jp` target name. The firmware image is
+`build/JpRxOnly/wrx-jp.bin`; the same directory also contains the
+ELF and HEX outputs.
+
+The `Custom` preset is a separate, non-Japanese build and is not receive-only.
+It retains the upstream transmit-capable configuration. Configure and build it
+with:
+
+```powershell
+cmake --preset Custom
+cmake --build --preset Custom -j2
+```
+
+The corresponding image is `build/Custom/uv-k1-custom.bin`.
+
+The receive-only static checks can be run before or after the firmware build:
+
+```powershell
+python -m unittest discover -s tests -p "test_*.py" -v
+```
+
+The host build requires CMake, Ninja, and the ARM GNU toolchain
+(`arm-none-eabi-gcc`). After the initial configure step, source changes can be
+rebuilt with only `cmake --build --preset JpRxOnly -j2`.
 
 The additional receive-only settings use the external flash area beginning at `0x00B000`; this is outside the stock settings, channel names and calibration regions.
 
@@ -403,7 +440,7 @@ To prepare the rolling development firmware:
 ```
 
 This keeps the regular build output in `build/Fusion` and also updates
-`archive/f4hwn.fusion.development.bin`. The development build is identified as
+`archive/uv-k1-fusion.development.bin`. The development build is identified as
 `DEV` in the firmware information screen. Publishing the updated archive file
 remains an explicit Git operation.
 
