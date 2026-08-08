@@ -655,6 +655,9 @@ void ACTION_Wn(void)
         pVfo->WIDE_PLUS = false;
     }
 
+    if (!RX_FEATURE_STATE_IsEnabled())
+        pVfo->WIDE_PLUS = false;
+
     // WIDE+ is meaningful only for the wide filter.  Keep the stored state
     // normalized even if a caller changes bandwidth outside this action.
     if (pVfo->CHANNEL_BANDWIDTH != BANDWIDTH_WIDE)
@@ -672,6 +675,8 @@ void ACTION_Wn(void)
 #endif
     if (pVfo->CHANNEL_BANDWIDTH == BANDWIDTH_WIDE)
         weakNoDifferent = pVfo->WIDE_PLUS;
+    if (!RX_FEATURE_STATE_IsEnabled())
+        weakNoDifferent = false;
     BK4819_SetFilterBandwidth(bandwidth, weakNoDifferent);
     if (IS_MR_CHANNEL(pVfo->CHANNEL_SAVE))
         RX_FEATURE_STATE_SetWidePlus(pVfo->CHANNEL_SAVE, pVfo->WIDE_PLUS);

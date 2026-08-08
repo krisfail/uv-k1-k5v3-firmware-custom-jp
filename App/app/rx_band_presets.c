@@ -5,6 +5,7 @@
 #include "app/action.h"
 #include "app/app.h"
 #include "app/chFrScanner.h"
+#include "app/rx_feature_state.h"
 #ifdef ENABLE_FMRADIO
     #include "app/fm.h"
 #endif
@@ -71,7 +72,8 @@ static void Close(void)
 static void Apply(const bool startScan)
 {
     const RX_BandPreset_t *preset = &gRxBandPresets[sSelection];
-    if (gEeprom.DUAL_WATCH != DUAL_WATCH_OFF ||
+    if (!RX_FEATURE_STATE_IsEnabled() ||
+        gEeprom.DUAL_WATCH != DUAL_WATCH_OFF ||
         gEeprom.CROSS_BAND_RX_TX != CROSS_BAND_OFF || !IsValid(preset))
     {
         Beep(true);
@@ -107,7 +109,8 @@ static void Apply(const bool startScan)
 
 void RX_BAND_PRESETS_Open(void)
 {
-    if (!IS_FREQ_CHANNEL(gTxVfo->CHANNEL_SAVE) || gScanStateDir != SCAN_OFF ||
+    if (!RX_FEATURE_STATE_IsEnabled() ||
+        !IS_FREQ_CHANNEL(gTxVfo->CHANNEL_SAVE) || gScanStateDir != SCAN_OFF ||
         gScanRangeStart != 0 || gTxVfo->FrequencyReverse ||
         gEeprom.DUAL_WATCH != DUAL_WATCH_OFF ||
         gEeprom.CROSS_BAND_RX_TX != CROSS_BAND_OFF
@@ -140,7 +143,8 @@ bool RX_BAND_PRESETS_IsOpen(void)
 
 bool RX_BAND_PRESETS_IsApplied(void)
 {
-    return sApplied && gScanRangeStart != 0 && sAppliedPreset < RX_BAND_PRESET_COUNT &&
+    return RX_FEATURE_STATE_IsEnabled() &&
+           sApplied && gScanRangeStart != 0 && sAppliedPreset < RX_BAND_PRESET_COUNT &&
            gScanRangeStart == gRxBandPresets[sAppliedPreset].lower &&
            gScanRangeStop == gRxBandPresets[sAppliedPreset].upper;
 }

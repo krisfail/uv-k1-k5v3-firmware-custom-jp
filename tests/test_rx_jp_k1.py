@@ -10,12 +10,52 @@ def source(path: str) -> str:
 
 
 class K1ReceiveOnlyStaticTests(unittest.TestCase):
+    def test_added_receive_features_have_persistent_master_switch_with_legacy_on_default(self):
+        header = source("App/app/rx_feature_state.h")
+        state = source("App/app/rx_feature_state.c")
+        self.assertIn("RX_FEATURE_STATE_IsEnabled", header)
+        self.assertIn("RX_FEATURE_STATE_SetEnabled", header)
+        self.assertIn("RX_FEATURE_FLAG_ENABLED", state)
+        self.assertIn("#define RX_FEATURE_VERSION           2u", state)
+        self.assertIn("RX_FEATURE_LEGACY_VERSION", state)
+        self.assertIn("sFlags = RX_FEATURE_FLAG_ENABLED", state)
+        self.assertIn("block[2] == RX_FEATURE_LEGACY_VERSION", state)
+
+    def test_master_switch_is_exposed_in_radio_menu_and_resets_active_scan_range(self):
+        menu_header = source("App/ui/menu.h")
+        menu_ui = source("App/ui/menu.c")
+        menu = source("App/app/menu.c")
+        self.assertIn("MENU_RX_EXT", menu_header)
+        self.assertIn('"RXExt"', menu_ui)
+        self.assertIn("MENU_RX_EXT", menu_ui)
+        self.assertIn("case MENU_RX_EXT", menu)
+        self.assertIn("RX_FEATURE_STATE_SetEnabled", menu)
+        self.assertIn("RX_BAND_PRESETS_Reset();", menu)
+        self.assertIn("gScanRangeStart = 0", menu)
+        self.assertIn("gScanRangeStop = 0", menu)
+
+    def test_master_switch_gates_all_added_feature_runtime_seams(self):
+        state = source("App/app/rx_feature_state.c")
+        presets = source("App/app/rx_band_presets.c")
+        skips = source("App/app/rx_scan_skip.c")
+        radio = source("App/radio.c")
+        action = source("App/app/action.c")
+        ui = source("App/ui/main.c")
+        self.assertIn("RX_FEATURE_STATE_IsEnabled()", state)
+        self.assertIn("RX_FEATURE_STATE_IsEnabled()", presets)
+        self.assertIn("RX_FEATURE_STATE_IsEnabled()", skips)
+        self.assertIn("if (!RX_FEATURE_STATE_IsEnabled())", radio)
+        self.assertIn("RX_FEATURE_STATE_IsEnabled()", action)
+        self.assertIn("RX_FEATURE_STATE_IsEnabled() && vfoInfo->WIDE_PLUS", ui)
+
     def test_build_outputs_use_project_names(self):
         cmake = source("CMakePresets.json")
         lists = source("CMakeLists.txt")
 
         self.assertIn('"TARGET": "wrx-jp"', cmake)
-        self.assertIn('"TARGET": "uv-k1-custom"', cmake)
+        self.assertNotIn('"name": "Custom"', cmake)
+        self.assertNotIn('"TARGET": "uv-k1-custom"', cmake)
+        self.assertNotIn('set(EDITION_STRING "Custom")', lists)
         self.assertNotIn('"TARGET": "f4hwn.', cmake)
         self.assertIn("archive/uv-k1-fusion.development.bin", lists)
         self.assertNotIn("archive/f4hwn.fusion.development.bin", lists)
@@ -32,7 +72,7 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
             '"ENABLE_DTMF_CALLING": false',
         ):
             self.assertIn(flag, cmake)
-        self.assertIn('"VERSION_STRING_2": "v5.7J"', cmake)
+        self.assertIn('"VERSION_STRING_2": "v5.8.0J2"', cmake)
         self.assertIn('"EDITION_STRING": "JP-RX-Only"', cmake)
 
     def test_rx_driver_guards_rf_tx_primitives(self):

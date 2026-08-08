@@ -23,10 +23,13 @@
 #define RX_FEATURE_GLOBAL_CRC_OFFSET 6u
 #define RX_FEATURE_MAGIC0            0x52u
 #define RX_FEATURE_MAGIC1            0x58u
-#define RX_FEATURE_VERSION           1u
+#define RX_FEATURE_VERSION           2u
+#define RX_FEATURE_LEGACY_VERSION    1u
 
+#define RX_FEATURE_FLAG_ENABLED     (1u << 2)
 #define RX_FEATURE_FLAG_SINGLE_VFO  (1u << 0)
 #define RX_FEATURE_FLAG_AUTO_SQL    (1u << 1)
+#define RX_FEATURE_FLAGS_ALL        (RX_FEATURE_FLAG_ENABLED | RX_FEATURE_FLAG_SINGLE_VFO | RX_FEATURE_FLAG_AUTO_SQL)
 
 static uint8_t sChannelBank[MR_CHANNELS_MAX];
 static uint8_t sWidePlus[(MR_CHANNELS_MAX + 7u) / 8u];
@@ -79,7 +82,8 @@ static void SetDefaults(void)
     memset(sWidePlus, 0xFF, sizeof(sWidePlus));
     memset(sBankDirty, 0, sizeof(sBankDirty));
     memset(sWidePlusDirty, 0, sizeof(sWidePlusDirty));
-    sFlags = 0;
+    /* Added RX features remain enabled unless explicitly disabled. */
+    sFlags = RX_FEATURE_FLAG_ENABLED;
     sSelectedBank = RX_FEATURE_BANK_ALL;
     sAutoSquelchRequest = false;
 }
@@ -98,12 +102,14 @@ void RX_FEATURE_STATE_Init(void)
             sChannelBank[channel] = RX_FEATURE_BANK_ALL;
 
     if (block[0] == RX_FEATURE_MAGIC0 && block[1] == RX_FEATURE_MAGIC1 &&
-        block[2] == RX_FEATURE_VERSION &&
+        (block[2] == RX_FEATURE_VERSION || block[2] == RX_FEATURE_LEGACY_VERSION) &&
         CRC16(block, RX_FEATURE_GLOBAL_CRC_OFFSET) ==
             ((uint16_t)block[RX_FEATURE_GLOBAL_CRC_OFFSET] |
              ((uint16_t)block[RX_FEATURE_GLOBAL_CRC_OFFSET + 1u] << 8)))
     {
-        sFlags = block[3] & (RX_FEATURE_FLAG_SINGLE_VFO | RX_FEATURE_FLAG_AUTO_SQL);
+        sFlags = block[3] & RX_FEATURE_FLAGS_ALL;
+        if (block[2] == RX_FEATURE_LEGACY_VERSION)
+            sFlags |= RX_FEATURE_FLAG_ENABLED;
         sSelectedBank = block[4] <= RX_FEATURE_BANK_MAX ? block[4] : RX_FEATURE_BANK_ALL;
     }
 
@@ -124,7 +130,7 @@ void RX_FEATURE_STATE_Save(void)
         block[0] = RX_FEATURE_MAGIC0;
         block[1] = RX_FEATURE_MAGIC1;
         block[2] = RX_FEATURE_VERSION;
-        block[3] = sFlags & (RX_FEATURE_FLAG_SINGLE_VFO | RX_FEATURE_FLAG_AUTO_SQL);
+        block[3] = sFlags & RX_FEATURE_FLAGS_ALL;
         block[4] = sSelectedBank;
         block[5] = 0;
         const uint16_t crc = CRC16(block, RX_FEATURE_GLOBAL_CRC_OFFSET);
@@ -165,9 +171,27 @@ void RX_FEATURE_STATE_Reset(void)
     RX_FEATURE_STATE_Save();
 }
 
+bool RX_FEATURE_STATE_IsEnabled(void)
+{
+    return (sFlags & RX_FEATURE_FLAG_ENABLED) != 0;
+}
+
+void RX_FEATURE_STATE_SetEnabled(const bool enabled)
+{
+    const uint8_t flags = enabled ? (sFlags | RX_FEATURE_FLAG_ENABLED) :
+                                    (sFlags & (uint8_t)~RX_FEATURE_FLAG_ENABLED);
+    if (flags != sFlags)
+    {
+        sFlags = flags;
+        sGlobalDirty = true;
+    }
+    sAutoSquelchRequest = enabled &&
+        (sFlags & RX_FEATURE_FLAG_AUTO_SQL) != 0;
+}
+
 bool RX_FEATURE_STATE_IsSingleVfo(void)
 {
-    return (sFlags & RX_FEATURE_FLAG_SINGLE_VFO) != 0;
+    return RX_FEATURE_STATE_IsEnabled() && (sFlags & RX_FEATURE_FLAG_SINGLE_VFO) != 0;
 }
 
 void RX_FEATURE_STATE_SetSingleVfo(const bool enabled)
@@ -217,7 +241,7 @@ void RX_FEATURE_STATE_SetChannelBank(const uint16_t channel, uint8_t bank)
 
 bool RX_FEATURE_STATE_IsBankFilterActive(void)
 {
-    return sSelectedBank != RX_FEATURE_BANK_ALL;
+    return RX_FEATURE_STATE_IsEnabled() && sSelectedBank != RX_FEATURE_BANK_ALL;
 }
 
 bool RX_FEATURE_STATE_ChannelMatchesBank(const uint16_t channel)
@@ -231,12 +255,15 @@ bool RX_FEATURE_STATE_ChannelMatchesBank(const uint16_t channel)
 
 bool RX_FEATURE_STATE_GetWidePlus(const uint16_t channel)
 {
+    if (!RX_FEATURE_STATE_IsEnabled())
+        return false;
     return channel < MR_CHANNELS_MAX ? GetBit(sWidePlus, channel) : true;
 }
 
 void RX_FEATURE_STATE_SetWidePlus(const uint16_t channel, const bool enabled)
 {
-    if (channel >= MR_CHANNELS_MAX || GetBit(sWidePlus, channel) == enabled)
+    if (!RX_FEATURE_STATE_IsEnabled() ||
+        channel >= MR_CHANNELS_MAX || GetBit(sWidePlus, channel) == enabled)
         return;
     SetBit(sWidePlus, channel, enabled);
     sWidePlusDirty[channel >> 3] = 1;
@@ -244,7 +271,7 @@ void RX_FEATURE_STATE_SetWidePlus(const uint16_t channel, const bool enabled)
 
 bool RX_FEATURE_STATE_IsAutoSquelch(void)
 {
-    return (sFlags & RX_FEATURE_FLAG_AUTO_SQL) != 0;
+    return RX_FEATURE_STATE_IsEnabled() && (sFlags & RX_FEATURE_FLAG_AUTO_SQL) != 0;
 }
 
 void RX_FEATURE_STATE_SetAutoSquelch(const bool enabled)
@@ -256,13 +283,14 @@ void RX_FEATURE_STATE_SetAutoSquelch(const bool enabled)
         sFlags = flags;
         sGlobalDirty = true;
     }
-    if (enabled)
+    if (enabled && RX_FEATURE_STATE_IsEnabled())
         sAutoSquelchRequest = true;
 }
 
 void RX_FEATURE_STATE_RequestAutoSquelch(void)
 {
-    sAutoSquelchRequest = true;
+    if (RX_FEATURE_STATE_IsAutoSquelch())
+        sAutoSquelchRequest = true;
 }
 
 bool RX_FEATURE_STATE_ConsumeAutoSquelchRequest(void)
@@ -326,7 +354,8 @@ static bool     sAgcSampleValid;
 
 void RX_FEATURE_STATE_ProcessAgcGuard(void)
 {
-    if (gRxVfo == NULL || !FUNCTION_IsRx() || gRxVfo->Modulation != MODULATION_FM ||
+    if (!RX_FEATURE_STATE_IsEnabled() || gRxVfo == NULL || !FUNCTION_IsRx() ||
+        gRxVfo->Modulation != MODULATION_FM ||
         gScanStateDir != SCAN_OFF
 #ifdef ENABLE_FMRADIO
         || gFmRadioMode

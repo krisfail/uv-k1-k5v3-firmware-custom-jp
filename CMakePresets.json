@@ -87,19 +87,11 @@
             }
         },
         {
-            "name": "Custom",
-            "inherits": "default",
-            "cacheVariables": {
-                "EDITION_STRING": "Custom",
-                "TARGET": "uv-k1-custom"
-            }
-        },
-        {
             "name": "JpRxOnly",
             "inherits": "default",
             "cacheVariables": {
                 "AUTHOR_STRING_2": "Kris",
-                "VERSION_STRING_2": "v5.7J",
+                "VERSION_STRING_2": "v5.8.0J2",
                 "EDITION_STRING": "JP-RX-Only",
                 "TARGET": "wrx-jp",
                 "ENABLE_RX_ONLY": true,
@@ -248,10 +240,6 @@
         }
     ],
     "buildPresets": [
-        {
-            "name": "Custom",
-            "configurePreset": "Custom"
-        },
         {
             "name": "JpRxOnly",
             "configurePreset": "JpRxOnly"

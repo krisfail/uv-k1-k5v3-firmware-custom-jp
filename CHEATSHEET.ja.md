@@ -8,8 +8,9 @@
 
 | 版 | 用途 | 送信 |
 | --- | --- | --- |
-| `JpRxOnly` | 日本語・受信専用 | 無効。PTTはモニター |
-| `Custom` | 通常版 | 送信可能な構成 |
+| `JpRxOnly` | 日本語・受信専用（v5.8.0J2） | 無効。PTTはモニター |
+
+このリポジトリで提供する日本語版は`JpRxOnly`のみです。上流系の送信可能な構成は国内向け受信機版として扱わないでください。
 
 ## ビルド（リポジトリのルート）
 
@@ -24,15 +25,6 @@ cmake --build --preset JpRxOnly -j2
 ```
 
 出力: `build/JpRxOnly/wrx-jp.bin`
-
-### 通常版
-
-```powershell
-cmake --preset Custom
-cmake --build --preset Custom -j2
-```
-
-出力: `build/Custom/uv-k1-custom.bin`
 
 ### テスト
 
@@ -62,12 +54,15 @@ python -m unittest discover -s tests -p "test_*.py" -v
 | 受信モード | `MAIN ONLY` / `DUAL RX` / `SINGLE` |
 | `Bank` | `ALL` / `B1`〜`B8` |
 | スケルチ | 数値または`AUTO` |
+| `RXExt` | 追加受信機能をまとめて`ON` / `OFF`（初期値`ON`） |
 | プリセット | 周波数モードで`STAR`短押し |
 | FM放送 | `76.0–95.0 MHz` |
+
+`RXExt=OFF`では、プリセット、WIDE+、SINGLE、バンク絞り込み、AUTOスケルチ、AGCガード、一時スキップが停止します。受信専用動作、PTTモニター、日本語表示、FM放送帯域制限は維持されます。
 
 ## 書き込み前チェック
 
 - 機種に合う版を選んだか
-- `JpRxOnly`と`Custom`を取り違えていないか
+- `JpRxOnly`を選んでいるか
 - 校正データをバックアップしたか
 - `JpRxOnly`ではPTTが送信ではなくモニターになることを確認したか

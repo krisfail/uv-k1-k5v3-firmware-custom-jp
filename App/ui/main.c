@@ -21,6 +21,7 @@
 #include "app/chFrScanner.h"
 #ifdef ENABLE_RX_ONLY
     #include "app/rx_band_presets.h"
+    #include "app/rx_feature_state.h"
 #endif
 #include "app/dtmf.h"
 
@@ -2186,7 +2187,7 @@ void UI_DisplayMain(void)
 
             #ifdef ENABLE_RX_ONLY
                 const uint8_t bandwidthIndex = displayBandwidth == BANDWIDTH_WIDE
-                    ? (vfoInfo->WIDE_PLUS ? 1 : 0)
+                    ? ((RX_FEATURE_STATE_IsEnabled() && vfoInfo->WIDE_PLUS) ? 1 : 0)
                     : (2 + narrower);
             #else
                 const uint8_t bandwidthIndex = displayBandwidth + narrower;
@@ -2214,7 +2215,7 @@ void UI_DisplayMain(void)
             #ifdef ENABLE_RX_ONLY
                 const uint8_t bandwidthIndex = displayBandwidth == BANDWIDTH_NARROW
                     ? 2
-                    : (vfoInfo->WIDE_PLUS ? 1 : 0);
+                    : ((RX_FEATURE_STATE_IsEnabled() && vfoInfo->WIDE_PLUS) ? 1 : 0);
             #else
                 const uint8_t bandwidthIndex = displayBandwidth;
             #endif
