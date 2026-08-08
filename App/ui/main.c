@@ -2178,17 +2178,17 @@ void UI_DisplayMain(void)
         const uint8_t displayBandwidth = vfoInfo->CHANNEL_BANDWIDTH;
 
         #ifdef ENABLE_FEAT_F4HWN_NARROWER
+#ifndef ENABLE_RX_ONLY
             bool narrower = 0;
 
             if(displayBandwidth == BANDWIDTH_NARROW && gSetting_set_nfm == 1)
             {
                 narrower = 1;
             }
+#endif
 
             #ifdef ENABLE_RX_ONLY
-                const uint8_t bandwidthIndex = displayBandwidth == BANDWIDTH_WIDE
-                    ? ((RX_FEATURE_STATE_IsEnabled() && vfoInfo->WIDE_PLUS) ? 1 : 0)
-                    : (2 + narrower);
+                const uint8_t bandwidthIndex = displayBandwidth <= BANDWIDTH_NARROWER ? displayBandwidth : BANDWIDTH_WIDE;
             #else
                 const uint8_t bandwidthIndex = displayBandwidth + narrower;
             #endif
@@ -2196,7 +2196,7 @@ void UI_DisplayMain(void)
             if (gSetting_set_gui)
             {
                 #ifdef ENABLE_RX_ONLY
-                    const char *bandWidthNames[] = {"W", "W+", "N", "N+"};
+                    const char *bandWidthNames[] = {"W", "N", "N-"};
                 #else
                     const char *bandWidthNames[] = {"W", "N", "N+"};
                 #endif
@@ -2205,7 +2205,7 @@ void UI_DisplayMain(void)
             else
             {
                 #ifdef ENABLE_RX_ONLY
-                    const char *bandWidthNames[] = {"WIDE", "WIDE+", "NAR", "NAR+"};
+                    const char *bandWidthNames[] = {"W", "N", "N-"};
                 #else
                     const char *bandWidthNames[] = {"WIDE", "NAR", "NAR+"};
                 #endif
@@ -2213,9 +2213,7 @@ void UI_DisplayMain(void)
             }
         #else
             #ifdef ENABLE_RX_ONLY
-                const uint8_t bandwidthIndex = displayBandwidth == BANDWIDTH_NARROW
-                    ? 2
-                    : ((RX_FEATURE_STATE_IsEnabled() && vfoInfo->WIDE_PLUS) ? 1 : 0);
+                const uint8_t bandwidthIndex = displayBandwidth <= BANDWIDTH_NARROWER ? displayBandwidth : BANDWIDTH_WIDE;
             #else
                 const uint8_t bandwidthIndex = displayBandwidth;
             #endif
@@ -2223,7 +2221,7 @@ void UI_DisplayMain(void)
             if (gSetting_set_gui)
             {
                 #ifdef ENABLE_RX_ONLY
-                    const char *bandWidthNames[] = {"W", "W+", "N"};
+                const char *bandWidthNames[] = {"W", "N", "N-"};
                 #else
                     const char *bandWidthNames[] = {"W", "N"};
                 #endif
@@ -2232,7 +2230,7 @@ void UI_DisplayMain(void)
             else
             {
                 #ifdef ENABLE_RX_ONLY
-                    const char *bandWidthNames[] = {"WIDE", "WIDE+", "NAR"};
+                const char *bandWidthNames[] = {"W", "N", "N-"};
                 #else
                     const char *bandWidthNames[] = {"WIDE", "NAR"};
                 #endif

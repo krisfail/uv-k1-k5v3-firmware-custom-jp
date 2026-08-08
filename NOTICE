@@ -37,6 +37,12 @@ others:
 Project-specific derived components
 -----------------------------------
 
+The Japanese LCD glyph data includes material adapted from
+rainy-knight/uv-k5-jp. This project records that source as Apache
+License, Version 2.0 material:
+
+  https://github.com/rainy-knight/uv-k5-jp
+
 The spectrum analyzer implementation includes work originally developed
 by fagci:
 

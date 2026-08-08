@@ -548,6 +548,9 @@ static void ScanFastApplyChannelShape(ModulationMode_t modulation)
 
     gRxVfo->Modulation         = modulation;
     gRxVfo->CHANNEL_BANDWIDTH  = BANDWIDTH_WIDE;
+#ifdef ENABLE_RX_ONLY
+    gRxVfo->WIDE_PLUS          = false;
+#endif
 
     if (modulationChanged)
         RADIO_SetModulation(modulation);

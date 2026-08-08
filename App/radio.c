@@ -235,7 +235,8 @@ void RADIO_InitInfo(VFO_Info_t *pInfo, const uint16_t ChannelSave, const uint32_
     pInfo->pTX                      = &pInfo->freq_config_TX;
     pInfo->Compander                = 0;  // off
 #ifdef ENABLE_RX_ONLY
-    pInfo->WIDE_PLUS                = true;
+    pInfo->CHANNEL_BANDWIDTH     = BANDWIDTH_WIDE;
+    pInfo->WIDE_PLUS             = false;
 #endif
 
     if (ChannelSave == (FREQ_CHANNEL_FIRST + BAND2_108MHz))
@@ -388,7 +389,7 @@ void RADIO_ConfigureChannel(const unsigned int VFO, const unsigned int configure
         if (data[4] == 0xFF)
         {
             pVfo->FrequencyReverse  = false;
-            pVfo->CHANNEL_BANDWIDTH = BK4819_FILTER_BW_WIDE;
+            pVfo->CHANNEL_BANDWIDTH = BANDWIDTH_WIDE;
             pVfo->OUTPUT_POWER      = OUTPUT_POWER_LOW1;
             pVfo->BUSY_CHANNEL_LOCK = false;
             pVfo->TX_LOCK = true;
@@ -402,6 +403,21 @@ void RADIO_ConfigureChannel(const unsigned int VFO, const unsigned int configure
             pVfo->BUSY_CHANNEL_LOCK = !!((d4 >> 5) & 1u);
             pVfo->TX_LOCK           = !!((d4 >> 6) & 1u);
         }
+
+#ifdef ENABLE_RX_ONLY
+        if ((data[7] & RADIO_BANDWIDTH_EXT_MARKER_MASK) == RADIO_BANDWIDTH_EXT_MARKER)
+        {
+            pVfo->CHANNEL_BANDWIDTH = data[7] & 3u;
+            if (pVfo->CHANNEL_BANDWIDTH > BANDWIDTH_NARROWER)
+                pVfo->CHANNEL_BANDWIDTH = BANDWIDTH_WIDE;
+        }
+        else if (IS_MR_CHANNEL(channel) && RADIO_BandwidthIsWide(pVfo->CHANNEL_BANDWIDTH))
+        {
+            /* Migrate the former one-bit WIDE/WIDE+ representation. */
+            pVfo->CHANNEL_BANDWIDTH = BANDWIDTH_WIDE;
+        }
+        pVfo->WIDE_PLUS = false;
+#endif
 
         if (data[5] == 0xFF)
         {
@@ -486,7 +502,7 @@ void RADIO_ConfigureChannel(const unsigned int VFO, const unsigned int configure
     pVfo->Compander = att->compander;
 
 #ifdef ENABLE_RX_ONLY
-    pVfo->WIDE_PLUS = IS_MR_CHANNEL(channel) ? RX_FEATURE_STATE_GetWidePlus(channel) : true;
+    pVfo->WIDE_PLUS = false;
 #endif
 
     #ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
@@ -763,19 +779,22 @@ void RADIO_SelectVfos(void)
 BK4819_FilterBandwidth_t RADIO_GetAMFilterBandwidth(const VFO_Info_t *pVfo)
 {
     // On BK4829, AM "wide" intentionally reuses the wider RF filter preset.
-    return (pVfo->CHANNEL_BANDWIDTH == BANDWIDTH_WIDE) ? BK4819_FILTER_BW_WIDE : BK4819_FILTER_BW_AM;
+    return RADIO_BandwidthIsWide(pVfo->CHANNEL_BANDWIDTH) ? BK4819_FILTER_BW_WIDE : BK4819_FILTER_BW_AM;
 }
 
 void RADIO_SetupRegisters(bool switchToForeground)
 {
-    BK4819_FilterBandwidth_t Bandwidth = gRxVfo->CHANNEL_BANDWIDTH;
+    const uint8_t channelBandwidth = gRxVfo->CHANNEL_BANDWIDTH;
+    BK4819_FilterBandwidth_t Bandwidth = RADIO_BandwidthToFilter(channelBandwidth);
 
+#ifndef ENABLE_RX_ONLY
     #ifdef ENABLE_FEAT_F4HWN_NARROWER
         if(Bandwidth == BK4819_FILTER_BW_NARROW && gSetting_set_nfm == 1)
         {
             Bandwidth = BK4819_FILTER_BW_NARROWER;
         }
     #endif
+#endif
 
     AUDIO_AudioPathOff();
 
@@ -801,10 +820,7 @@ void RADIO_SetupRegisters(bool switchToForeground)
                     weakNoDifferent = true;
 #endif
 #ifdef ENABLE_RX_ONLY
-                    if (Bandwidth == BK4819_FILTER_BW_WIDE)
-                        weakNoDifferent = gRxVfo->WIDE_PLUS;
-                    if (!RX_FEATURE_STATE_IsEnabled())
-                        weakNoDifferent = false;
+                    weakNoDifferent = RADIO_BandwidthUsesWidePlusFilter(channelBandwidth);
 #endif
                     BK4819_SetFilterBandwidth(Bandwidth, weakNoDifferent);
                 }
@@ -1016,7 +1032,7 @@ void RADIO_SetTxParameters(void)
     RADIO_SetupRegisters(true);
     return;
 #endif
-    BK4819_FilterBandwidth_t Bandwidth = gCurrentVfo->CHANNEL_BANDWIDTH;
+    BK4819_FilterBandwidth_t Bandwidth = RADIO_BandwidthToFilter(gCurrentVfo->CHANNEL_BANDWIDTH);
 
     #ifdef ENABLE_FEAT_F4HWN_NARROWER
         if(Bandwidth == BK4819_FILTER_BW_NARROW && gSetting_set_nfm == 1)
@@ -1391,7 +1407,7 @@ void RADIO_SendEndOfTransmission(void)
     RADIO_SetupRegisters(true);
     return;
 #endif
-    BK4819_FilterBandwidth_t Bandwidth = gCurrentVfo->CHANNEL_BANDWIDTH;
+    BK4819_FilterBandwidth_t Bandwidth = RADIO_BandwidthToFilter(gCurrentVfo->CHANNEL_BANDWIDTH);
 
     #ifdef ENABLE_FEAT_F4HWN_NARROWER
         if(Bandwidth == BK4819_FILTER_BW_NARROW && gSetting_set_nfm == 1)

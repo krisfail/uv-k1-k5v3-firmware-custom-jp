@@ -44,9 +44,8 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
         self.assertIn("RX_FEATURE_STATE_IsEnabled()", state)
         self.assertIn("RX_FEATURE_STATE_IsEnabled()", presets)
         self.assertIn("RX_FEATURE_STATE_IsEnabled()", skips)
-        self.assertIn("if (!RX_FEATURE_STATE_IsEnabled())", radio)
-        self.assertIn("RX_FEATURE_STATE_IsEnabled()", action)
-        self.assertIn("RX_FEATURE_STATE_IsEnabled() && vfoInfo->WIDE_PLUS", ui)
+        self.assertIn("RADIO_BandwidthToFilter", action)
+        self.assertNotIn("RX_FEATURE_STATE_IsEnabled() && vfoInfo->WIDE_PLUS", ui)
 
     def test_build_outputs_use_project_names(self):
         cmake = source("CMakePresets.json")
@@ -110,15 +109,20 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
         self.assertIn("gEeprom.FM_Band = 1;", settings)
         self.assertIn("one fixed 76-95 MHz receive band", fm)
 
-    def test_wide_plus_has_distinct_display_and_filter_state(self):
+    def test_k1_receive_bandwidth_has_three_modes_and_preserves_step_choices(self):
         ui = source("App/ui/main.c")
         action = source("App/app/action.c")
         radio = source("App/radio.c")
-        self.assertIn('"WIDE+"', ui)
-        self.assertIn('"W+"', ui)
-        self.assertIn("vfoInfo->WIDE_PLUS", ui)
-        self.assertIn("RX_FEATURE_STATE_SetWidePlus", action)
-        self.assertIn("weakNoDifferent = gRxVfo->WIDE_PLUS", radio)
+        menu = source("App/ui/menu.c")
+        settings = source("App/settings.c")
+        frequencies = source("App/frequencies.c")
+        self.assertIn('"W", "N", "N-"', ui)
+        self.assertIn('"W",\n    "N",\n    "N-"', menu)
+        self.assertIn("BANDWIDTH_NARROWER", action)
+        self.assertIn("RADIO_BandwidthToFilter", radio)
+        self.assertIn("RADIO_BANDWIDTH_EXT_MARKER", settings)
+        self.assertIn("[STEP_6_25kHz]  = 625", frequencies)
+        self.assertIn("[STEP_20kHz]    = 2000", frequencies)
 
     def test_auto_squelch_recalibrates_after_fm_configuration(self):
         radio = source("App/radio.c")
@@ -182,6 +186,12 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
         self.assertIn("#define FONT_CODE_MAX 0xFF", font_header)
         self.assertIn("[0xE0 - 0x7F]", font)
         self.assertIn("// ー", font)
+        self.assertIn(
+            "[0xE0 - 0x7F] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x02,0x02,0x02,0x02,0x02,0x02}",
+            font,
+        )
+        self.assertIn("(uint8_t)((page0 >> 1) | (page1 << 7))", helper)
+        self.assertIn("(uint8_t)(page1 >> 1)", helper)
         self.assertIn("[0xFF - 0x7F]", font)
         self.assertIn("code <= FONT_CODE_MAX", helper)
 

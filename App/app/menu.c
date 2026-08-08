@@ -631,10 +631,9 @@ void MENU_AcceptSetting(void)
 
         case MENU_W_N:
 #ifdef ENABLE_RX_ONLY
-            gTxVfo->CHANNEL_BANDWIDTH = gSubMenuSelection == 2 ? BANDWIDTH_NARROW : BANDWIDTH_WIDE;
-            gTxVfo->WIDE_PLUS = gSubMenuSelection == 1;
-            if (IS_MR_CHANNEL(gTxVfo->CHANNEL_SAVE))
-                RX_FEATURE_STATE_SetWidePlus(gTxVfo->CHANNEL_SAVE, gTxVfo->WIDE_PLUS);
+            gTxVfo->CHANNEL_BANDWIDTH = gSubMenuSelection == 2 ? BANDWIDTH_NARROWER :
+                (gSubMenuSelection == 1 ? BANDWIDTH_NARROW : BANDWIDTH_WIDE);
+            gTxVfo->WIDE_PLUS = false;
 #else
             gTxVfo->CHANNEL_BANDWIDTH = gSubMenuSelection;
 #endif
@@ -1242,8 +1241,8 @@ void MENU_ShowCurrentSetting(void)
 
         case MENU_W_N:
 #ifdef ENABLE_RX_ONLY
-            gSubMenuSelection = gTxVfo->CHANNEL_BANDWIDTH == BANDWIDTH_NARROW ? 2 :
-                (RX_FEATURE_STATE_IsEnabled() && gTxVfo->WIDE_PLUS ? 1 : 0);
+            gSubMenuSelection = gTxVfo->CHANNEL_BANDWIDTH == BANDWIDTH_NARROWER ? 2 :
+                (gTxVfo->CHANNEL_BANDWIDTH == BANDWIDTH_NARROW ? 1 : 0);
 #else
             gSubMenuSelection = gTxVfo->CHANNEL_BANDWIDTH;
 #endif

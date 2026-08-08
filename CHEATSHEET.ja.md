@@ -1,8 +1,10 @@
 # UV-K1 / UV-K5 V3 cheatsheet
 
-[日本語版README](README.ja.md) | [英語版README](README.md)
+[日本語版README](README.ja.md) | [英語版README](README.md) | [CHIRPドライバ](tools/chirp/README.ja.md)
 
 注意事項、forkの関係、AI支援開発、免責、バックアップの要件は[README.ja.md](README.ja.md)を確認してください。
+
+このファイルは早見表です。対象機種、メモリーマップ、CHIRPの読み書き範囲などの説明を重複して管理しません。
 
 ## 版の選択
 
@@ -48,13 +50,13 @@ python -m unittest discover -s tests -p "test_*.py" -v
 
 ## CHIRP
 
-`tools/chirp/wrx_jp.py`にK1／K5 V3共通プロファイルと旧UV-K5プロファイルを収録しています。機種選択を誤らず、アップロード前に全イメージを保存してください。FM設定は`76.0–95.0 MHz`、送信設定は扱いません。
+機種選択、バックアップ、校正領域の保護範囲は[CHIRPドライバの説明](tools/chirp/README.ja.md)を確認してください。要点は、K1／K5 V3プロファイルを選び、アップロード前に全イメージを保存し、送信設定を扱わないことです。
 
 ## 受信設定
 
 | 設定 | 値・動作 |
 | --- | --- |
-| `W/N` | `WIDE` / `WIDE+` / `NARROW` |
+| `W/N` | `W` 20 kHz / `N` 12.5 kHz / `N-` 6.25 kHz |
 | 受信モード | `MAIN ONLY` / `DUAL RX` / `SINGLE` |
 | `Bank` | `ALL` / `B1`〜`B8` |
 | スケルチ | 数値または`AUTO` |
@@ -64,7 +66,7 @@ python -m unittest discover -s tests -p "test_*.py" -v
 
 RX-onlyメニューでは、`RXExt`は「受信拡張」、スケルチの`AUTO`は「自動」と表示されます。優先スキャン、情報、反転、音声、自動、狭帯、高速などの主要項目も日本語表示です。大文字の長音「ー」も専用グリフで表示します。
 
-`RXExt=OFF`では、プリセット、WIDE+、SINGLE、バンク絞り込み、AUTOスケルチ、AGCガード、一時スキップが停止します。受信専用動作、PTTモニター、日本語表示、FM放送帯域制限は維持されます。
+`RXExt=OFF`では、プリセット、SINGLE、バンク絞り込み、AUTOスケルチ、AGCガード、一時スキップが停止します。通常受信の3段階帯域幅、受信専用動作、PTTモニター、日本語表示、FM放送帯域制限は維持されます。周波数ステップは帯域幅と独立して選択できます。
 
 ## 書き込み前チェック
 

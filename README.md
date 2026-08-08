@@ -1,6 +1,6 @@
 # UV-K1 / UV-K5 V3 Japanese receive-only firmware
 
-[日本語版README](README.ja.md) | [操作・ビルドcheatsheet](CHEATSHEET.ja.md)
+[日本語版README](README.ja.md) | [操作・ビルドcheatsheet](CHEATSHEET.ja.md) | [CHIRP driver](tools/chirp/README.ja.md) | [Technical feature details](docs/FEATURES_TECHNICAL.ja.md)
 
 This repository is the downstream fork [krisfail/uv-k1-k5v3-firmware-custom-jp](https://github.com/krisfail/uv-k1-k5v3-firmware-custom-jp), with [armel/uv-k1-k5v3-firmware-custom](https://github.com/armel/uv-k1-k5v3-firmware-custom) as its upstream. It adapts the F4HWN and [Egzumer custom firmware](https://github.com/egzumer/uv-k5-firmware-custom) lineage to the UV-K1 and UV-K5 V3, which use the PY32F071 MCU.
 
@@ -21,14 +21,14 @@ The local Japanese build is `JpRxOnly`:
 - TX paths and TX-related menus disabled.
 - PTT assigned to monitor operation.
 - `MAIN ONLY`, `DUAL RX`, and `SINGLE` receive modes.
-- `WIDE+`, `WIDE`, and `NARROW` bandwidth selection.
+- `W`, `N`, and `N-` bandwidth selection (20/12.5/6.25 kHz); K1 does not expose WIDE+ because BK4829 applies the same RF setting.
 - Receive band presets, memory banks, automatic squelch, AGC protection, and temporary scan skipping.
 - The `RXExt` radio menu item enables or disables those added receive features as a group; it defaults to enabled.
 - Domestic FM broadcast reception limited to `76.0–95.0 MHz`.
 
 The other CMake presets (`Bandscope`, `Broadcast`, `Basic`, `RescueOps`, `Game`, and `Fusion`) are retained for upstream-style development and feature comparison. They are not Japanese or domestic receive-only editions. A Japanese transmit-capable edition is not currently distributed; it remains a separate future investigation and must not be inferred from the other presets.
 
-Detailed operation notes are in [README.ja.md](README.ja.md). The quick reference is in [CHEATSHEET.ja.md](CHEATSHEET.ja.md).
+Detailed operation notes are in [README.ja.md](README.ja.md). The quick reference is in [CHEATSHEET.ja.md](CHEATSHEET.ja.md). Technical implementation details are in [docs/FEATURES_TECHNICAL.ja.md](docs/FEATURES_TECHNICAL.ja.md). CHIRP-specific memory-map and upload guidance is in [tools/chirp/README.ja.md](tools/chirp/README.ja.md); legal attribution remains in `tools/chirp/NOTICE.md` and `tools/chirp/LICENSE.txt`.
 
 ## Building `JpRxOnly`
 
@@ -46,6 +46,10 @@ The outputs are under `build/JpRxOnly`:
 - `wrx-jp.bin`: firmware image.
 - `wrx-jp.hex`: HEX image.
 - `wrx-jp.elf`: ELF image for debugging.
+
+## CHIRP driver
+
+Copy `tools/chirp/wrx_jp.py` into the CHIRP driver directory and select `UV-K1 / UV-K5 V3 (wrx-jp RX-only)`. The same module contains a separate legacy UV-K5 profile; do not use it for K1 or UV-K5 V3. The driver is RX-only and its upload whitelist excludes calibration data. Read the [CHIRP guide](tools/chirp/README.ja.md) before writing.
 
 After configuration, source-only changes can be rebuilt with:
 
@@ -104,6 +108,7 @@ Many thanks to:
 - [Egzumer](https://github.com/egzumer)
 - [OneOfEleven](https://github.com/OneOfEleven)
 - [DualTachyon](https://github.com/DualTachyon)
+- UV-K5-RX-JP: receive-only and wideband receiver feature ideas were used as a partial reference.
 - [Mikhail / fagci](https://github.com/fagci)
 - [Manuel](https://github.com/manujedi)
 - @wagner
