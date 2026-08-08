@@ -71,7 +71,7 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
             '"ENABLE_DTMF_CALLING": false',
         ):
             self.assertIn(flag, cmake)
-        self.assertIn('"VERSION_STRING_2": "v5.8.0J3"', cmake)
+        self.assertIn('"VERSION_STRING_2": "v5.8.0J4"', cmake)
         self.assertIn('"EDITION_STRING": "JP-RX-Only"', cmake)
         for flag in (
             '"ENABLE_FEAT_F4HWN_SCAN_PROGRESS": true',
@@ -258,7 +258,7 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
         self.assertIn("ACTION_Monitor()", generic)
         self.assertIn("COMMON_SwitchVFOs", common)
         self.assertIn("return;", common)
-        self.assertIn("RADIO_SetupRegisters(true);", functions)
+        self.assertIn("RADIO_SetVfoState(VFO_STATE_TX_DISABLE);", functions)
         self.assertIn('"SINGLE"', menu)
         self.assertIn("const char auto_name[] = {0xEB, 0xEC, 0};", menu)
 

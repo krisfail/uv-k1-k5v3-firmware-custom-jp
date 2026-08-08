@@ -256,9 +256,12 @@ void RADIO_ValidateAndSetCode(FREQ_Config_t *pFreq_Config, uint8_t tmp) {
             break;
 
         case CODE_TYPE_CONTINUOUS_TONE:
+        case CODE_TYPE_REVERSE_CONTINUOUS_TONE:
         case CODE_TYPE_DIGITAL:
         case CODE_TYPE_REVERSE_DIGITAL:
-            if (tmp > ((pFreq_Config->CodeType == CODE_TYPE_CONTINUOUS_TONE ? ARRAY_SIZE(CTCSS_Options) : ARRAY_SIZE(DCS_Options)) - 1))
+            if (tmp > (((pFreq_Config->CodeType == CODE_TYPE_CONTINUOUS_TONE ||
+                         pFreq_Config->CodeType == CODE_TYPE_REVERSE_CONTINUOUS_TONE)
+                            ? ARRAY_SIZE(CTCSS_Options) : ARRAY_SIZE(DCS_Options)) - 1))
                 tmp = 0;
             break;
     }
@@ -904,6 +907,7 @@ void RADIO_SetupRegisters(bool switchToForeground)
                     break;
 
                 case CODE_TYPE_CONTINUOUS_TONE:
+                case CODE_TYPE_REVERSE_CONTINUOUS_TONE:
                     BK4819_SetCTCSSFrequency(CTCSS_Options[Code]);
 
                     //#ifndef ENABLE_CTCSS_TAIL_PHASE_SHIFT
@@ -1091,6 +1095,7 @@ void RADIO_SetTxParameters(void)
             break;
 
         case CODE_TYPE_CONTINUOUS_TONE:
+        case CODE_TYPE_REVERSE_CONTINUOUS_TONE:
             BK4819_SetCTCSSFrequency(CTCSS_Options[gCurrentVfo->pTX->Code]);
             break;
 

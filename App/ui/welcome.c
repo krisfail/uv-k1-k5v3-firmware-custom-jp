@@ -34,6 +34,24 @@
     #include "k5viewer.h"
 #endif
 
+#ifdef ENABLE_RX_ONLY
+static const char UI_RxOnlyWelcome0[] = {0x80, 0x81, 0x98, 0x99, 0}; // 受信専用
+static const char UI_RxOnlyWelcome1[] = "JP RX-ONLY";
+#endif
+
+static void UI_SanitizeWelcomeString(char *string, const size_t size)
+{
+    string[size - 1u] = '\0';
+    for (size_t i = 0; i < size - 1u; i++)
+    {
+        if ((uint8_t)string[i] == 0xFFu)
+        {
+            string[i] = '\0';
+            break;
+        }
+    }
+}
+
 #ifdef ENABLE_FEAT_F4HWN_LOGO
 // Boot logo storage in PY25Q16 external flash, aligned on a 4 KB sector,
 // placed past the calibration zone (0x010000-0x010200).
@@ -255,20 +273,27 @@ void UI_DisplayWelcome(void)
     }
 #endif
 #ifdef ENABLE_FEAT_F4HWN_LOGO
-    else if (gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_LOGO) {
+    else if (gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_LOGO ||
+             gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_LOGO_MESSAGE) {
         UI_LoadLogo();
+        if (gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_LOGO_MESSAGE)
+            UI_PrintStringSmallNormal("JP RX-ONLY", 0, 0, 6);
     }
 #endif
     else {
-        char WelcomeString0[16];
-        char WelcomeString1[16];
+        char WelcomeString0[17];
+        char WelcomeString1[17];
         char WelcomeString2[16];
         char WelcomeString3[32];
 
         // 0x0EB0
+        memset(WelcomeString0, 0, sizeof(WelcomeString0));
+        memset(WelcomeString1, 0, sizeof(WelcomeString1));
         PY25Q16_ReadBuffer(0x00A0C8, WelcomeString0, 16);
         // 0x0EC0
         PY25Q16_ReadBuffer(0x00A0D8, WelcomeString1, 16);
+        UI_SanitizeWelcomeString(WelcomeString0, sizeof(WelcomeString0));
+        UI_SanitizeWelcomeString(WelcomeString1, sizeof(WelcomeString1));
 
         sprintf(WelcomeString2, "%u.%02uV %u%%",
                 gBatteryVoltageAverage / 100,
@@ -284,8 +309,13 @@ void UI_DisplayWelcome(void)
         {
             if(strlen(WelcomeString0) == 0 && strlen(WelcomeString1) == 0)
             {
+#ifdef ENABLE_RX_ONLY
+                memcpy(WelcomeString0, UI_RxOnlyWelcome0, sizeof(UI_RxOnlyWelcome0));
+                memcpy(WelcomeString1, UI_RxOnlyWelcome1, sizeof(UI_RxOnlyWelcome1));
+#else
                 strcpy(WelcomeString0, "WELCOME");
                 strcpy(WelcomeString1, WelcomeString2);
+#endif
             }
             else if(strlen(WelcomeString0) == 0 || strlen(WelcomeString1) == 0)
             {

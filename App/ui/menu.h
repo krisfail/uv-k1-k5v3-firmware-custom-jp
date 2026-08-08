@@ -50,7 +50,7 @@ enum
     MENU_SCR,
 #endif
     MENU_BCL,
-#ifdef ENABLE_FEAT_F4HWN
+#if defined(ENABLE_FEAT_F4HWN) && !defined(ENABLE_RX_ONLY)
     MENU_TX_LOCK, 
 #endif
     MENU_MEM_CH,
@@ -233,7 +233,7 @@ extern const char* const            gSubMenu_D_RSP[4];
 extern const char* const gSubMenu_PTT_ID[5];
 #ifdef ENABLE_FEAT_F4HWN
     #ifdef ENABLE_FEAT_F4HWN_LOGO
-        extern const char* const    gSubMenu_PONMSG[6];
+        extern const char* const    gSubMenu_PONMSG[7];
     #else
         extern const char* const    gSubMenu_PONMSG[5];
     #endif
@@ -273,6 +273,7 @@ extern int               edit_index;
 extern bool              edit_is_uppercase;
 
 void UI_DisplayMenu(void);
+void UI_MENU_TimeSlice500ms(void);
 int UI_MENU_GetCurrentMenuId();
 uint8_t UI_MENU_GetMenuIdx(uint8_t id);
 

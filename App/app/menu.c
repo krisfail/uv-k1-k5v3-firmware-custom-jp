@@ -209,7 +209,7 @@ int MENU_GetLimits(uint8_t menu_id, int32_t *pMin, int32_t *pMax)
         case MENU_R_CTCS:
         case MENU_T_CTCS:
             //*pMin = 0;
-            *pMax = ARRAY_SIZE(CTCSS_Options);
+            *pMax = ARRAY_SIZE(CTCSS_Options) * 2;
             break;
 
         case MENU_W_N:
@@ -440,7 +440,9 @@ int MENU_GetLimits(uint8_t menu_id, int32_t *pMin, int32_t *pMax)
             *pMax = 15;
             break;
         #endif
+#ifndef ENABLE_RX_ONLY
         case MENU_TX_LOCK:
+#endif
         #ifdef ENABLE_FEAT_F4HWN_INV
         case MENU_SET_INV:
             //*pMin = 0;
@@ -604,16 +606,25 @@ void MENU_AcceptSetting(void)
             pConfig = &gTxVfo->freq_config_TX;
             [[fallthrough]];
         case MENU_R_CTCS: {
+            const size_t ctcss_count = ARRAY_SIZE(CTCSS_Options);
+            const bool is_ctcss =
+                pConfig->CodeType == CODE_TYPE_CONTINUOUS_TONE ||
+                pConfig->CodeType == CODE_TYPE_REVERSE_CONTINUOUS_TONE;
+
             if (gSubMenuSelection == 0) {
-                if (pConfig->CodeType != CODE_TYPE_CONTINUOUS_TONE) {
+                if (!is_ctcss) {
                     return;
                 }
                 pConfig->Code     = 0;
                 pConfig->CodeType = CODE_TYPE_OFF;
             }
-            else {
+            else if (gSubMenuSelection <= (int32_t)ctcss_count) {
                 pConfig->Code     = gSubMenuSelection - 1;
                 pConfig->CodeType = CODE_TYPE_CONTINUOUS_TONE;
+            }
+            else {
+                pConfig->Code     = gSubMenuSelection - (int32_t)ctcss_count - 1;
+                pConfig->CodeType = CODE_TYPE_REVERSE_CONTINUOUS_TONE;
             }
 
             gRequestSaveChannel = 1;
@@ -1126,10 +1137,12 @@ void MENU_AcceptSetting(void)
             gSetting_set_sav = gSubMenuSelection;
             break;
 #endif
+#ifndef ENABLE_RX_ONLY
         case MENU_TX_LOCK:
             gTxVfo->TX_LOCK = gSubMenuSelection;
             gRequestSaveChannel       = 1;
             return;
+#endif
 #endif
     }
 
@@ -1192,13 +1205,21 @@ void MENU_ShowCurrentSetting(void)
                 type = gScanCssResultType;
                 code = gScanCssResultCode;
             }
-            if((menuid==MENU_R_CTCS) ^ (type==CODE_TYPE_CONTINUOUS_TONE)) { //not the same type
+            const bool is_ctcss =
+                type == CODE_TYPE_CONTINUOUS_TONE ||
+                type == CODE_TYPE_REVERSE_CONTINUOUS_TONE;
+            if((menuid==MENU_R_CTCS) != is_ctcss) { // not the same type
                 gSubMenuSelection = 0;
                 break;
             }
 
             switch (type) {
                 case CODE_TYPE_CONTINUOUS_TONE:
+                    gSubMenuSelection = code + 1;
+                    break;
+                case CODE_TYPE_REVERSE_CONTINUOUS_TONE:
+                    gSubMenuSelection = code + ARRAY_SIZE(CTCSS_Options) + 1;
+                    break;
                 case CODE_TYPE_DIGITAL:
                     gSubMenuSelection = code + 1;
                     break;
@@ -1228,7 +1249,12 @@ void MENU_ShowCurrentSetting(void)
             break;
 
         case MENU_T_CTCS:
-            gSubMenuSelection = (gTxVfo->freq_config_TX.CodeType == CODE_TYPE_CONTINUOUS_TONE) ? gTxVfo->freq_config_TX.Code + 1 : 0;
+            if (gTxVfo->freq_config_TX.CodeType == CODE_TYPE_CONTINUOUS_TONE)
+                gSubMenuSelection = gTxVfo->freq_config_TX.Code + 1;
+            else if (gTxVfo->freq_config_TX.CodeType == CODE_TYPE_REVERSE_CONTINUOUS_TONE)
+                gSubMenuSelection = gTxVfo->freq_config_TX.Code + ARRAY_SIZE(CTCSS_Options) + 1;
+            else
+                gSubMenuSelection = 0;
             break;
 
         case MENU_SFT_D:
@@ -1627,9 +1653,11 @@ void MENU_ShowCurrentSetting(void)
             gSubMenuSelection = gSetting_set_sav;
             break;
 #endif
+#ifndef ENABLE_RX_ONLY
         case MENU_TX_LOCK:
             gSubMenuSelection = gTxVfo->TX_LOCK;
             break;
+#endif
 #endif
 
         default:

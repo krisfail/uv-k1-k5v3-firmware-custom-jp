@@ -1,6 +1,6 @@
 # UV-K1 / UV-K5 V3 Japanese receive-only firmware
 
-[日本語版README](README.ja.md) | [操作・ビルドcheatsheet](CHEATSHEET.ja.md) | [CHIRP driver](tools/chirp/README.ja.md) | [Technical feature details](docs/FEATURES_TECHNICAL.ja.md)
+[日本語版README](README.ja.md) | [操作・ビルドcheatsheet](CHEATSHEET.ja.md) | [Developer guide](DEVELOPMENT.md) | [CHIRP driver](tools/chirp/README.ja.md) | [Technical feature details](docs/FEATURES_TECHNICAL.ja.md)
 
 This repository is the downstream fork [krisfail/uv-k1-k5v3-firmware-custom-jp](https://github.com/krisfail/uv-k1-k5v3-firmware-custom-jp), with [armel/uv-k1-k5v3-firmware-custom](https://github.com/armel/uv-k1-k5v3-firmware-custom) as its upstream. It adapts the F4HWN and [Egzumer custom firmware](https://github.com/egzumer/uv-k5-firmware-custom) lineage to the UV-K1 and UV-K5 V3, which use the PY32F071 MCU.
 
@@ -29,6 +29,8 @@ The local Japanese build is `JpRxOnly`:
 The other CMake presets (`Bandscope`, `Broadcast`, `Basic`, `RescueOps`, `Game`, and `Fusion`) are retained for upstream-style development and feature comparison. They are not Japanese or domestic receive-only editions. A Japanese transmit-capable edition is not currently distributed; it remains a separate future investigation and must not be inferred from the other presets.
 
 Detailed operation notes are in [README.ja.md](README.ja.md). The quick reference is in [CHEATSHEET.ja.md](CHEATSHEET.ja.md). Technical implementation details are in [docs/FEATURES_TECHNICAL.ja.md](docs/FEATURES_TECHNICAL.ja.md). CHIRP-specific memory-map and upload guidance is in [tools/chirp/README.ja.md](tools/chirp/README.ja.md); legal attribution remains in `tools/chirp/NOTICE.md` and `tools/chirp/LICENSE.txt`.
+
+Development-specific source layout, change boundaries, atlas generation, validation, and release handling are collected in [DEVELOPMENT.md](DEVELOPMENT.md). `README.md` intentionally keeps only the general usage and build information needed to get started.
 
 ## Building `JpRxOnly`
 
@@ -62,6 +64,8 @@ Run the static checks with:
 ```powershell
 python -m unittest discover -s tests -p "test_*.py" -v
 ```
+
+The full developer workflow, source map, persistence boundaries, and atlas procedure are in [DEVELOPMENT.md](DEVELOPMENT.md).
 
 The optional Docker helper is intended for the upstream-style presets:
 

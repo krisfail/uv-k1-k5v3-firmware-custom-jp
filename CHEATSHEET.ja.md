@@ -1,6 +1,6 @@
 # UV-K1 / UV-K5 V3 cheatsheet
 
-[日本語版README](README.ja.md) | [英語版README](README.md) | [CHIRPドライバ](tools/chirp/README.ja.md)
+[日本語版README](README.ja.md) | [英語版README](README.md) | [開発者向けガイド](DEVELOPMENT.md) | [CHIRPドライバ](tools/chirp/README.ja.md)
 
 注意事項、forkの関係、AI支援開発、免責、バックアップの要件は[README.ja.md](README.ja.md)を確認してください。
 
@@ -10,7 +10,7 @@
 
 | 版 | 用途 | 送信 |
 | --- | --- | --- |
-| `JpRxOnly` | 日本語・受信専用（v5.8.0J3） | 無効。PTTはモニター |
+| `JpRxOnly` | 日本語・受信専用（v5.8.0J4） | 無効。PTTはモニター |
 
 このリポジトリで提供する日本語版は`JpRxOnly`のみです。上流系の送信可能な構成は国内向け受信機版として扱わないでください。
 

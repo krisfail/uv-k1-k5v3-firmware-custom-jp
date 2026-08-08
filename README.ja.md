@@ -1,6 +1,6 @@
 # UV-K1 / UV-K5 V3 日本語・受信専用ファームウェア
 
-[英語版README](README.md) | [操作・ビルドcheatsheet](CHEATSHEET.ja.md) | [CHIRPドライバ](tools/chirp/README.ja.md) | [新機能の技術詳細](docs/FEATURES_TECHNICAL.ja.md)
+[英語版README](README.md) | [操作・ビルドcheatsheet](CHEATSHEET.ja.md) | [開発者向けガイド](DEVELOPMENT.md) | [CHIRPドライバ](tools/chirp/README.ja.md) | [新機能の技術詳細](docs/FEATURES_TECHNICAL.ja.md) | [bitmap/font atlas](docs/BITMAP_ATLAS.ja.md)
 
 ## このリポジトリの位置づけ
 
@@ -21,6 +21,7 @@
 - `README.ja.md`: 対象、制約、安全上の注意、ビルド、書き込み、基本操作をまとめた正規ガイド
 - `README.md`: 英語の短縮版。上流の説明は要約し、詳細は上流Wikiへリンク
 - `CHEATSHEET.ja.md`: 日常操作、ビルドコマンド、書き込み前チェックだけを確認する早見表
+- `DEVELOPMENT.md`: 開発者向けのソース構成、変更境界、検証、atlas生成、リリース取り扱い
 - `tools/chirp/README.ja.md`: CHIRPの機種選択、読み書き範囲、校正領域の扱い
 - `tools/chirp/NOTICE.md` / `LICENSE.txt`: CHIRPドライバの帰属表示とライセンス
 - `docs/FEATURES_TECHNICAL.ja.md`: 新機能の実装、メモリーマップ、フォント、検証範囲の技術資料
@@ -41,7 +42,7 @@
 
 - 送信処理、送信系メニュー、送信トーンを無効化
 - PTTをモニター操作へ割り当て
-- 表示名は`Kris v5.8.0J3`、エディション名は`JP-RX-Only`
+- 表示名は`Kris v5.8.0J4`、エディション名は`JP-RX-Only`
 - `MAIN ONLY`、`DUAL RX`、`SINGLE`の受信モード
 - `W` 20 kHz、`N` 12.5 kHz、`N-` 6.25 kHzの受信帯域
 - メモリーバンクによるスキャン対象の絞り込み

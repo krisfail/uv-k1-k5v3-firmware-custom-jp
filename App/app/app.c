@@ -387,6 +387,13 @@ static void CheckForIncoming(void)
     }
 }
 
+static bool APP_CtcssMatch(void)
+{
+    return gCurrentCodeType == CODE_TYPE_REVERSE_CONTINUOUS_TONE
+        ? g_CTCSS_Lost
+        : !g_CTCSS_Lost;
+}
+
 static void HandleIncoming(void)
 {
     if (!g_SquelchLost) {   // squelch is closed
@@ -401,6 +408,7 @@ static void HandleIncoming(void)
         return;
     }
 
+    const bool ctcss_match = APP_CtcssMatch();
     bool bFlag = (gScanStateDir == SCAN_OFF && gCurrentCodeType == CODE_TYPE_OFF);
 
 #ifdef ENABLE_NOAA
@@ -410,7 +418,9 @@ static void HandleIncoming(void)
     }
 #endif
 
-    if (g_CTCSS_Lost && gCurrentCodeType == CODE_TYPE_CONTINUOUS_TONE) {
+    if (!ctcss_match &&
+        (gCurrentCodeType == CODE_TYPE_CONTINUOUS_TONE ||
+         gCurrentCodeType == CODE_TYPE_REVERSE_CONTINUOUS_TONE)) {
         bFlag       = true;
         gFoundCTCSS = false;
     }
@@ -480,9 +490,19 @@ static void HandleReceive(void)
             break;
 
         case CODE_TYPE_CONTINUOUS_TONE:
+        case CODE_TYPE_REVERSE_CONTINUOUS_TONE:
+            if (gFoundCTCSS && gFoundCTCSSCountdown_10ms == 0)
+            {
+                gFoundCTCSS = false;
+                gFoundCDCSS = false;
+                Mode        = END_OF_RX_MODE_END;
+                goto Skip;
+            }
+            break;
+
         case CODE_TYPE_DIGITAL:
         case CODE_TYPE_REVERSE_DIGITAL:
-            if ((gFoundCTCSS && gFoundCTCSSCountdown_10ms == 0) || (gFoundCDCSS && gFoundCDCSSCountdown_10ms == 0))
+            if (gFoundCDCSS && gFoundCDCSSCountdown_10ms == 0)
             {
                 gFoundCTCSS = false;
                 gFoundCDCSS = false;
@@ -514,7 +534,8 @@ static void HandleReceive(void)
                     break;
 
                 case CODE_TYPE_CONTINUOUS_TONE:
-                    if (g_CTCSS_Lost)
+                case CODE_TYPE_REVERSE_CONTINUOUS_TONE:
+                    if (!APP_CtcssMatch())
                     {
                         gFoundCTCSS = false;
                     }
@@ -1819,6 +1840,7 @@ void cancelUserInputModes(void)
 void APP_TimeSlice500ms(void)
 {
     gNextTimeslice_500ms = false;
+    UI_MENU_TimeSlice500ms();
     bool exit_menu = false;
 
     // Skipped authentic device check

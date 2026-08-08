@@ -91,7 +91,7 @@
             "inherits": "default",
             "cacheVariables": {
                 "AUTHOR_STRING_2": "Kris",
-                "VERSION_STRING_2": "v5.8.0J3",
+                "VERSION_STRING_2": "v5.8.0J4",
                 "EDITION_STRING": "JP-RX-Only",
                 "TARGET": "wrx-jp",
                 "ENABLE_RX_ONLY": true,
@@ -110,6 +110,8 @@
                 "ENABLE_FEAT_F4HWN_RX_TX_TIMER": false,
                 "ENABLE_SPECTRUM": false,
                 "ENABLE_FEAT_F4HWN_AUDIO_SCOPE": true,
+                "ENABLE_FEAT_F4HWN_LOGO": true,
+                "ENABLE_FEAT_F4HWN_LOGO_SAV": true,
                 "ENABLE_FEAT_F4HWN_SCAN_PROGRESS": true,
                 "ENABLE_FEAT_F4HWN_SCAN_FASTER": true,
                 "ENABLE_FEAT_F4HWN_SCAN_RSSI": true,

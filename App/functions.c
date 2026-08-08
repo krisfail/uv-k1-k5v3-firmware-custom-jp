@@ -148,7 +148,7 @@ void FUNCTION_PowerSave() {
 void FUNCTION_Transmit()
 {
 #ifdef ENABLE_RX_ONLY
-    RADIO_SetupRegisters(true);
+    RADIO_SetVfoState(VFO_STATE_TX_DISABLE);
     return;
 #endif
     // if DTMF is enabled when TX'ing, it changes the TX audio filtering !! .. 1of11
