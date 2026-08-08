@@ -72,7 +72,7 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
             '"ENABLE_DTMF_CALLING": false',
         ):
             self.assertIn(flag, cmake)
-        self.assertIn('"VERSION_STRING_2": "v5.8.0J2"', cmake)
+        self.assertIn('"VERSION_STRING_2": "v5.8.0J3"', cmake)
         self.assertIn('"EDITION_STRING": "JP-RX-Only"', cmake)
 
     def test_rx_driver_guards_rf_tx_primitives(self):
@@ -175,6 +175,25 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
         self.assertIn("0xD8, 0xBD, 0xC4", menu)
         self.assertIn("gSubMenu_RXMode[3]", menu_header)
 
+    def test_extended_japanese_font_covers_large_long_vowel_and_added_terms(self):
+        font_header = source("App/font.h")
+        font = source("App/japanese_font.c")
+        helper = source("App/ui/helper.c")
+        self.assertIn("#define FONT_CODE_MAX 0xFF", font_header)
+        self.assertIn("[0xE0 - 0x7F]", font)
+        self.assertIn("// ー", font)
+        self.assertIn("[0xFF - 0x7F]", font)
+        self.assertIn("code <= FONT_CODE_MAX", helper)
+
+    def test_rx_only_menu_uses_expanded_japanese_labels(self):
+        menu = source("App/ui/menu.c")
+        self.assertIn("{{0x80, 0x81, 0xE1, 0xE2}, MENU_RX_EXT}", menu)
+        self.assertIn("{{0xE3, 0xE4}, MENU_S_PRI}", menu)
+        self.assertIn("{{0xE5, 0xE6}, MENU_VOL}", menu)
+        self.assertIn("{{0xE7, 0xE8}, MENU_SET_INV}", menu)
+        self.assertIn("{{0xE9, 0xEA}, MENU_SET_AUD}", menu)
+        self.assertIn("{{0xEB, 0xEC}, MENU_SET_OFF}", menu)
+
     def test_ptt_is_monitor_and_single_vfo_is_enforced(self):
         generic = source("App/app/generic.c")
         common = source("App/app/common.c")
@@ -185,7 +204,7 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
         self.assertIn("return;", common)
         self.assertIn("RADIO_SetupRegisters(true);", functions)
         self.assertIn('"SINGLE"', menu)
-        self.assertIn('strcpy(String, "AUTO");', menu)
+        self.assertIn("const char auto_name[] = {0xEB, 0xEC, 0};", menu)
 
 
 if __name__ == "__main__":

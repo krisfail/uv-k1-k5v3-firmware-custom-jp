@@ -17,6 +17,7 @@ The firmware is provided **as is**, without warranty. The maintainers are not re
 The local Japanese build is `JpRxOnly`:
 
 - Japanese menu labels and large/small Japanese glyph paths.
+- Expanded Japanese LCD labels, including large-font long-vowel and restored katakana glyphs.
 - TX paths and TX-related menus disabled.
 - PTT assigned to monitor operation.
 - `MAIN ONLY`, `DUAL RX`, and `SINGLE` receive modes.

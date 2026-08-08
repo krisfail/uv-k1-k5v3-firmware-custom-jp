@@ -19,7 +19,7 @@
 
 #include <stdint.h>
 
-#define FONT_CODE_MAX 0xDF
+#define FONT_CODE_MAX 0xFF
 
 extern const uint8_t gFontBig[95 - 1][16 - 2];
 extern const uint8_t gFontBigDigits[11][26 - 6];

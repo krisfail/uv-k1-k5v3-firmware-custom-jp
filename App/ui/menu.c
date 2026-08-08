@@ -73,9 +73,17 @@ const t_menu_item MenuList[] =
  #endif
     {"W/N",         MENU_W_N           },
 #ifdef ENABLE_RX_ONLY
+ #ifdef ENABLE_JAPANESE
+    {{0x80, 0x81, 0xE1, 0xE2}, MENU_RX_EXT}, // 受信拡張
+ #else
     {"RXExt",       MENU_RX_EXT       },
+ #endif
     {"Bank",        MENU_RX_BANK       },
+ #ifdef ENABLE_JAPANESE
+    {{0xF5, 0xF6}, MENU_RX_BANK_SET}, // 設定
+ #else
     {"BnkSet",      MENU_RX_BANK_SET   },
+ #endif
 #endif
 #ifndef ENABLE_FEAT_F4HWN
     {"Scramb",      MENU_SCR           }, // was "SCR"
@@ -114,10 +122,16 @@ const t_menu_item MenuList[] =
 #else
     {"ScList",       MENU_S_LIST       },
 #endif
+ #ifdef ENABLE_JAPANESE
+    {{0xE3, 0xE4}, MENU_S_PRI}, // 優先
+    {{0xE3, 0xE4, '1'}, MENU_S_PRI_CH_1}, // 優先1
+    {{0xE3, 0xE4, '2'}, MENU_S_PRI_CH_2}, // 優先2
+ #else
     {"ScPri",        MENU_S_PRI        },
     {"PriCh1",       MENU_S_PRI_CH_1   },
     {"PriCh2",       MENU_S_PRI_CH_2   },
-    {"ScnRev",      MENU_SC_REV        },
+ #endif
+    {"ScanRev",      MENU_SC_REV        },
 #ifndef ENABLE_FEAT_F4HWN
     #ifdef ENABLE_NOAA
         {"NOAA-S",      MENU_NOAA_S    },
@@ -138,14 +152,18 @@ const t_menu_item MenuList[] =
  #endif
 
  #ifdef ENABLE_JAPANESE
-    {{0xB7, '-', 0xDB, 0xAF, 0xB8}, MENU_AUTOLK}, // キーロック
+    {{0xB7, 0xE0, 0xDB, 0xAF, 0xB8}, MENU_AUTOLK}, // キーロック
  #else
     {"KeyLck",      MENU_AUTOLK        }, // was "AUTOLk"
  #endif
 #ifndef ENABLE_RX_ONLY
     {"TxTOut",      MENU_TOT           }, // was "TOT"
 #endif
+ #ifdef ENABLE_JAPANESE
+    {{0x8F, 0xF7}, MENU_SAVE}, // 電池
+ #else
     {"BatSav",      MENU_SAVE          }, // was "SAVE"
+ #endif
  #ifdef ENABLE_JAPANESE
     {{0x8F, 0x92, '%', 0x93, 0x94}, MENU_BAT_TXT}, // 電圧/%表示
  #else
@@ -175,7 +193,7 @@ const t_menu_item MenuList[] =
     {"BLTxRx",      MENU_ABR_ON_TX_RX  },
 #endif
  #ifdef ENABLE_JAPANESE
-    {{0xB7, '-', 0x8E}, MENU_BEEP}, // キー音
+    {{0xB7, 0xE0, 0x8E}, MENU_BEEP}, // キー音
  #else
     {"Beep",        MENU_BEEP          },
  #endif
@@ -229,7 +247,11 @@ const t_menu_item MenuList[] =
     {"VOX",         MENU_VOX           },
 #endif
 #ifdef ENABLE_FEAT_F4HWN
+ #ifdef ENABLE_JAPANESE
+    {{0xE5, 0xE6}, MENU_VOL}, // 情報
+ #else
     {"SysInf",      MENU_VOL           }, // was "VOL"
+ #endif
 #else
 #ifdef ENABLE_JAPANESE
     {{0xCA, 0xDE, 0xAF, 0xC3, 0xD8, '-'}, MENU_VOL}, // バッテリー
@@ -238,7 +260,7 @@ const t_menu_item MenuList[] =
 #endif
 #endif
  #ifdef ENABLE_JAPANESE
-    {{0x80, 0x81, 0xD3, '-', 0xC4, 0xDE}, MENU_TDR}, // 受信モード
+    {{0x80, 0x81, 0xD3, 0xE0, 0xC4, 0xDE}, MENU_TDR}, // 受信モード
     {{0xBD, 0xB9, 0xD9, 0xC1}, MENU_SQL}, // スケルチ
  #else
     {"RxMode",      MENU_TDR           },
@@ -252,9 +274,13 @@ const t_menu_item MenuList[] =
     {"SetEOT",      MENU_SET_EOT       },
 #endif
     {"SetCtr",      MENU_SET_CTR       },
-    {"SetInv",      MENU_SET_INV       },
  #ifdef ENABLE_JAPANESE
-    {{0xB7, '-', 0xDB, 0xAF, 0xB8}, MENU_SET_LCK}, // キーロック
+    {{0xE7, 0xE8}, MENU_SET_INV}, // 反転
+ #else
+    {"SetInv",      MENU_SET_INV       },
+ #endif
+ #ifdef ENABLE_JAPANESE
+    {{0xB7, 0xE0, 0xDB, 0xAF, 0xB8}, MENU_SET_LCK}, // キーロック
  #else
     {"SetLck",      MENU_SET_LCK       },
  #endif
@@ -265,19 +291,35 @@ const t_menu_item MenuList[] =
     {"SetGUI",      MENU_SET_GUI       },
  #endif
 #ifdef ENABLE_FEAT_F4HWN_AUDIO    
+ #ifdef ENABLE_JAPANESE
+    {{0xE9, 0xEA}, MENU_SET_AUD}, // 音声
+ #else
     {"SetRxA",      MENU_SET_AUD       },
+ #endif
 #endif
 #ifndef ENABLE_RX_ONLY
     {"SetTmr",      MENU_SET_TMR       },
 #endif
 #ifdef ENABLE_FEAT_F4HWN_SLEEP
+ #ifdef ENABLE_JAPANESE
+    {{0xEB, 0xEC}, MENU_SET_OFF}, // 自動
+ #else
     {"SetOff",       MENU_SET_OFF      },
+ #endif
 #endif
 #ifdef ENABLE_FEAT_F4HWN_NARROWER
+ #ifdef ENABLE_JAPANESE
+    {{0xED, 0xEE}, MENU_SET_NFM}, // 狭帯
+ #else
     {"SetNFM",      MENU_SET_NFM       },
+ #endif
 #endif
 #ifdef ENABLE_FEAT_F4HWN_VOL
+ #ifdef ENABLE_JAPANESE
+    {{0xE9, 0xEF}, MENU_SET_VOL}, // 音量
+ #else
     {"SetVol",      MENU_SET_VOL       },
+ #endif
 #endif
 #ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
     {"SetKey",      MENU_SET_KEY       },
@@ -286,10 +328,18 @@ const t_menu_item MenuList[] =
     {"SetNWR",      MENU_NOAA_S    },
 #endif
 #ifdef ENABLE_FEAT_F4HWN_SCAN_FASTER
+ #ifdef ENABLE_JAPANESE
+    {{0xF0, 0xF1}, MENU_SET_SCN}, // 高速
+ #else
     {"SetScn",      MENU_SET_SCN       },
+ #endif
 #endif
 #ifdef ENABLE_FEAT_F4HWN_LOGO_SAV
+ #ifdef ENABLE_JAPANESE
+    {{0x86, 0x87}, MENU_SET_SAV}, // 保存
+ #else
     {"SetSav",      MENU_SET_SAV       },
+ #endif
 #endif
 #endif
     // hidden menu items from here on
@@ -312,7 +362,11 @@ const t_menu_item MenuList[] =
     {"BatCal",      MENU_BATCAL        }, // battery voltage calibration
     {"BatTyp",      MENU_BATTYP        }, // battery type 1600/2200mAh
     {"SetNav",      MENU_SET_NAV       }, // set navigation (LEFT / RIGHT or UP / DOWN)
+ #ifdef ENABLE_JAPANESE
+    {{0xF8, 0xF9, 0xFA}, MENU_RESET}, // 初期化
+ #else
     {"Reset",       MENU_RESET         }, // might be better to move this to the hidden menu items ?
+ #endif
 
     {"",                              0xff               }  // end of list - DO NOT delete or move this this
 };
@@ -882,7 +936,14 @@ void UI_DisplayMenu(void)
         case MENU_SQL:
 #ifdef ENABLE_RX_ONLY
             if (gSubMenuSelection == 10)
+ #ifdef ENABLE_JAPANESE
+            {
+                const char auto_name[] = {0xEB, 0xEC, 0}; // 自動
+                strcpy(String, auto_name);
+            }
+ #else
                 strcpy(String, "AUTO");
+ #endif
             else
                 sprintf(String, "%d", gSubMenuSelection);
 #else
@@ -1366,7 +1427,14 @@ void UI_DisplayMenu(void)
             if (page == p++) {
                 char val[16];
 
+ #ifdef ENABLE_JAPANESE
+                {
+                    const char battery_name[] = {0x8F, 0xF7, 0}; // 電池
+                    strcpy(top_right_badge, battery_name);
+                }
+ #else
                 strcpy(top_right_badge, "BATTERY");
+ #endif
 
                 sprintf(val, "%u.%02uV %u%%",
                     gBatteryVoltageAverage / 100, gBatteryVoltageAverage % 100,
