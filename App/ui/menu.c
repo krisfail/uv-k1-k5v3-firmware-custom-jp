@@ -755,6 +755,21 @@ char    edit[17];
 int     edit_index;
 bool    edit_is_uppercase = false;
 
+static const char *UI_MENU_GetRxHelp(const int menuId)
+{
+    switch (menuId)
+    {
+        case MENU_SQL:         return "AUTO=measure noise";
+        case MENU_W_N:         return "W+25 W20 N12 N-6";
+#ifdef ENABLE_RX_ONLY
+        case MENU_RX_EXT:      return "RX features master";
+        case MENU_RX_BANK:     return "scan bank filter";
+        case MENU_RX_BANK_SET: return "set channel bank";
+#endif
+        default:               return NULL;
+    }
+}
+
 static void UI_MENU_DrawTopRightRoundedBadge(const char *text, const uint8_t line, const bool center_in_area, const uint8_t area_x1, const uint8_t area_x2)
 {
     const size_t length = strlen(text);
@@ -1788,6 +1803,10 @@ void UI_DisplayMenu(void)
     if (top_right_badge[0] != '\0') {
         UI_MENU_DrawTopRightRoundedBadge(top_right_badge, 1, true, menu_item_x1, menu_item_x2);
     }
+
+    const char *rxHelp = UI_MENU_GetRxHelp(m);
+    if (rxHelp != NULL)
+        UI_PrintStringSmallNormal(rxHelp, 18, 127, 6);
 
     if ((m == MENU_RESET    ||
          m == MENU_MEM_CH   ||

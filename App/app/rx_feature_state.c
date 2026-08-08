@@ -319,19 +319,35 @@ void RX_FEATURE_STATE_CalibrateSquelch(struct VFO_Info_t *pInfo)
     uint32_t rssi = 0;
     uint32_t noise = 0;
     uint32_t glitch = 0;
+    uint16_t rssiMin = 0xFFFFu;
+    uint16_t rssiMax = 0;
+    uint8_t noiseMin = 0x7Fu;
+    uint8_t noiseMax = 0;
+    uint8_t glitchMin = 0xFFu;
+    uint8_t glitchMax = 0;
     uint8_t thresholds[6];
 
     for (uint8_t i = 0; i < 8; ++i)
     {
         SYSTEM_DelayMs(2);
-        rssi += BK4819_GetRSSI();
-        noise += BK4819_GetExNoiceIndicator();
-        glitch += BK4819_GetGlitchIndicator();
+        const uint16_t rssiSample = BK4819_GetRSSI();
+        const uint8_t noiseSample = BK4819_GetExNoiceIndicator();
+        const uint8_t glitchSample = BK4819_GetGlitchIndicator();
+        rssi += rssiSample;
+        noise += noiseSample;
+        glitch += glitchSample;
+        if (rssiSample < rssiMin) rssiMin = rssiSample;
+        if (rssiSample > rssiMax) rssiMax = rssiSample;
+        if (noiseSample < noiseMin) noiseMin = noiseSample;
+        if (noiseSample > noiseMax) noiseMax = noiseSample;
+        if (glitchSample < glitchMin) glitchMin = glitchSample;
+        if (glitchSample > glitchMax) glitchMax = glitchSample;
     }
 
-    RX_FEATURE_STATE_ComputeSquelch((uint8_t)((rssi / 8u) >> 1),
-                                    (uint8_t)(noise / 8u),
-                                    (uint8_t)(glitch / 8u), thresholds);
+    /* Ignore one high and one low sample before deriving the baseline. */
+    RX_FEATURE_STATE_ComputeSquelch((uint8_t)(((rssi - rssiMin - rssiMax) / 6u) >> 1),
+                                    (uint8_t)((noise - noiseMin - noiseMax) / 6u),
+                                    (uint8_t)((glitch - glitchMin - glitchMax) / 6u), thresholds);
     pInfo->SquelchOpenRSSIThresh = thresholds[0];
     pInfo->SquelchCloseRSSIThresh = thresholds[1];
     pInfo->SquelchOpenNoiseThresh = thresholds[2];
@@ -350,6 +366,7 @@ static uint32_t sAgcFrequency;
 static int16_t  sAgcRssi;
 static int8_t   sAgcGain;
 static uint8_t  sAgcHold;
+static uint8_t  sAgcMode;
 static bool     sAgcSampleValid;
 
 void RX_FEATURE_STATE_ProcessAgcGuard(void)
@@ -363,6 +380,7 @@ void RX_FEATURE_STATE_ProcessAgcGuard(void)
     )
     {
         sAgcHold = 0;
+        sAgcMode = 0;
         sAgcSampleValid = false;
         return;
     }
@@ -372,6 +390,7 @@ void RX_FEATURE_STATE_ProcessAgcGuard(void)
     {
         sAgcFrequency = frequency;
         sAgcHold = 0;
+        sAgcMode = 0;
         sAgcSampleValid = false;
     }
 
@@ -388,7 +407,10 @@ void RX_FEATURE_STATE_ProcessAgcGuard(void)
     if (sAgcHold != 0)
     {
         if (--sAgcHold == 0)
+        {
             BK4819_SetAGC(true);
+            sAgcMode = 0;
+        }
         sAgcRssi = rssi;
         sAgcGain = gain;
         return;
@@ -396,10 +418,27 @@ void RX_FEATURE_STATE_ProcessAgcGuard(void)
 
     const int16_t rssiDelta = rssi > sAgcRssi ? rssi - sAgcRssi : sAgcRssi - rssi;
     const int8_t gainDelta = gain > sAgcGain ? gain - sAgcGain : sAgcGain - gain;
-    if (rssiDelta >= 12 || gainDelta >= 8)
+    /* FM-only, coarse gain policy: reduce front-end gain for a strong
+     * carrier, release it with hysteresis, and briefly hold an intermediate
+     * gain after a sudden change. */
+    if (rssi >= -58)
     {
-        BK4819_SetAGC(false);
-        sAgcHold = 30;
+        if (sAgcMode != 1)
+        {
+            BK4819_SetAGCFixedIndex(-4);
+            sAgcMode = 1;
+        }
+    }
+    else if (sAgcMode == 1 && rssi <= -78)
+    {
+        BK4819_SetAGC(true);
+        sAgcMode = 0;
+    }
+    else if (sAgcMode == 0 && (rssiDelta >= 12 || gainDelta >= 8))
+    {
+        BK4819_SetAGCFixedIndex(-3);
+        sAgcHold = 20;
+        sAgcMode = 2;
     }
     sAgcRssi = rssi;
     sAgcGain = gain;

@@ -849,20 +849,27 @@ void UI_DisplayAudioScope(void)
     static uint16_t g_scope_floor      = SCOPE_VOLUME_MIN;     // persistent floor: snaps down fast, rises slowly
     static uint8_t  g_scope_ready      = 0;                    // number of valid samples since TX entry
 
-    // REG_64 (VoiceAmplitudeOut) is only meaningful in TX (mic input).
-    // FM RX audio is frequency-encoded — no register gives the instantaneous waveform.
-
-// ------------------------------ Sample audio amplitude ------------------------------
-
+    /* REG_64 is treated here as an amplitude envelope.  This intentionally
+     * draws activity history, not an FFT: the BK4829 does not expose a usable
+     * audio sample stream to the application. */
     static bool s_was_tx = false;
+    static bool s_was_rx = false;
+    const bool rxScope =
+#ifdef ENABLE_RX_ONLY
+        RX_FEATURE_STATE_IsEnabled() && FUNCTION_IsRx() && gScanStateDir == SCAN_OFF;
+#else
+        false;
+#endif
+    const bool txScope = gCurrentFunction == FUNCTION_TRANSMIT;
 
-    if (gCurrentFunction != FUNCTION_TRANSMIT) {
+    if (!txScope && !rxScope) {
         s_was_tx = false;
+        s_was_rx = false;
         return;
     }
 
     // This prevents a sudden spike on the bar caused by release the PTT button
-    if (!GPIO_IsPttPressed()
+    if (txScope && !GPIO_IsPttPressed()
 #ifdef ENABLE_VOX
     && !gEeprom.VOX_SWITCH
 #endif
@@ -872,25 +879,43 @@ void UI_DisplayAudioScope(void)
     )
     return;
 
-    if (!s_was_tx) {
+    if (rxScope) {
+        s_was_tx = false;
+        if (!s_was_rx) {
+            for (uint8_t i = 0; i < SCOPE_SAMPLES; i++)
+                g_scope_buf[i] = SCOPE_VOLUME_MIN;
+            g_scope_write = 0u;
+            g_scope_floor = SCOPE_VOLUME_MIN;
+            g_scope_ready = 0u;
+            s_was_rx = true;
+        }
+        g_scope_buf[g_scope_write] = BK4819_GetVoiceAmplitudeOut();
+        if (g_scope_buf[g_scope_write] == 0)
+            g_scope_buf[g_scope_write] = SCOPE_VOLUME_MIN;
+    }
+    else {
+        s_was_rx = false;
+    }
+
+    if (txScope && !s_was_tx) {
         // TX entry: full reset so every new transmission starts from a clean state
         for (uint8_t i = 0; i < SCOPE_SAMPLES; i++) g_scope_buf[i] = SCOPE_VOLUME_MIN;
         g_scope_write      = 0u;
         g_scope_floor      = SCOPE_VOLUME_MIN;
+        g_scope_ready      = 0u;
         s_was_tx           = true;
     }
 
-    // The first 7 bars after turning on the radio
-    // will not display any values: they cause high bars.
-    if (g_scope_ready >= 7)
-        g_scope_buf[g_scope_write] = BK4819_GetVoiceAmplitudeOut();
-    else
-        g_scope_ready++;
-        
-    // If the reading is 0, it is definitely an incorrect value
-    // caused by the microphone being muted - set it to 200.
-    if (g_scope_buf[g_scope_write] == 0) 
-        g_scope_buf[g_scope_write] =  SCOPE_VOLUME_MIN;
+    if (txScope) {
+        // Discard the first few unstable TX readings.
+        if (g_scope_ready >= 7)
+            g_scope_buf[g_scope_write] = BK4819_GetVoiceAmplitudeOut();
+        else
+            g_scope_ready++;
+
+        if (g_scope_buf[g_scope_write] == 0)
+            g_scope_buf[g_scope_write] = SCOPE_VOLUME_MIN;
+    }
 
     g_scope_write = (g_scope_write + 1u) % SCOPE_SAMPLES;
 
@@ -2333,7 +2358,13 @@ void UI_DisplayMain(void)
         else
 #endif
 #ifdef ENABLE_FEAT_F4HWN_AUDIO_SCOPE
-        if (gSetting_mic_bar && gCurrentFunction == FUNCTION_TRANSMIT) {
+        if ((rx &&
+#ifdef ENABLE_RX_ONLY
+             RX_FEATURE_STATE_IsEnabled() && gScanStateDir == SCAN_OFF
+#else
+             false
+#endif
+            ) || (gSetting_mic_bar && gCurrentFunction == FUNCTION_TRANSMIT)) {
             // Reserve the line so no other element overwrites it.
             // Actual drawing is handled exclusively by the app.c timeslice.
             center_line = CENTER_LINE_AUDIO_SCOPE;

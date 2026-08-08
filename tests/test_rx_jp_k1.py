@@ -73,6 +73,13 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
             self.assertIn(flag, cmake)
         self.assertIn('"VERSION_STRING_2": "v5.8.0J3"', cmake)
         self.assertIn('"EDITION_STRING": "JP-RX-Only"', cmake)
+        for flag in (
+            '"ENABLE_FEAT_F4HWN_SCAN_PROGRESS": true',
+            '"ENABLE_FEAT_F4HWN_SCAN_FASTER": true',
+            '"ENABLE_FEAT_F4HWN_SCAN_RSSI": true',
+            '"ENABLE_FEAT_F4HWN_SCAN_SUBAUDIBLE": true',
+        ):
+            self.assertIn(flag, cmake)
 
     def test_rx_driver_guards_rf_tx_primitives(self):
         driver = source("App/driver/bk4829.c")
@@ -131,6 +138,45 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
             radio,
         )
         self.assertIn("RX_FEATURE_STATE_RequestAutoSquelch();", radio)
+
+    def test_scan_paths_include_harmonic_verification_and_fm_css_guard(self):
+        scanner = source("App/app/scanner.c")
+        main = source("App/app/main.c")
+
+        self.assertIn("SCANNER_ShouldVerifyVhfSecondHarmonic", scanner)
+        self.assertIn("SCANNER_HandleFrequencyVerification", scanner)
+        self.assertIn("scanVerifyFundamentalRssi - harmonicRssi >= margin", scanner)
+        self.assertIn("gRxVfo->Modulation != MODULATION_FM", main)
+        self.assertLess(main.index("gRxVfo->Modulation != MODULATION_FM"), main.index("SCANNER_Start(true)"))
+
+    def test_fm_gain_and_trimmed_squelch_use_driver_seams(self):
+        state = source("App/app/rx_feature_state.c")
+        driver = source("App/driver/bk4829.c")
+        header = source("App/driver/bk4819.h")
+
+        self.assertIn("BK4819_SetAGCFixedIndex", header)
+        self.assertIn("BK4819_SetAGCFixedIndex", driver)
+        self.assertIn("BK4819_SetAGCFixedIndex(-4)", state)
+        self.assertIn("BK4819_SetAGCFixedIndex(-3)", state)
+        self.assertIn("rssiMin", state)
+        self.assertIn("noiseMax", state)
+        self.assertIn("glitchMin", state)
+        self.assertIn("/ 6u", state)
+
+    def test_audio_scope_scan_watch_and_menu_help_are_receive_only_additions(self):
+        cmake = source("CMakePresets.json")
+        ui = source("App/ui/main.c")
+        app = source("App/app/app.c")
+        scanner = source("App/app/chFrScanner.c")
+        menu = source("App/ui/menu.c")
+
+        self.assertIn('"ENABLE_FEAT_F4HWN_AUDIO_SCOPE": true', cmake)
+        self.assertIn("REG_64", ui)
+        self.assertIn("not an FFT", ui)
+        self.assertIn("RX_FEATURE_STATE_IsEnabled()", app)
+        self.assertIn("watchChannel", scanner)
+        self.assertIn("UI_MENU_GetRxHelp", menu)
+        self.assertIn('"AUTO=measure noise"', menu)
 
     def test_band_state_uses_k1_external_flash_map(self):
         state = source("App/app/rx_feature_state.c")

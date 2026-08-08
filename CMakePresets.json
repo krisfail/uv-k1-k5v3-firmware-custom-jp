@@ -108,7 +108,12 @@
                 "ENABLE_EXTRA_UART_CMD": false,
                 "ENABLE_UART_RW_BK_REGS": false,
                 "ENABLE_FEAT_F4HWN_RX_TX_TIMER": false,
-                "ENABLE_SPECTRUM": false
+                "ENABLE_SPECTRUM": false,
+                "ENABLE_FEAT_F4HWN_AUDIO_SCOPE": true,
+                "ENABLE_FEAT_F4HWN_SCAN_PROGRESS": true,
+                "ENABLE_FEAT_F4HWN_SCAN_FASTER": true,
+                "ENABLE_FEAT_F4HWN_SCAN_RSSI": true,
+                "ENABLE_FEAT_F4HWN_SCAN_SUBAUDIBLE": true
             }
         },
         {

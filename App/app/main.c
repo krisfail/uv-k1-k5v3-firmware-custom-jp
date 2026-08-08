@@ -935,6 +935,16 @@ static void MAIN_Key_STAR(bool bKeyPressed, bool bKeyHeld)
             return;
         }               
 #endif
+#ifdef ENABLE_RX_ONLY
+        // The BK4819 CSS detector is meaningful only in FM demodulation.
+        // Refuse this shortcut in AM/USB instead of entering a scan state
+        // that cannot produce a tone result.
+        if (gRxVfo->Modulation != MODULATION_FM) {
+            gBeepToPlay = BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
+            gUpdateStatus = true;
+            return;
+        }
+#endif
         if (gScanStateDir != SCAN_OFF) {
             // Stop the channel/frequency scan before saving the RX mode for the CTCSS/DCS scan.
             gScanKeepResult = false;
