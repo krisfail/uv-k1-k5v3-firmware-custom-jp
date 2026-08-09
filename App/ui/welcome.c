@@ -277,7 +277,7 @@ void UI_DisplayWelcome(void)
              gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_LOGO_MESSAGE) {
         UI_LoadLogo();
         if (gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_LOGO_MESSAGE)
-            UI_PrintStringSmallNormal("JP RX-ONLY", 0, 0, 6);
+            UI_PrintString("JP RX-ONLY", 0, 127, 5, 10);
     }
 #endif
     else {
@@ -343,7 +343,17 @@ void UI_DisplayWelcome(void)
             }
         }
 
-        UI_PrintString(WelcomeString0, 0, 127, 0, 10);
+#if defined(ENABLE_RX_ONLY) && defined(ENABLE_JAPANESE)
+        if (gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_ALL ||
+            gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_MESSAGE)
+        {
+            UI_PrintStringJapaneseExtraLarge(WelcomeString0, 0, 127, 0, 11);
+        }
+        else
+#endif
+        {
+            UI_PrintString(WelcomeString0, 0, 127, 0, 10);
+        }
         UI_PrintString(WelcomeString1, 0, 127, 2, 10);
 
 #ifdef ENABLE_FEAT_F4HWN

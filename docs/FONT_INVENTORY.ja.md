@@ -1,7 +1,5 @@
 # フォント一覧
 
-この文書は人間の開発者向けの生成物一覧です。利用者向けの表示案内は[README.ja.md](../README.ja.md)、AIエージェント向けの規則は[AGENTS.md](../AGENTS.md)を参照してください。
-
 この一覧は `tools/render_bitmap_atlas.py` が現行Cソースから生成したものです。
 コードはファームウェア内部の1バイトコードであり、Unicodeコードポイントではありません。
 字形の元バイト列は同じ出力ディレクトリの `bitmap_atlas_inventory.json` を参照してください。
@@ -56,7 +54,7 @@
 | `gFont3x5` | font | 288 | 3 | — | — |
 | `gFontBigJapanese` | font | 1792 | 14 | 128 | 120 |
 | `gFontJapaneseExtraLargeCodes` | font | 4 | — | — | — |
-| `gFontJapaneseExtraLarge` | font | 80 | 20 | 4 | 0 |
+| `gFontJapaneseExtraLarge` | font | 80 | 20 | 4 | 4 |
 | `gFontSmallJapanese` | font | 768 | 6 | 128 | 119 |
 
 ## `gFontBig`
@@ -295,10 +293,10 @@
 
 | コード | 注釈 | 状態 | ソース順 |
 | --- | --- | --- | ---: |
-| `0x80` | 受 | 空き | 0 |
-| `0x81` | 信 | 空き | 1 |
-| `0x98` | 専 | 空き | 2 |
-| `0x99` | 用 | 空き | 3 |
+| `0x80` | 受 | 使用中 | 0 |
+| `0x81` | 信 | 使用中 | 1 |
+| `0x98` | 専 | 使用中 | 2 |
+| `0x99` | 用 | 使用中 | 3 |
 
 ## `gFontSmallJapanese`
 

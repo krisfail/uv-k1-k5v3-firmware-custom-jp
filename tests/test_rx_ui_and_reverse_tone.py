@@ -32,8 +32,11 @@ class ReceiveUiAndToneTests(unittest.TestCase):
         self.assertIn("POWER_ON_DISPLAY_MODE_ALL", welcome)
         self.assertIn("POWER_ON_DISPLAY_MODE_LOGO_MESSAGE", settings)
         self.assertIn('"ENABLE_FEAT_F4HWN_LOGO": true', cmake)
+        self.assertIn('UI_PrintString("JP RX-ONLY", 0, 127, 5, 10);', welcome)
+        self.assertIn("UI_PrintStringJapaneseExtraLarge(WelcomeString0, 0, 127, 0, 11);", welcome)
         self.assertIn("[0x98 - 0x7F]", font)
         self.assertIn("[0x99 - 0x7F]", font)
+        self.assertIn("0x00,0x68,0xb8,0xa8,0xb8,0xa8,0xb4,0x64,0x00,0x00", font)
 
     def test_reverse_ctcss_is_stored_displayed_and_inverted_at_runtime(self) -> None:
         dcs = read("App/dcs.h")

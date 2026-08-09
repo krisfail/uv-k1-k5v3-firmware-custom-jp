@@ -73,7 +73,7 @@ class FontAtlasTests(unittest.TestCase):
         array = self.parse_array("gFontJapaneseExtraLarge")
         self.assertEqual(array.glyph_layout, (10, 2))
         self.assertEqual([glyph["code"] for glyph in array.glyphs or []], [0x80, 0x81, 0x98, 0x99])
-        self.assertTrue(all(not glyph["occupied"] for glyph in array.glyphs or []))
+        self.assertTrue(all(glyph["occupied"] for glyph in array.glyphs or []))
 
     def test_large_long_vowel_uses_the_ascii_hyphen_rows(self) -> None:
         ascii_font = self.parse_array("gFontBig")
