@@ -118,17 +118,44 @@ void UI_PrintString(const char *pString, uint8_t Start, uint8_t End, uint8_t Lin
         else if (code >= 0x7F && code <= FONT_CODE_MAX)
         {
             const uint8_t *glyph = gFontBigJapanese[code - 0x7F];
-            for (uint8_t column = 0; column < 7; ++column)
-            {
-                const uint8_t page0 = glyph[column];
-                const uint8_t page1 = glyph[column + 7];
-                gFrameBuffer[Line + 0][ofs + column] = (uint8_t)((page0 >> 1) | (page1 << 7));
-                gFrameBuffer[Line + 1][ofs + column] = (uint8_t)(page1 >> 1);
-            }
+            /* The Japanese table is normalized to the same display rows as
+             * the ASCII table, so no font-specific baseline correction is
+             * needed at the rendering boundary. */
+            memcpy(gFrameBuffer[Line + 0] + ofs, &glyph[0], 7);
+            memcpy(gFrameBuffer[Line + 1] + ofs, &glyph[7], 7);
 #endif
         }
     }
 }
+
+#ifdef ENABLE_JAPANESE
+void UI_PrintStringJapaneseExtraLarge(const char *pString, uint8_t Start, uint8_t End, uint8_t Line, uint8_t Width)
+{
+    const size_t Length = strlen(pString);
+
+    if (End > Start)
+        Start += (((End - Start) - (Length * Width)) + 1) / 2;
+
+    for (size_t i = 0; i < Length; i++)
+    {
+        const uint8_t code = (uint8_t)pString[i];
+        const unsigned int ofs = (unsigned int)Start + (i * Width);
+        for (size_t glyph = 0; glyph < FONT_JP_EXTRA_LARGE_GLYPHS; glyph++)
+        {
+            if (gFontJapaneseExtraLargeCodes[glyph] == code)
+            {
+                memcpy(gFrameBuffer[Line + 0] + ofs,
+                       gFontJapaneseExtraLarge[glyph],
+                       FONT_JP_EXTRA_LARGE_WIDTH);
+                memcpy(gFrameBuffer[Line + 1] + ofs,
+                       gFontJapaneseExtraLarge[glyph] + FONT_JP_EXTRA_LARGE_WIDTH,
+                       FONT_JP_EXTRA_LARGE_WIDTH);
+                break;
+            }
+        }
+    }
+}
+#endif
 
 void UI_PrintStringSmall(const char *pString, uint8_t Start, uint8_t End, uint8_t Line, uint8_t char_width, const uint8_t *font)
 {
@@ -449,6 +476,12 @@ void UI_DisplayPopup(const char *string)
     // DrawRectangle(9,9, 118,38, true);
     UI_PrintString(string, 9, 118, 2, 8);
     UI_PrintStringSmallNormal("Press EXIT", 9, 118, 6);
+}
+
+void UI_DisplayUnavailable(const char *string)
+{
+    UI_DisplayPopup(string);
+    ST7565_BlitFullScreen();
 }
 
 void UI_DisplayClear()

@@ -105,7 +105,7 @@ if(NOT SQL_TONE)
 endif()
 target_compile_definitions(App INTERFACE SQL_TONE=${SQL_TONE})
 
-if(ENABLE_AIRCOPY OR ENABLE_UART OR ENABLE_USB)
+if(ENABLE_UART OR ENABLE_USB)
     target_sources(App INTERFACE 
         driver/crc.c
         driver/eeprom_compat.c
@@ -141,21 +141,13 @@ enable_feature(ENABLE_FMRADIO
     app/fm.c 
     ui/fmradio.c
 )
-enable_feature(ENABLE_AIRCOPY
-    app/aircopy.c
-    ui/aircopy.c
-)
 enable_feature(ENABLE_NOAA)
 enable_feature(ENABLE_VOICE 
     driver/voice.c
 )
-enable_feature(ENABLE_VOX)
-enable_feature(ENABLE_ALARM)
-enable_feature(ENABLE_TX1750)
 enable_feature(ENABLE_PWRON_PASSWORD
     ui/lock.c
 )
-enable_feature(ENABLE_DTMF_CALLING)
 enable_feature(ENABLE_FLASHLIGHT
     app/flashlight.c
 )
@@ -170,7 +162,6 @@ enable_feature(ENABLE_SMALL_BOLD)
 enable_feature(ENABLE_CUSTOM_MENU_LAYOUT)
 enable_feature(ENABLE_KEEP_MEM_NAME)
 enable_feature(ENABLE_WIDE_RX)
-enable_feature(ENABLE_TX_WHEN_AM)
 enable_feature(ENABLE_F_CAL_MENU)
 enable_feature(ENABLE_CTCSS_TAIL_PHASE_SHIFT)
 enable_feature(ENABLE_BOOT_BEEPS)
@@ -183,7 +174,6 @@ enable_feature(ENABLE_RSSI_BAR)
 enable_feature(ENABLE_AUDIO_BAR)
 enable_feature(ENABLE_FEAT_F4HWN_AUDIO_SCOPE)
 enable_feature(ENABLE_COPY_CHAN_TO_VFO)
-enable_feature(ENABLE_REDUCE_LOW_MID_TX_POWER)
 enable_feature(ENABLE_BYP_RAW_DEMODULATORS)
 enable_feature(ENABLE_BLMIN_TMP_OFF)
 enable_feature(ENABLE_SCAN_RANGES)
@@ -203,7 +193,6 @@ enable_feature(ENABLE_FEAT_F4HWN_K5VIEWER
     k5viewer.c
 )
 enable_feature(ENABLE_FEAT_F4HWN_SPECTRUM)
-enable_feature(ENABLE_FEAT_F4HWN_RX_TX_TIMER)
 enable_feature(ENABLE_FEAT_F4HWN_CHARGING_C)
 enable_feature(ENABLE_FEAT_F4HWN_SLEEP)
 enable_feature(ENABLE_FEAT_F4HWN_RESUME_STATE)
@@ -223,25 +212,6 @@ enable_feature(ENABLE_FEAT_F4HWN_GMRS_FRS_MURS)
 enable_feature(ENABLE_FEAT_F4HWN_CA)
 enable_feature(ENABLE_FEAT_F4HWN_DEBUG)
 enable_feature(ENABLE_FEAT_F4HWN_MEM)
-enable_feature(ENABLE_FEAT_F4HWN_BEAM
-    app/beam.c
-)
-enable_feature(ENABLE_FEAT_F4HWN_RXTX_LOG
-    app/rxtx_log.c
-)
-enable_feature(ENABLE_FEAT_F4HWN_FOXHUNT
-    app/foxhunt.c
-)
-enable_feature(ENABLE_FEAT_F4HWN_RXTX_LOG_WRAP)
-enable_feature(ENABLE_FEAT_F4HWN_RXTX_LOG_K5VIEWER)
-
-if(ENABLE_FEAT_F4HWN_RXTX_LOG_K5VIEWER AND NOT (ENABLE_FEAT_F4HWN_RXTX_LOG AND ENABLE_FEAT_F4HWN_K5VIEWER))
-    message(FATAL_ERROR "ENABLE_FEAT_F4HWN_RXTX_LOG_K5VIEWER requires ENABLE_FEAT_F4HWN_RXTX_LOG (log data) and ENABLE_FEAT_F4HWN_K5VIEWER (serial transport).")
-endif()
-
-if(ENABLE_FEAT_F4HWN_BEAM AND NOT ENABLE_AIRCOPY)
-    message(FATAL_ERROR "ENABLE_FEAT_F4HWN_BEAM requires ENABLE_AIRCOPY (it reuses g_FSK_Buffer, AIRCOPY_Obfuscate and the FSK packet plumbing).")
-endif()
 enable_feature(ENABLE_FEAT_F4HWN_QRCODE)
 enable_feature(ENABLE_FEAT_F4HWN_LOGO)
 enable_feature(ENABLE_FEAT_F4HWN_LOGO_SAV)

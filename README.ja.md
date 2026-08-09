@@ -1,6 +1,6 @@
 # UV-K1 / UV-K5 V3 日本語・受信専用ファームウェア
 
-[英語版README](README.md) | [操作・ビルドcheatsheet](CHEATSHEET.ja.md) | [開発者向けガイド](DEVELOPMENT.md) | [CHIRPドライバ](tools/chirp/README.ja.md) | [新機能の技術詳細](docs/FEATURES_TECHNICAL.ja.md) | [bitmap/font atlas](docs/BITMAP_ATLAS.ja.md)
+[英語版README](README.md) | [操作・ビルドcheatsheet](CHEATSHEET.ja.md) | [開発者向けガイド](DEVELOPMENT.md) | [CHIRPドライバ](tools/chirp/README.ja.md) | [新機能の技術詳細](docs/FEATURES_TECHNICAL.ja.md) | [機能優先度](docs/FEATURE_PRIORITY.ja.md) | [bitmap/font atlas](docs/BITMAP_ATLAS.ja.md)
 
 ## このリポジトリの位置づけ
 
@@ -8,7 +8,7 @@
 
 ## AI支援（AI-Assisted）開発と現状有姿での提供
 
-コードの分析、実装、テスト補助、文書作成の一部にAI支援を使用しています。採用前にソースコード、静的テスト、ビルド、可能な範囲の実機結果を確認していますが、AI支援は保守者によるレビューや利用者の実機確認を代替しません。
+コードの分析、実装、テスト補助、文書作成の一部にAI支援を使用しています。公開前に保守者が確認していますが、AI支援は保守者によるレビューや利用者の実機確認を代替しません。
 
 ファームウェアは**現状有姿（AS IS）**で提供し、動作や特定目的への適合を保証しません。書き込み失敗、無線機の破損、校正データ・EEPROM・設定の消失、復旧不能、法令・無線規制に反する使用について、保守者は責任を負いません。書き込み前に校正データと必要なメモリーをバックアップし、機種に対応したイメージと復旧手段を用意してください。
 
@@ -16,21 +16,18 @@
 
 この文書は、PY32F071搭載のUV-K1とUV-K5 V3向けファームウェアを、日本語でビルド・書き込み・操作するための案内です。初回は「版の選択」「ビルド」「書き込み」を順に確認し、日常の操作は[CHEATSHEET.ja.md](CHEATSHEET.ja.md)を参照してください。
 
-### 文書の役割
+### 詳しい情報
 
-- `README.ja.md`: 対象、制約、安全上の注意、ビルド、書き込み、基本操作をまとめた正規ガイド
-- `README.md`: 英語の短縮版。上流の説明は要約し、詳細は上流Wikiへリンク
-- `CHEATSHEET.ja.md`: 日常操作、ビルドコマンド、書き込み前チェックだけを確認する早見表
-- `DEVELOPMENT.md`: 開発者向けのソース構成、変更境界、検証、atlas生成、リリース取り扱い
-- `tools/chirp/README.ja.md`: CHIRPの機種選択、読み書き範囲、校正領域の扱い
-- `tools/chirp/NOTICE.md` / `LICENSE.txt`: CHIRPドライバの帰属表示とライセンス
-- `docs/FEATURES_TECHNICAL.ja.md`: 新機能の実装、メモリーマップ、フォント、検証範囲の技術資料
+- 日常操作と最小限のビルド手順は[CHEATSHEET.ja.md](CHEATSHEET.ja.md)
+- CHIRPの機種選択・読み書き範囲・校正領域は[CHIRPドライバの説明](tools/chirp/README.ja.md)
+- 開発者向けのソース構成・検証・atlas生成は[DEVELOPMENT.md](DEVELOPMENT.md)
+- 実装、保存形式、フォント、未検証範囲は[技術詳細](docs/FEATURES_TECHNICAL.ja.md)と[機能優先度](docs/FEATURE_PRIORITY.ja.md)
 
-同じ説明を複数の文書へ追加せず、機能の説明はこのREADME、CHIRP固有の説明は`tools/chirp/README.ja.md`へ追記してください。
+このREADMEは利用者向けの案内です。実装上の判断やAIエージェント向けの作業規則は、上記の開発者向け文書と[AGENTS.md](AGENTS.md)に分けて記載しています。
 
 ## 先に版を選ぶ
 
-このリポジトリには、用途の異なるCMakeプリセットがあります。日本語・受信専用版と通常版を取り違えないでください。
+このリポジトリで利用するCMakeプリセットは、日本語・受信専用の`JpRxOnly`だけです。送信可能な上流系プリセットはこのフォークから除外しています。
 
 | プリセット | 用途 | 送信 | 主な生成物 |
 | --- | --- | --- | --- |
@@ -42,7 +39,7 @@
 
 - 送信処理、送信系メニュー、送信トーンを無効化
 - PTTをモニター操作へ割り当て
-- 表示名は`Kris v5.8.0J4`、エディション名は`JP-RX-Only`
+- 表示名は`Kris v5.8.0J5`、エディション名は`JP-RX-Only`
 - `MAIN ONLY`、`DUAL RX`、`SINGLE`の受信モード
 - `W` 20 kHz、`N` 12.5 kHz、`N-` 6.25 kHzの受信帯域
 - メモリーバンクによるスキャン対象の絞り込み
@@ -76,6 +73,7 @@ cmake --build --preset JpRxOnly -j2
 - `build/JpRxOnly/wrx-jp.bin`: 書き込み用バイナリ
 - `build/JpRxOnly/wrx-jp.hex`: HEX形式
 - `build/JpRxOnly/wrx-jp.elf`: デバッグ用ELF
+- `release/wrx-jp-v5.8.0J5.packed.bin`: リリース相当のパック済みイメージ
 
 構成生成後にソースだけを変更した場合は、次のビルドだけで構いません。
 
@@ -115,6 +113,13 @@ python -m unittest discover -s tests -p "test_*.py" -v
 4. 起動後、表示版、周波数入力、FM放送、受信音、PTTの動作を確認する。
 
 `JpRxOnly`のPTTはモニター動作です。送信機能を使う目的で`JpRxOnly`を変更・再有効化する手順は、この文書の対象外です。
+
+## 表示と利用できない操作
+
+- 受信専用画面では送信出力の`LOW`／`HIGH`表示を出しません。
+- 通常の`PTT`はモニター操作です。予期しないTX要求が最終的な安全ゲートへ到達した場合だけ、ビープ音と`TX DISABLE`を表示します。
+- 受信拡張の条件が合わない操作は、ビープ音だけでなく`RXExt OFF`、`VFO ONLY`、`SCAN ACTIVE`、`FM ONLY`など短い理由を表示します。
+- 起動画面の`MESSAGE`／`ALL`は、この版の受信専用メッセージを表示します。`LOGO+MSG`では画像と用途表示を続けて確認できます。
 
 ## 困ったとき
 

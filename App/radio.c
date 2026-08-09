@@ -1034,6 +1034,10 @@ void RADIO_SetTxParameters(void)
 {
 #ifdef ENABLE_RX_ONLY
     RADIO_SetupRegisters(true);
+    /* This is the final TX safety gate. Keep the refusal audible and visible
+     * if an unexpected caller reaches the TX entry point. */
+    RADIO_SetVfoState(VFO_STATE_TX_DISABLE);
+    AUDIO_PlayBeep(BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL);
     return;
 #endif
     BK4819_FilterBandwidth_t Bandwidth = RADIO_BandwidthToFilter(gCurrentVfo->CHANNEL_BANDWIDTH);
@@ -1251,6 +1255,10 @@ void RADIO_PrepareTX(void)
 {
 #ifdef ENABLE_RX_ONLY
     RADIO_SetupRegisters(true);
+    /* This is the final TX safety gate. Keep the refusal audible and visible
+     * if an unexpected caller reaches the TX entry point. */
+    RADIO_SetVfoState(VFO_STATE_TX_DISABLE);
+    AUDIO_PlayBeep(BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL);
     return;
 #endif
     VfoState_t State = VFO_STATE_NORMAL;  // default to OK to TX

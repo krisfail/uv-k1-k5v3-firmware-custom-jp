@@ -71,7 +71,11 @@ const t_menu_item MenuList[] =
     {"TxODir",      MENU_SFT_D         }, // was "SFT_D"
     {"TxOffs",      MENU_OFFSET        }, // was "OFFSET"
  #endif
+#ifdef ENABLE_JAPANESE
+    {{0xEE, 0xFF}, MENU_W_N}, // 帯幅
+#else
     {"W/N",         MENU_W_N           },
+#endif
 #ifdef ENABLE_RX_ONLY
  #ifdef ENABLE_JAPANESE
     {{0x80, 0x81, 0xE1, 0xE2}, MENU_RX_EXT}, // 受信拡張
@@ -97,11 +101,6 @@ const t_menu_item MenuList[] =
  #else
     {"Mode",        MENU_AM            }, // was "AM"
  #endif
-#ifdef ENABLE_FEAT_F4HWN
- #ifndef ENABLE_RX_ONLY
-    {"TXLock",      MENU_TX_LOCK       }, 
- #endif
-#endif
 #ifdef ENABLE_JAPANESE
     {{'C', 'H', 0xD8, 0xBD, 0xC4}, MENU_LIST_CH}, // CHリスト
 #else
@@ -284,7 +283,11 @@ const t_menu_item MenuList[] =
  #else
     {"SetLck",      MENU_SET_LCK       },
  #endif
+#ifdef ENABLE_JAPANESE
+    {{0x93, 0x94}, MENU_SET_MET}, // 表示
+#else
     {"SetMet",      MENU_SET_MET       },
+#endif
  #ifdef ENABLE_JAPANESE
     {{0x95, 0x96}, MENU_SET_GUI}, // 画面
  #else
@@ -359,7 +362,11 @@ const t_menu_item MenuList[] =
 #ifdef ENABLE_F_CAL_MENU
     {"FrCali",      MENU_F_CALI        }, // reference xtal calibration
 #endif
+#ifdef ENABLE_JAPANESE
+    {{0x8F, 0xF7, 0xFB, 0xFC}, MENU_BATCAL}, // 電池校正
+#else
     {"BatCal",      MENU_BATCAL        }, // battery voltage calibration
+#endif
     {"BatTyp",      MENU_BATTYP        }, // battery type 1600/2200mAh
     {"SetNav",      MENU_SET_NAV       }, // set navigation (LEFT / RIGHT or UP / DOWN)
  #ifdef ENABLE_JAPANESE
@@ -1667,19 +1674,6 @@ void UI_DisplayMenu(void)
                 strcpy(String, gSubMenu_NA);
             #endif
             break;
-
-#ifndef ENABLE_RX_ONLY
-        case MENU_TX_LOCK:
-            if(TX_freq_check(gEeprom.VfoInfo[gEeprom.TX_VFO].pTX->Frequency) == 0)
-            {
-                strcpy(String, "Inside\nF Lock\nPlan");
-            }
-            else
-            {
-                strcpy(String, gSubMenu_OFF_ON[gSubMenuSelection]);
-            }
-            break;
-#endif
 
         case MENU_SET_LCK:
             strcpy(String, gSubMenu_SET_LCK[gSubMenuSelection]);

@@ -56,8 +56,10 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
         self.assertNotIn('"TARGET": "uv-k1-custom"', cmake)
         self.assertNotIn('set(EDITION_STRING "Custom")', lists)
         self.assertNotIn('"TARGET": "f4hwn.', cmake)
-        self.assertIn("archive/uv-k1-fusion.development.bin", lists)
-        self.assertNotIn("archive/f4hwn.fusion.development.bin", lists)
+        self.assertIn("set(CMAKE_PROJECT_NAME wrx-jp)", lists)
+        self.assertNotIn("Development build", lists)
+        for preset in ("default", "Bandscope", "Broadcast", "Basic", "RescueOps", "Game", "Fusion"):
+            self.assertNotIn(f'"name": "{preset}"', cmake)
 
     def test_dedicated_preset_keeps_rx_only_and_japanese_flags(self):
         cmake = source("CMakePresets.json")
@@ -71,7 +73,7 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
             '"ENABLE_DTMF_CALLING": false',
         ):
             self.assertIn(flag, cmake)
-        self.assertIn('"VERSION_STRING_2": "v5.8.0J4"', cmake)
+        self.assertIn('"VERSION_STRING_2": "v5.8.0J5"', cmake)
         self.assertIn('"EDITION_STRING": "JP-RX-Only"', cmake)
         for flag in (
             '"ENABLE_FEAT_F4HWN_SCAN_PROGRESS": true',
@@ -80,6 +82,35 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
             '"ENABLE_FEAT_F4HWN_SCAN_SUBAUDIBLE": true',
         ):
             self.assertIn(flag, cmake)
+
+    def test_rx_only_policy_is_enforced_at_cmake_boundary(self):
+        root = source("CMakeLists.txt")
+        app = source("App/CMakeLists.txt")
+
+        self.assertIn("set(ENABLE_RX_ONLY ON CACHE BOOL", root)
+        for feature in (
+            "ENABLE_AIRCOPY",
+            "ENABLE_ALARM",
+            "ENABLE_DTMF_CALLING",
+            "ENABLE_FEAT_F4HWN_BEAM",
+            "ENABLE_FEAT_F4HWN_FOXHUNT",
+            "ENABLE_FEAT_F4HWN_RXTX_LOG",
+            "ENABLE_FEAT_F4HWN_RX_TX_TIMER",
+            "ENABLE_REDUCE_LOW_MID_TX_POWER",
+            "ENABLE_TX1750",
+            "ENABLE_TX_WHEN_AM",
+            "ENABLE_VOX",
+        ):
+            self.assertIn(feature, root)
+
+        for source_file in (
+            "app/aircopy.c",
+            "ui/aircopy.c",
+            "app/beam.c",
+            "app/foxhunt.c",
+            "app/rxtx_log.c",
+        ):
+            self.assertNotIn(source_file, app)
 
     def test_rx_driver_guards_rf_tx_primitives(self):
         driver = source("App/driver/bk4829.c")
@@ -233,22 +264,31 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
         self.assertIn("[0xE0 - 0x7F]", font)
         self.assertIn("// ー", font)
         self.assertIn(
-            "[0xE0 - 0x7F] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x02,0x02,0x02,0x02,0x02,0x02}",
+            "[0xE0 - 0x7F] = {0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x00,0x00,0x00,0x00,0x00,0x00,0x00}",
             font,
         )
-        self.assertIn("(uint8_t)((page0 >> 1) | (page1 << 7))", helper)
-        self.assertIn("(uint8_t)(page1 >> 1)", helper)
+        self.assertIn("same display rows as", helper)
+        self.assertNotIn("FONT_BIG_JAPANESE_RENDER_SHIFT", helper)
         self.assertIn("[0xFF - 0x7F]", font)
         self.assertIn("code <= FONT_CODE_MAX", helper)
 
     def test_rx_only_menu_uses_expanded_japanese_labels(self):
         menu = source("App/ui/menu.c")
         self.assertIn("{{0x80, 0x81, 0xE1, 0xE2}, MENU_RX_EXT}", menu)
+        self.assertIn("{{0xEE, 0xFF}, MENU_W_N}", menu)
         self.assertIn("{{0xE3, 0xE4}, MENU_S_PRI}", menu)
         self.assertIn("{{0xE5, 0xE6}, MENU_VOL}", menu)
         self.assertIn("{{0xE7, 0xE8}, MENU_SET_INV}", menu)
         self.assertIn("{{0xE9, 0xEA}, MENU_SET_AUD}", menu)
         self.assertIn("{{0xEB, 0xEC}, MENU_SET_OFF}", menu)
+        self.assertIn("{{0x93, 0x94}, MENU_SET_MET}", menu)
+        self.assertIn("{{0x8F, 0xF7, 0xFB, 0xFC}, MENU_BATCAL}", menu)
+
+    def test_status_messages_keep_safety_text_and_localize_battery_labels(self):
+        main = source("App/ui/main.c")
+        self.assertIn('[VFO_STATE_BAT_LOW]="\\x8F\\xF7 LOW"', main)
+        self.assertIn('[VFO_STATE_TX_DISABLE]="TX DISABLE"', main)
+        self.assertIn('[VFO_STATE_VOLTAGE_HIGH]="\\x8F\\x92 HIGH"', main)
 
     def test_ptt_is_monitor_and_single_vfo_is_enforced(self):
         generic = source("App/app/generic.c")

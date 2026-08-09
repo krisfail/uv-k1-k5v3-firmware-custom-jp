@@ -9,7 +9,7 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug")
 endif()
 
-set(CMAKE_PROJECT_NAME f4hwn)
+set(CMAKE_PROJECT_NAME wrx-jp)
 
 # Enable compile command to ease indexing with e.g. clangd
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
@@ -19,7 +19,33 @@ message("Build type: " ${CMAKE_BUILD_TYPE})
 
 enable_language(C ASM)
 
-option(DEV "Prepare the rolling Fusion development firmware" OFF)
+# This repository distributes one firmware profile: Japanese, receive-only.
+# Force the policy at the CMake boundary so an inherited cache or an ad-hoc
+# -D option cannot re-enable RF transmit sources.
+set(ENABLE_RX_ONLY ON CACHE BOOL "Build the receive-only Japanese profile" FORCE)
+foreach(_rx_only_disabled_feature IN ITEMS
+    ENABLE_AIRCOPY
+    ENABLE_ALARM
+    ENABLE_DTMF_CALLING
+    ENABLE_FEAT_F4HWN_BEAM
+    ENABLE_FEAT_F4HWN_FOXHUNT
+    ENABLE_FEAT_F4HWN_RXTX_LOG
+    ENABLE_FEAT_F4HWN_RXTX_LOG_WRAP
+    ENABLE_FEAT_F4HWN_RXTX_LOG_K5VIEWER
+    ENABLE_FEAT_F4HWN_RX_TX_TIMER
+    ENABLE_REDUCE_LOW_MID_TX_POWER
+    ENABLE_TX1750
+    ENABLE_TX_WHEN_AM
+    ENABLE_VOX
+)
+    set(${_rx_only_disabled_feature} OFF CACHE BOOL
+        "Disabled by the wrx-jp receive-only policy" FORCE)
+endforeach()
+
+# Keep an ad-hoc CMake invocation aligned with the only distributed profile.
+set(ENABLE_FEAT_F4HWN ON CACHE BOOL "Enable the wrx-jp feature set" FORCE)
+set(ENABLE_JAPANESE ON CACHE BOOL "Enable Japanese display paths" FORCE)
+set(ENABLE_FMRADIO ON CACHE BOOL "Enable domestic FM broadcast reception" FORCE)
 
 find_package(Git QUIET)
 set(BUILD_COMMIT "unknown")
@@ -41,16 +67,16 @@ if(ENABLE_FEAT_F4HWN)
         set(AUTHOR_STRING_1 "EGZUMER")
     endif()
     if(NOT AUTHOR_STRING_2)
-        set(AUTHOR_STRING_2 "F4HWN")
+        set(AUTHOR_STRING_2 "Kris")
     endif()
     if(NOT VERSION_STRING_1)
         set(VERSION_STRING_1 "v0.22")
     endif()
     if(NOT VERSION_STRING_2)
-        set(VERSION_STRING_2 "v4.2")
+        set(VERSION_STRING_2 "v5.8.0J5")
     endif()
     if(NOT EDITION_STRING)
-        set(EDITION_STRING "Default")
+        set(EDITION_STRING "JP-RX-Only")
     endif()
     if(NOT AUTHOR_STRING)
         set(AUTHOR_STRING "${AUTHOR_STRING_1}+${AUTHOR_STRING_2}")
@@ -70,20 +96,12 @@ endif()
 if(TARGET)
     set(EXE_NAME ${TARGET})
 else()
-    set(EXE_NAME "firmware")
+    set(EXE_NAME "wrx-jp")
 endif()
 
-if(DEV)
-    if(NOT "${TARGET}" STREQUAL "uv-k1-fusion")
-        message(FATAL_ERROR "DEV is only supported for the Fusion target")
-    endif()
-    set(DISPLAY_VERSION_STRING_2 "${VERSION_STRING_2} Dev")
-else()
-    set(DISPLAY_VERSION_STRING_2 "${VERSION_STRING_2}")
-endif()
+set(DISPLAY_VERSION_STRING_2 "${VERSION_STRING_2}")
 
 message("EXE_NAME = " ${EXE_NAME})
-message("Development build = " ${DEV})
 
 add_executable(${EXE_NAME})
 
@@ -121,17 +139,6 @@ add_custom_command(
     COMMAND ${CMAKE_OBJCOPY} -O binary ${EXE_NAME}.elf ${EXE_NAME}.bin
     COMMENT "Generating .bin file"
 )
-
-if(DEV)
-    add_custom_command(
-        TARGET ${EXE_NAME}
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${CMAKE_CURRENT_BINARY_DIR}/${EXE_NAME}.bin"
-                "${CMAKE_SOURCE_DIR}/archive/uv-k1-fusion.development.bin"
-        COMMENT "Preparing archive/uv-k1-fusion.development.bin"
-    )
-endif()
 
 # Generate .hex file
 add_custom_command(

@@ -1664,7 +1664,9 @@ void APP_TimeSlice10ms(void)
     }
 
 #ifdef ENABLE_FEAT_F4HWN_LOGO_SAV
+#ifdef ENABLE_FEAT_F4HWN_K5VIEWER
     bool screenSaverRendered = false;
+#endif
 
     if (gScreenSaverDisplayed) {
         if (gUpdateDisplayCurrent) {
@@ -1678,13 +1680,17 @@ void APP_TimeSlice10ms(void)
             if (++gScreenSaverTick >= 8u) {
                 gScreenSaverTick = 0;
                 ScreenSaverRenderMatrix(false);
+#ifdef ENABLE_FEAT_F4HWN_K5VIEWER
                 screenSaverRendered = true;
+#endif
             }
         } else if (gSetting_set_sav == SET_SAV_LOGO_PLUS) {
             if (++gScreenSaverTick >= 16u) {
                 gScreenSaverTick = 0;
                 ScreenSaverRenderLogoPlus(false);
+#ifdef ENABLE_FEAT_F4HWN_K5VIEWER
                 screenSaverRendered = true;
+#endif
             }
         }
     }

@@ -10,7 +10,7 @@
 
 | 版 | 用途 | 送信 |
 | --- | --- | --- |
-| `JpRxOnly` | 日本語・受信専用（v5.8.0J4） | 無効。PTTはモニター |
+| `JpRxOnly` | 日本語・受信専用（v5.8.0J5） | 無効。PTTはモニター |
 
 このリポジトリで提供する日本語版は`JpRxOnly`のみです。上流系の送信可能な構成は国内向け受信機版として扱わないでください。
 
@@ -27,6 +27,8 @@ cmake --build --preset JpRxOnly -j2
 ```
 
 出力: `build/JpRxOnly/wrx-jp.bin`
+
+リリース相当packed: `release/wrx-jp-v5.8.0J5.packed.bin`
 
 ### テスト
 
@@ -47,6 +49,12 @@ python -m unittest discover -s tests -p "test_*.py" -v
 | `F` + `0 FM` | FM放送 |
 | `* SCAN`長押し | スキャン開始 |
 | スキャン中に`F1`短押し | 現在周波数を一時スキップ |
+
+## 表示メッセージ
+
+- 受信専用画面では送信出力の`LOW`／`HIGH`を表示しません。
+- 通常の`PTT`はモニターです。予期しない送信要求があった場合だけ、`TX DISABLE`とビープ音で知らせます。
+- 条件に合わない受信操作は、`RXExt OFF`、`VFO ONLY`、`SCAN ACTIVE`、`FM ONLY`などの理由を表示します。
 
 ## CHIRP
 

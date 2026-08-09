@@ -147,11 +147,11 @@ static void UI_MAIN_DrawBeamLine(void)
 const char *const VfoStateStr[] = {
        [VFO_STATE_NORMAL]="",
        [VFO_STATE_BUSY]="BUSY",
-       [VFO_STATE_BAT_LOW]="BAT LOW",
+       [VFO_STATE_BAT_LOW]="\x8F\xF7 LOW", // 電池 LOW
        [VFO_STATE_TX_DISABLE]="TX DISABLE",
        [VFO_STATE_TIMEOUT]="TIMEOUT",
        [VFO_STATE_ALARM]="ALARM",
-       [VFO_STATE_VOLTAGE_HIGH]="VOLT HIGH"
+       [VFO_STATE_VOLTAGE_HIGH]="\x8F\x92 HIGH" // 電圧 HIGH
 };
 
 #if defined(ENABLE_FEAT_F4HWN_SCAN_FASTER) && defined(ENABLE_FEAT_F4HWN_SCAN_RSSI)
@@ -2102,6 +2102,7 @@ void UI_DisplayMain(void)
         UI_PrintStringSmallNormal(s, LCD_WIDTH + 24, 0, line + 1);
 #endif
 
+#ifndef ENABLE_RX_ONLY
         if (state == VFO_STATE_NORMAL || state == VFO_STATE_ALARM)
         {   // show the TX power
             uint8_t currentPower = vfoInfo->OUTPUT_POWER % 8;
@@ -2141,6 +2142,7 @@ void UI_DisplayMain(void)
                 memcpy(p_line0 + 256 + arrowPos, BITMAP_PowerUser, sizeof(BITMAP_PowerUser));
             }
         }
+#endif
 
         if (vfoInfo->freq_config_RX.Frequency != vfoInfo->freq_config_TX.Frequency)
         {   // show the TX offset symbol

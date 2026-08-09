@@ -1,6 +1,6 @@
 # UV-K1 / UV-K5 V3 Japanese receive-only firmware
 
-[日本語版README](README.ja.md) | [操作・ビルドcheatsheet](CHEATSHEET.ja.md) | [Developer guide](DEVELOPMENT.md) | [CHIRP driver](tools/chirp/README.ja.md) | [Technical feature details](docs/FEATURES_TECHNICAL.ja.md)
+[日本語版README](README.ja.md) | [操作・ビルドcheatsheet](CHEATSHEET.ja.md) | [Developer guide](DEVELOPMENT.md) | [CHIRP driver](tools/chirp/README.ja.md) | [Technical feature details](docs/FEATURES_TECHNICAL.ja.md) | [Priority notes](docs/FEATURE_PRIORITY.ja.md)
 
 This repository is the downstream fork [krisfail/uv-k1-k5v3-firmware-custom-jp](https://github.com/krisfail/uv-k1-k5v3-firmware-custom-jp), with [armel/uv-k1-k5v3-firmware-custom](https://github.com/armel/uv-k1-k5v3-firmware-custom) as its upstream. It adapts the F4HWN and [Egzumer custom firmware](https://github.com/egzumer/uv-k5-firmware-custom) lineage to the UV-K1 and UV-K5 V3, which use the PY32F071 MCU.
 
@@ -8,7 +8,7 @@ This repository is the downstream fork [krisfail/uv-k1-k5v3-firmware-custom-jp](
 
 This fork targets Japanese-language, receive-only use on the UV-K1 and UV-K5 V3. It is not an official Quansheng, F4HWN, or armel release.
 
-The code analysis, implementation, test support, and documentation were partly AI-assisted and were reviewed against the source, static tests, builds, and available hardware results. AI assistance does not replace maintainer review or user testing.
+Some code analysis, implementation, test support, and documentation used AI assistance. Maintainers review the result, but AI assistance does not replace maintainer review or user testing.
 
 The firmware is provided **as is**, without warranty. The maintainers are not responsible for radio damage, failed flashing, loss of EEPROM, calibration data or configuration, recovery failure, or use that violates local radio regulations. Back up calibration data and relevant memory before flashing, use an image for the exact hardware model, and keep a recovery method available.
 
@@ -26,11 +26,13 @@ The local Japanese build is `JpRxOnly`:
 - The `RXExt` radio menu item enables or disables those added receive features as a group; it defaults to enabled.
 - Domestic FM broadcast reception limited to `76.0–95.0 MHz`.
 
-The other CMake presets (`Bandscope`, `Broadcast`, `Basic`, `RescueOps`, `Game`, and `Fusion`) are retained for upstream-style development and feature comparison. They are not Japanese or domestic receive-only editions. A Japanese transmit-capable edition is not currently distributed; it remains a separate future investigation and must not be inferred from the other presets.
+The receive-only UI omits TX power labels such as `LOW` and `HIGH`. Normal PTT operation is monitor control; only an unexpected request reaching the final TX guard shows `TX DISABLE`. Unsupported receive actions show a short reason such as `RXExt OFF`, `VFO ONLY`, `SCAN ACTIVE`, or `FM ONLY`.
+
+`JpRxOnly` is the only supported CMake preset. The former upstream-style presets were removed from this fork so a Japanese or domestic receive-only build cannot be confused with a transmit-capable comparison image.
 
 Detailed operation notes are in [README.ja.md](README.ja.md). The quick reference is in [CHEATSHEET.ja.md](CHEATSHEET.ja.md). Technical implementation details are in [docs/FEATURES_TECHNICAL.ja.md](docs/FEATURES_TECHNICAL.ja.md). CHIRP-specific memory-map and upload guidance is in [tools/chirp/README.ja.md](tools/chirp/README.ja.md); legal attribution remains in `tools/chirp/NOTICE.md` and `tools/chirp/LICENSE.txt`.
 
-Development-specific source layout, change boundaries, atlas generation, validation, and release handling are collected in [DEVELOPMENT.md](DEVELOPMENT.md). `README.md` intentionally keeps only the general usage and build information needed to get started.
+This README is a user-facing overview. Development-specific source layout, change boundaries, atlas generation, validation, and release handling are collected in [DEVELOPMENT.md](DEVELOPMENT.md); AI-agent rules are kept in [AGENTS.md](AGENTS.md).
 
 ## Building `JpRxOnly`
 
@@ -48,6 +50,7 @@ The outputs are under `build/JpRxOnly`:
 - `wrx-jp.bin`: firmware image.
 - `wrx-jp.hex`: HEX image.
 - `wrx-jp.elf`: ELF image for debugging.
+- `release/wrx-jp-v5.8.0J5.packed.bin`: versioned release-equivalent packed image.
 
 ## CHIRP driver
 
@@ -66,12 +69,6 @@ python -m unittest discover -s tests -p "test_*.py" -v
 ```
 
 The full developer workflow, source map, persistence boundaries, and atlas procedure are in [DEVELOPMENT.md](DEVELOPMENT.md).
-
-The optional Docker helper is intended for the upstream-style presets:
-
-```bash
-./compile-with-docker.sh Fusion
-```
 
 ## Flashing and backup
 

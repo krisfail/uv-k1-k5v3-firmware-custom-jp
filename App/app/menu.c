@@ -440,9 +440,6 @@ int MENU_GetLimits(uint8_t menu_id, int32_t *pMin, int32_t *pMax)
             *pMax = 15;
             break;
         #endif
-#ifndef ENABLE_RX_ONLY
-        case MENU_TX_LOCK:
-#endif
         #ifdef ENABLE_FEAT_F4HWN_INV
         case MENU_SET_INV:
             //*pMin = 0;
@@ -1137,12 +1134,6 @@ void MENU_AcceptSetting(void)
             gSetting_set_sav = gSubMenuSelection;
             break;
 #endif
-#ifndef ENABLE_RX_ONLY
-        case MENU_TX_LOCK:
-            gTxVfo->TX_LOCK = gSubMenuSelection;
-            gRequestSaveChannel       = 1;
-            return;
-#endif
 #endif
     }
 
@@ -1651,11 +1642,6 @@ void MENU_ShowCurrentSetting(void)
 #ifdef ENABLE_FEAT_F4HWN_LOGO_SAV
         case MENU_SET_SAV:
             gSubMenuSelection = gSetting_set_sav;
-            break;
-#endif
-#ifndef ENABLE_RX_ONLY
-        case MENU_TX_LOCK:
-            gSubMenuSelection = gTxVfo->TX_LOCK;
             break;
 #endif
 #endif

@@ -63,6 +63,35 @@ static void Beep(const bool error)
     gBeepToPlay = error ? BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL : BEEP_1KHZ_60MS_OPTIONAL;
 }
 
+static void Reject(const char *message)
+{
+    Beep(true);
+    UI_DisplayUnavailable(message);
+    /* Keep the reason visible until the next user action redraws the screen. */
+    gUpdateDisplay = false;
+}
+
+static const char *OpenError(void)
+{
+    if (!RX_FEATURE_STATE_IsEnabled())
+        return "RXExt OFF";
+    if (!IS_FREQ_CHANNEL(gTxVfo->CHANNEL_SAVE))
+        return "VFO ONLY";
+    if (gScanStateDir != SCAN_OFF || gScanRangeStart != 0)
+        return "SCAN ACTIVE";
+    if (gTxVfo->FrequencyReverse)
+        return "REV ON";
+    if (gEeprom.DUAL_WATCH != DUAL_WATCH_OFF)
+        return "DUAL RX ON";
+    if (gEeprom.CROSS_BAND_RX_TX != CROSS_BAND_OFF)
+        return "CROSS ON";
+#ifdef ENABLE_FMRADIO
+    if (gFmRadioMode)
+        return "FM MODE";
+#endif
+    return NULL;
+}
+
 static void Close(void)
 {
     sOpen = false;
@@ -76,8 +105,10 @@ static void Apply(const bool startScan)
         gEeprom.DUAL_WATCH != DUAL_WATCH_OFF ||
         gEeprom.CROSS_BAND_RX_TX != CROSS_BAND_OFF || !IsValid(preset))
     {
-        Beep(true);
         Close();
+        Reject(!RX_FEATURE_STATE_IsEnabled() ? "RXExt OFF" :
+            gEeprom.DUAL_WATCH != DUAL_WATCH_OFF ? "DUAL RX ON" :
+            gEeprom.CROSS_BAND_RX_TX != CROSS_BAND_OFF ? "CROSS ON" : "PRESET ERROR");
         return;
     }
 
@@ -109,17 +140,10 @@ static void Apply(const bool startScan)
 
 void RX_BAND_PRESETS_Open(void)
 {
-    if (!RX_FEATURE_STATE_IsEnabled() ||
-        !IS_FREQ_CHANNEL(gTxVfo->CHANNEL_SAVE) || gScanStateDir != SCAN_OFF ||
-        gScanRangeStart != 0 || gTxVfo->FrequencyReverse ||
-        gEeprom.DUAL_WATCH != DUAL_WATCH_OFF ||
-        gEeprom.CROSS_BAND_RX_TX != CROSS_BAND_OFF
-#ifdef ENABLE_FMRADIO
-        || gFmRadioMode
-#endif
-    )
+    const char *error = OpenError();
+    if (error != NULL)
     {
-        Beep(true);
+        Reject(error);
         return;
     }
 
