@@ -1,6 +1,6 @@
 # UV-K1 / UV-K5 V3 日本語・受信専用ファームウェア
 
-[英語版README](README.md) | [操作・ビルドcheatsheet](CHEATSHEET.ja.md) | [開発者向けガイド](DEVELOPMENT.md) | [CHIRPドライバ](tools/chirp/README.ja.md) | [新機能の技術詳細](docs/FEATURES_TECHNICAL.ja.md) | [機能優先度](docs/FEATURE_PRIORITY.ja.md) | [bitmap/font atlas](docs/BITMAP_ATLAS.ja.md)
+[英語版README](README.md) | [操作・ビルドcheatsheet](CHEATSHEET.ja.md) | [開発者向けガイド](DEVELOPMENT.md) | [CHIRPドライバ](tools/chirp/README.ja.md) | [新機能の技術詳細](docs/FEATURES_TECHNICAL.ja.md) | [機能監査](docs/FEATURE_AUDIT.ja.md) | [実機テスト計画](docs/HARDWARE_TEST_PLAN.ja.md) | [bitmap/font atlas](docs/BITMAP_ATLAS.ja.md) | [ドキュメントサイト](docs/index.md)
 
 ## このリポジトリの位置づけ
 
@@ -21,7 +21,7 @@
 - 日常操作と最小限のビルド手順は[CHEATSHEET.ja.md](CHEATSHEET.ja.md)
 - CHIRPの機種選択・読み書き範囲・校正領域は[CHIRPドライバの説明](tools/chirp/README.ja.md)
 - 開発者向けのソース構成・検証・atlas生成は[DEVELOPMENT.md](DEVELOPMENT.md)
-- 実装、保存形式、フォント、未検証範囲は[技術詳細](docs/FEATURES_TECHNICAL.ja.md)と[機能優先度](docs/FEATURE_PRIORITY.ja.md)
+- 実装の詳細は[技術詳細](docs/FEATURES_TECHNICAL.ja.md)、採否と除外機能は[機能監査](docs/FEATURE_AUDIT.ja.md)、実機確認項目は[実機テスト計画](docs/HARDWARE_TEST_PLAN.ja.md)
 
 このREADMEは利用者向けの案内です。実装上の判断やAIエージェント向けの作業規則は、上記の開発者向け文書と[AGENTS.md](AGENTS.md)に分けて記載しています。
 
@@ -49,7 +49,9 @@
 - FM受信時の急激なゲイン変化を抑えるAGCガード
 - `RXExt`で追加受信機能をまとめてON/OFF（初期値ON）
 - RX-onlyメニューの主要項目を日本語化（受信拡張、優先、情報、反転、音声、自動、狭帯、高速など）
+- K1のフラッシュ容量を使い、受信音声プロファイルと音声レベル履歴を有効化
 - 大きい文字と小さい文字に対応した日本語表示。大文字の長音「ー」と既存ラベルのカタカナも補完
+- 起動画面の`受信専用`に使う大字形は、パブリックドメインのIzumi 16から独立変換しています。詳細は[フォントの出所と変換](docs/FONT_SOURCES.ja.md)を参照してください。
 
 メニューの`受信拡張`（従来表記`RXExt`）を`OFF`にすると、プリセット、受信モードの`SINGLE`、メモリーバンク絞り込み、`自動`スケルチ、AGCガード、一時スキップを停止します。通常受信の3段階帯域幅、受信専用・PTTモニター、日本語表示、FM放送の`76.0–95.0 MHz`制限は変わりません。周波数ステップは帯域幅と独立して選べます。既存の保存データは互換性のためONとして扱います。
 
@@ -74,6 +76,8 @@ cmake --build --preset JpRxOnly -j2
 - `build/JpRxOnly/wrx-jp.hex`: HEX形式
 - `build/JpRxOnly/wrx-jp.elf`: デバッグ用ELF
 - `release/wrx-jp-v5.8.0J5.packed.bin`: リリース相当のパック済みイメージ
+
+UVTools2で書き込む場合は、パック済みではない`build/JpRxOnly/wrx-jp.bin`を選択してください。`*.packed.bin`はpack形式に対応したツールや配布用に保持するファイルで、UVTools2へそのまま渡すものではありません。
 
 構成生成後にソースだけを変更した場合は、次のビルドだけで構いません。
 
@@ -113,6 +117,10 @@ python -m unittest discover -s tests -p "test_*.py" -v
 4. 起動後、表示版、周波数入力、FM放送、受信音、PTTの動作を確認する。
 
 `JpRxOnly`のPTTはモニター動作です。送信機能を使う目的で`JpRxOnly`を変更・再有効化する手順は、この文書の対象外です。
+
+## 隠しメニュー
+
+電源OFFの状態で`PTT`と上側サイドキーを同時に押しながら電源を入れると、隠しメニューを開けます。受信専用版では送信ロック・送信調整項目は表示せず、`BatCal`、`BatTyp`、`Reset`などの保守項目を残しています。EEPROM初期化が必要な場合は`Reset`を使用する前に、EEPROMとcalibrationのバックアップを確認してください。
 
 ## 表示と利用できない操作
 

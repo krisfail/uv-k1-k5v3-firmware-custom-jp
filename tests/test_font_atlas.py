@@ -55,13 +55,13 @@ class FontAtlasTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.atlas.parse_glyph_annotations("gFontBigJapanese", initializer, 14)
 
-    def test_project_authored_large_glyphs_have_stable_readable_bitmaps(self) -> None:
+    def test_open_font_derived_large_glyphs_have_stable_readable_bitmaps(self) -> None:
         array = self.parse_array("gFontBigJapanese")
         glyphs = array.glyphs
         assert glyphs is not None
         expected = {
-            0x98: bytes.fromhex("04 88 50 20 50 88 04 01 00 00 00 00 00 01"),
-            0x99: bytes.fromhex("fc 54 54 fc 54 54 fc 0f 00 00 03 00 08 0f"),
+            0x98: bytes.fromhex("48 e8 58 fc 58 e8 48 02 03 02 07 02 03 02"),
+            0x99: bytes.fromhex("00 fc 24 fc 24 fc 00 06 01 06 01 06 01 06"),
         }
         for code, bitmap in expected.items():
             glyph = glyphs[code - 0x80]

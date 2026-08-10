@@ -13,5 +13,9 @@ k5_eeprom.raw
 
 /build
 __pycache__/
+.pages-source/
+_site/
 
 .DS_Store
+
+/tmp

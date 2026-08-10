@@ -30,6 +30,8 @@ cmake --build --preset JpRxOnly -j2
 
 リリース相当packed: `release/wrx-jp-v5.8.0J5.packed.bin`
 
+UVTools2で書き込むのはパック前の`build/JpRxOnly/wrx-jp.bin`です。`*.packed.bin`はpack対応ツール用です。
+
 ### テスト
 
 ```powershell
@@ -82,3 +84,7 @@ RX-onlyメニューでは、`RXExt`は「受信拡張」、スケルチの`AUTO`
 - `JpRxOnly`を選んでいるか
 - 校正データをバックアップしたか
 - `JpRxOnly`ではPTTが送信ではなくモニターになることを確認したか
+
+## 隠しメニュー
+
+電源OFF時に`PTT`と上側サイドキーを同時に押しながら電源を入れます。RX-only版では送信項目はなく、`BatCal`、`BatTyp`、`Reset`などの保守項目を開けます。`Reset`の前にEEPROMとcalibrationをバックアップしてください。

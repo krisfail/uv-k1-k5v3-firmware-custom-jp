@@ -1,6 +1,6 @@
 # UV-K1 / UV-K5 V3 Japanese receive-only firmware
 
-[日本語版README](README.ja.md) | [操作・ビルドcheatsheet](CHEATSHEET.ja.md) | [Developer guide](DEVELOPMENT.md) | [CHIRP driver](tools/chirp/README.ja.md) | [Technical feature details](docs/FEATURES_TECHNICAL.ja.md) | [Priority notes](docs/FEATURE_PRIORITY.ja.md)
+[日本語版README](README.ja.md) | [操作・ビルドcheatsheet](CHEATSHEET.ja.md) | [Developer guide](DEVELOPMENT.md) | [CHIRP driver](tools/chirp/README.ja.md) | [Technical feature details](docs/FEATURES_TECHNICAL.ja.md) | [Feature audit](docs/FEATURE_AUDIT.ja.md) | [Hardware test plan](docs/HARDWARE_TEST_PLAN.ja.md) | [Documentation site](docs/index.md)
 
 This repository is the downstream fork [krisfail/uv-k1-k5v3-firmware-custom-jp](https://github.com/krisfail/uv-k1-k5v3-firmware-custom-jp), with [armel/uv-k1-k5v3-firmware-custom](https://github.com/armel/uv-k1-k5v3-firmware-custom) as its upstream. It adapts the F4HWN and [Egzumer custom firmware](https://github.com/egzumer/uv-k5-firmware-custom) lineage to the UV-K1 and UV-K5 V3, which use the PY32F071 MCU.
 
@@ -18,11 +18,13 @@ The local Japanese build is `JpRxOnly`:
 
 - Japanese menu labels and large/small Japanese glyph paths.
 - Expanded Japanese LCD labels, including large-font long-vowel and restored katakana glyphs.
+- The `専` and `用` glyphs, including the receive-only welcome display, are independently reduced from the public-domain [Izumi 16](https://unifoundry.com/japanese/) bitmap font; see [font provenance](docs/FONT_SOURCES.ja.md).
 - TX paths and TX-related menus disabled.
 - PTT assigned to monitor operation.
 - `MAIN ONLY`, `DUAL RX`, and `SINGLE` receive modes.
 - `W`, `N`, and `N-` bandwidth selection (20/12.5/6.25 kHz); K1 does not expose WIDE+ because BK4829 applies the same RF setting.
 - Receive band presets, memory banks, automatic squelch, AGC protection, and temporary scan skipping.
+- Receive audio profiles are enabled in `JpRxOnly`; the audio scope and level history remain receive-side diagnostics.
 - The `RXExt` radio menu item enables or disables those added receive features as a group; it defaults to enabled.
 - Domestic FM broadcast reception limited to `76.0–95.0 MHz`.
 
@@ -30,7 +32,7 @@ The receive-only UI omits TX power labels such as `LOW` and `HIGH`. Normal PTT o
 
 `JpRxOnly` is the only supported CMake preset. The former upstream-style presets were removed from this fork so a Japanese or domestic receive-only build cannot be confused with a transmit-capable comparison image.
 
-Detailed operation notes are in [README.ja.md](README.ja.md). The quick reference is in [CHEATSHEET.ja.md](CHEATSHEET.ja.md). Technical implementation details are in [docs/FEATURES_TECHNICAL.ja.md](docs/FEATURES_TECHNICAL.ja.md). CHIRP-specific memory-map and upload guidance is in [tools/chirp/README.ja.md](tools/chirp/README.ja.md); legal attribution remains in `tools/chirp/NOTICE.md` and `tools/chirp/LICENSE.txt`.
+Detailed operation notes are in [README.ja.md](README.ja.md). The quick reference is in [CHEATSHEET.ja.md](CHEATSHEET.ja.md). Technical implementation details are in [docs/FEATURES_TECHNICAL.ja.md](docs/FEATURES_TECHNICAL.ja.md); current feature adoption and exclusions are consolidated in [docs/FEATURE_AUDIT.ja.md](docs/FEATURE_AUDIT.ja.md), with the hardware checklist in [docs/HARDWARE_TEST_PLAN.ja.md](docs/HARDWARE_TEST_PLAN.ja.md). CHIRP-specific memory-map and upload guidance is in [tools/chirp/README.ja.md](tools/chirp/README.ja.md); legal attribution remains in `tools/chirp/NOTICE.md` and `tools/chirp/LICENSE.txt`.
 
 This README is a user-facing overview. Development-specific source layout, change boundaries, atlas generation, validation, and release handling are collected in [DEVELOPMENT.md](DEVELOPMENT.md); AI-agent rules are kept in [AGENTS.md](AGENTS.md).
 

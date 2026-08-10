@@ -1,0 +1,55 @@
+# K1／K5 V3版 機能監査と採否
+
+この文書を、PY32F071搭載のUV-K1／UV-K5 V3向け`wrx-jp`における機能採否の現行台帳とします。利用者向けの操作説明は[README.ja.md](../README.ja.md)、開発手順は[DEVELOPMENT.md](../DEVELOPMENT.md)、AIエージェント向けの規則は[AGENTS.md](../AGENTS.md)に分けています。
+
+## 判断基準
+
+受信機としての価値、安全性、LCD上の理解しやすさ、保存形式への影響、実機での確認しやすさの順に判断します。K1／K5 V3はK5よりフラッシュに余裕がありますが、送信経路、送信校正、送信を前提とする保守機能は有効にしません。
+
+## 残す機能
+
+| 分類 | 機能 | 採用理由・境界 |
+| --- | --- | --- |
+| 安全 | RX-only、PTTモニター、TX要求時の`TX DISABLE` | RF送信を無効にし、PTTを受信モニターに固定する |
+| 受信 | AM/FM、W+ 25 kHz、W 20 kHz、N 12.5 kHz、N- 6.25 kHz | 4段階の受信幅を明示する |
+| 受信 | 日本向けFM放送、周波数ステップ、RXExt、逆CTCSS | 国内の受信操作と選択性を改善する |
+| 走査 | バンドプリセット、範囲スキャン、スキャン一時スキップ、RSSI／進捗表示 | 受信専用機としての探索性を高める |
+| 音声 | 受信音声プロファイル、音声スコープ、音声レベル表示、FM AGCガード、AM補正 | K1の余裕を使い、受信状態の確認と聴きやすさを優先する |
+| UI | 日本語メニュー、起動画面、MESSAGE／ALL、簡易ヘルプ、画像／メッセージ表示、フォントatlas | LCD幅を確認しながら意味を明確にする |
+| 状態 | スリープ、復帰状態、LCD反転・コントラスト、狭帯域化、チャンネル名・バンク | 受信運用に直接使える範囲で維持する |
+| 接続 | CHIRP、UART（低レベル校正操作を除く） | 通常のメモリー管理に必要。calibration領域は通常経路から除外 |
+
+## 追加検討する機能
+
+| 機能 | 採用条件 |
+| --- | --- |
+| 追加漢字・大字形 | ライセンス確認、atlasの重複確認、LCD幅と基線の実機確認 |
+| 受信履歴やスキャン詳細 | RAM、操作性、電池消費、保存形式を確認できること |
+| 小型の受信補助表示 | メイン受信画面を圧迫せず、無効化設定と実機試験を追加できること |
+
+フラッシュに余裕があることだけを理由に、大型の送信系・解析系・保守系機能を有効化しません。受信経路とUIの品質を優先します。
+
+## RX専用版から外した機能
+
+次の機能はCMakeのRX-only強制境界で無効化し、通常プロファイルのメニューにも出しません。ソースを残すものは、上流互換性と差分追跡のためです。
+
+- RF送信、送信電力・送信帯域の変更、AM時送信、1750 Hz送信、VOX、TOT、アラーム、DTMF calling
+- AirCopy、REGA、F_CAL、F Lock、電池校正メニュー、UARTからのBKレジスタ書き換え
+- NOAA／voice、full spectrum、game、K5 viewer、charging、rescue操作、音量拡張
+- PMR、GMRS／FRS／MURS、デバッグ、メモリー診断、QRコード、受信／送信タイマー
+
+CHIRP通常操作とUART通信そのものは残しますが、低レベル保守コマンドまでRX-onlyの安全境界を保証するものではありません。
+
+## 変更時の確認
+
+1. `CMakeLists.txt`と`CMakePresets.json`の強制無効化境界、メニューの条件コンパイル、PTT分岐を確認する。
+2. `cmake --build --preset JpRxOnly -j2`とホストテストを実行する。
+3. `cmake --build --preset JpRxOnly -j2`の最後に出るFLASH／RAM使用量を記録する。
+4. [HARDWARE_TEST_PLAN.ja.md](HARDWARE_TEST_PLAN.ja.md)を実機で埋める。
+5. フォントを変更した場合は、[BITMAP_ATLAS.ja.md](BITMAP_ATLAS.ja.md)と実機表示を確認する。
+
+## 関連資料
+
+- 容量判断の経過：[FEATURE_PRIORITY.ja.md](FEATURE_PRIORITY.ja.md)
+- 実装の保存形式・ドライバ境界：[FEATURES_TECHNICAL.ja.md](FEATURES_TECHNICAL.ja.md)
+- 実機試験票：[HARDWARE_TEST_PLAN.ja.md](HARDWARE_TEST_PLAN.ja.md)

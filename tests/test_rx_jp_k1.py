@@ -80,6 +80,9 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
             '"ENABLE_FEAT_F4HWN_SCAN_FASTER": true',
             '"ENABLE_FEAT_F4HWN_SCAN_RSSI": true',
             '"ENABLE_FEAT_F4HWN_SCAN_SUBAUDIBLE": true',
+            '"ENABLE_FEAT_F4HWN_AUDIO": true',
+            '"ENABLE_FEAT_F4HWN_SPECTRUM": false',
+            '"ENABLE_FEAT_F4HWN_CA": false',
         ):
             self.assertIn(flag, cmake)
 
@@ -96,6 +99,12 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
             "ENABLE_FEAT_F4HWN_FOXHUNT",
             "ENABLE_FEAT_F4HWN_RXTX_LOG",
             "ENABLE_FEAT_F4HWN_RX_TX_TIMER",
+            "ENABLE_FEAT_F4HWN_SPECTRUM",
+            "ENABLE_FEAT_F4HWN_GAME",
+            "ENABLE_FEAT_F4HWN_K5VIEWER",
+            "ENABLE_FEAT_F4HWN_CA",
+            "ENABLE_NOAA",
+            "ENABLE_VOICE",
             "ENABLE_REDUCE_LOW_MID_TX_POWER",
             "ENABLE_TX1750",
             "ENABLE_TX_WHEN_AM",
@@ -282,7 +291,10 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
         self.assertIn("{{0xE9, 0xEA}, MENU_SET_AUD}", menu)
         self.assertIn("{{0xEB, 0xEC}, MENU_SET_OFF}", menu)
         self.assertIn("{{0x93, 0x94}, MENU_SET_MET}", menu)
-        self.assertIn("{{0x8F, 0xF7, 0xFB, 0xFC}, MENU_BATCAL}", menu)
+        menu_list = menu.split("const t_menu_item MenuList[]", 1)[1].split("};", 1)[0]
+        self.assertIn("#ifndef ENABLE_RX_ONLY", menu_list)
+        self.assertIn("MENU_BATCAL", menu_list)
+        self.assertIn("FIRST_HIDDEN_MENU_ITEM = MENU_BATCAL", menu)
 
     def test_status_messages_keep_safety_text_and_localize_battery_labels(self):
         main = source("App/ui/main.c")
