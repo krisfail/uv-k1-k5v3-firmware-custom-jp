@@ -15,7 +15,7 @@ from typing import TextIO
 
 
 SOURCE_SIZE = 16
-TOP_PADDING = 2
+REGULAR_TOP_PADDING = 2
 DEFAULT_GLYPHS = ("受", "信", "専", "用")
 
 # A direct 16-to-7 reduction drops the one-pixel horizontal strokes that make
@@ -104,13 +104,14 @@ def resize_glyph(
     active_height: int = 10,
     character: str | None = None,
 ) -> list[list[int]]:
-    """Fit a 16x16 source into the shared 16-row LCD baseline contract.
+    """Fit a 16x16 source into a fixed 16-row LCD cell.
 
     ``専`` and ``用`` use independent, hand-tuned low-resolution cells guided
     by the public-domain source so their defining strokes survive the narrow
     LCD columns. Other characters use deterministic coverage reduction. Both
-    paths preserve the 10-row glyph area between two top and four bottom
-    padding rows used by both firmware variants.
+    paths preserve the regular 10-row glyph area. ``active_height=16`` is
+    for a startup-only extra-large glyph and leaves no forced top or bottom
+    rows.
     """
 
     if len(source) != SOURCE_SIZE or any(len(row) != SOURCE_SIZE for row in source):
@@ -118,16 +119,20 @@ def resize_glyph(
     if width <= 0 or active_height <= 0 or active_height > 16:
         raise ValueError("width must be positive and active_height must be 1..16")
 
-    if active_height != 10:
-        raise ValueError("the LCD contract currently requires a 10-row glyph area")
-    top_padding = TOP_PADDING
+    if active_height not in (10, 16):
+        raise ValueError("active_height must be 10 for regular glyphs or 16 for extra-large glyphs")
+    top_padding = 0 if active_height == SOURCE_SIZE else REGULAR_TOP_PADDING
     template = READABLE_CELLS.get((character, width))
     if template is not None:
-        if len(template) != active_height or any(len(row) != width for row in template):
-            raise ValueError("readable cell dimensions do not match the LCD contract")
+        if any(len(row) != width for row in template):
+            raise ValueError("readable cell dimensions do not match the requested width")
+        template_rows = [
+            template[min(len(template) - 1, round(index * (len(template) - 1) / (active_height - 1)))]
+            for index in range(active_height)
+        ]
         return (
             [[0] * width for _ in range(top_padding)]
-            + [[int(pixel == "#") for pixel in row] for row in template]
+            + [[int(pixel == "#") for pixel in row] for row in template_rows]
             + [[0] * width for _ in range(16 - top_padding - active_height)]
         )
 
@@ -174,6 +179,13 @@ def parse_args() -> argparse.Namespace:
         default="".join(DEFAULT_GLYPHS),
         help="characters to extract in table order (default: 受信専用)",
     )
+    parser.add_argument(
+        "--active-height",
+        type=int,
+        choices=(10, 16),
+        default=10,
+        help="active rows inside the 16-row cell: 10 for regular, 16 for startup extra-large",
+    )
     return parser.parse_args()
 
 
@@ -182,7 +194,9 @@ def main() -> None:
     characters = tuple(args.characters)
     glyphs = read_glyphs(args.bdf, characters)
     for character in characters:
-        resized = resize_glyph(glyphs[character], args.width, character=character)
+        resized = resize_glyph(
+            glyphs[character], active_height=args.active_height, width=args.width, character=character
+        )
         print(format_initializer(character, to_page_bytes(resized, args.width)))
 
 

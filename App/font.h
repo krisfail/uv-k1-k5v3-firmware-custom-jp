@@ -21,12 +21,15 @@
 
 #define FONT_CODE_MAX 0xFF
 
-/* Large glyphs occupy two 8-row OLED pages.  The editor and the renderer
- * use the same display-coordinate contract: rows 0-1 are top padding, rows
- * 2-11 are the normal glyph area, and rows 12-15 are bottom padding. */
+/* Large glyphs are stored as two complete 8-row OLED pages.  The zero bits
+ * in a glyph are part of that glyph's bitmap; they are not a separate
+ * padding field.  The visible bounds therefore remain glyph-specific. */
 #define FONT_BIG_CELL_ROWS 16u
-#define FONT_BIG_TOP_PADDING 2u
-#define FONT_BIG_BOTTOM_PADDING 4u
+#define FONT_BIG_PAGE_ROWS 8u
+
+/* Startup-only Japanese glyphs deliberately use the full 16-row cell.  This
+ * table is independent from the regular 7-column font so its shape is not
+ * constrained by the normal menu font's baseline. */
 #define FONT_JP_EXTRA_LARGE_WIDTH 10u
 #define FONT_JP_EXTRA_LARGE_PAGES 2u
 #define FONT_JP_EXTRA_LARGE_BYTES (FONT_JP_EXTRA_LARGE_WIDTH * FONT_JP_EXTRA_LARGE_PAGES)

@@ -71,10 +71,20 @@ class ReceiveUiAndToneTests(unittest.TestCase):
     def test_large_font_uses_one_source_coordinate_system(self) -> None:
         header = read("App/font.h")
         helper = read("App/ui/helper.c")
-        self.assertIn("#define FONT_BIG_TOP_PADDING 2u", header)
-        self.assertIn("#define FONT_BIG_BOTTOM_PADDING 4u", header)
-        self.assertIn("same display rows as", helper)
+        self.assertIn("#define FONT_BIG_PAGE_ROWS 8u", header)
+        self.assertIn("UI_CenteredStart", helper)
+        self.assertIn("UI_CopyLargeGlyph", helper)
+        self.assertIn("UI_PrintStringBufferClipped", helper)
+        self.assertIn("capacity - offset", helper)
+        self.assertIn("glyph data itself decides which rows are lit", helper)
         self.assertNotIn("FONT_BIG_JAPANESE_RENDER_SHIFT", helper)
+
+    def test_inverse_small_text_reuses_centering_and_clips_edges(self) -> None:
+        helper = read("App/ui/helper.c")
+        self.assertIn("const uint8_t x_start = UI_CenteredStart", helper)
+        self.assertIn("if (length == 0u || Line == 0u || Line >= line_count || x_start >= LCD_WIDTH)", helper)
+        self.assertIn("if (x_start > 0u)", helper)
+        self.assertIn("if (x_end < LCD_WIDTH)", helper)
 
 
 if __name__ == "__main__":

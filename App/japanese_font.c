@@ -4,9 +4,9 @@
  * ASCII font.  0x80..0x97 are the original UI kanji, 0x98/0x99 are
  * independently reduced from the public-domain Izumi 16 font, 0xD9..0xDD
  * restore the large katakana glyphs used by the existing Japanese labels,
- * and 0xE0..0xFF are Japanese labels added for the K1 display.  Their bytes
- * already use the common large-glyph display rows (top 2, glyph area 10,
- * bottom 4). */
+ * and 0xE0..0xFF are Japanese labels added for the K1 display. All entries
+ * use the fixed 14-byte, two-page format; each glyph retains its own visible
+ * top and bottom bounds. */
 const uint8_t gFontBigJapanese[FONT_CODE_MAX - 0x7F + 1][14] =
 {
     [0x80 - 0x7F] = {0x68,0xb8,0xa8,0xb8,0xa8,0xb4,0x64,0x10,0x10,0x0a,0x04,0x0a,0x11,0x10},
@@ -136,7 +136,7 @@ const uint8_t gFontBigJapanese[FONT_CODE_MAX - 0x7F + 1][14] =
 /* Keep the extra-large table sparse so the same source remains suitable for
  * K5 as well as K1/K5 V3. These four 10x16 cells are independent,
  * low-resolution reconstructions guided by the public-domain Izumi 16 bitmap
- * font, with the same top/bottom padding as the normal font. */
+ * font, with each glyph retaining its own stored top/bottom extent. */
 const uint8_t gFontJapaneseExtraLargeCodes[FONT_JP_EXTRA_LARGE_GLYPHS] = {
     0x80,  // 受
     0x81,  // 信

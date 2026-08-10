@@ -26,6 +26,22 @@ SHARED_GLYPH_LABELS = dict(zip(
     range(0x80, 0x98),
     "受信変調追加保存削除名長短押音電源更圧表示画面無",
 ))
+FONT_ELEMENT_CODES = {
+    "gFontSmall": tuple(range(0x21, 0x7F)),
+    "gFontSmallBold": tuple(range(0x21, 0x7F)),
+    "gFont3x5": tuple(range(0x20, 0x80)),
+    "gFontSmallDigits": tuple(range(0x30, 0x3A)) + (0x2D,),
+    "gFontBigDigits": tuple(range(0x30, 0x3A)) + (0x2D,),
+}
+
+
+def font_element_label(name: str, index: int) -> str:
+    codes = FONT_ELEMENT_CODES.get(name)
+    if codes is None or index >= len(codes):
+        return f"element {index}"
+    code = codes[index]
+    character = chr(code) if 0x20 <= code < 0x7F else ""
+    return f"0x{code:02X}{f' {character}' if character else ''}"
 
 
 @dataclass
@@ -69,6 +85,26 @@ class Array:
         if not self.glyphs:
             return None
         return [bytes(glyph["bytes"]) for glyph in self.glyphs]
+
+    @property
+    def editable_chunks(self) -> list[dict]:
+        """Describe non-glyph arrays as independently editable byte chunks."""
+        if self.glyphs is not None:
+            return []
+        chunk_size = self.element_width or 64
+        if chunk_size <= 0 or chunk_size > 64:
+            chunk_size = 64
+        chunks = []
+        for index, offset in enumerate(range(0, len(self.values), chunk_size)):
+            length = min(chunk_size, len(self.values) - offset)
+            label = font_element_label(self.name, index) if self.category == "font" else f"element {index}"
+            chunks.append({
+                "index": index,
+                "offset": offset,
+                "length": length,
+                "label": label,
+            })
+        return chunks
 
 
 def remove_comments(text: str) -> str:
@@ -169,19 +205,32 @@ def parse_values(initializer: str) -> bytes:
 
 
 def comment_label(comment: str) -> str | None:
-    """Extract the human annotation after a glyph initializer."""
+    """Extract all human annotation fragments after a glyph initializer.
+
+    Some tables use two comments, for example ``//0x98 専 //（自作）``.
+    Keeping both fragments makes the generated inventory round-trip the
+    source annotation instead of silently replacing it with the last comment.
+    """
     parts = [part.strip() for part in comment.split("//") if part.strip()]
     if not parts:
         return None
-    candidate = parts[-1]
-    candidate = re.sub(r"^0[xX][0-9A-Fa-f]+\s*", "", candidate)
-    candidate = candidate.strip(" ,")
-    if len(candidate) >= 2 and candidate[0] in "'\"" and candidate[-1] == candidate[0]:
-        candidate = candidate[1:-1].strip()
-    return candidate or None
+    labels = []
+    for part in parts:
+        candidate = re.sub(r"^0[xX][0-9A-Fa-f]+\s*", "", part)
+        candidate = candidate.strip(" ,")
+        if len(candidate) >= 2 and candidate[0] in "'\"" and candidate[-1] == candidate[0]:
+            candidate = candidate[1:-1].strip()
+        if candidate:
+            labels.append(candidate)
+    return " ".join(labels) or None
 
 
-def parse_glyph_annotations(name: str, initializer: str, element_width: int | None) -> list[dict] | None:
+def parse_glyph_annotations(
+    name: str,
+    initializer: str,
+    element_width: int | None,
+    declared_count: int | None = None,
+) -> list[dict] | None:
     """Return code-point and label annotations for Japanese glyph tables."""
     if name == "gFontBig" and element_width == 14:
         # The source keeps a disabled space glyph as a line comment.  Do not
@@ -202,6 +251,19 @@ def parse_glyph_annotations(name: str, initializer: str, element_width: int | No
                 label = chr(code)
             glyphs.append({"code": code, "label": label, "bytes": values,
                            "occupied": any(values), "source_index": index})
+        if declared_count is not None:
+            if len(glyphs) > declared_count:
+                raise ValueError(
+                    f"{name} contains {len(glyphs)} glyphs but declares {declared_count}"
+                )
+            for index in range(len(glyphs), declared_count):
+                glyphs.append({
+                    "code": 0x21 + index,
+                    "label": None,
+                    "bytes": bytes(element_width),
+                    "occupied": False,
+                    "source_index": index,
+                })
         return glyphs
 
     if name == "gFontJapaneseExtraLarge" and element_width == 20:
@@ -275,8 +337,13 @@ def parse_source(
         values = parse_values(text[opening + 1 : closing])
         dimensions = re.findall(r"\[([^\]]*)\]", match.group("dims"))
         width = eval_dimension(dimensions[-1]) if dimensions else None
+        if width is None and len(dimensions) == 1:
+            # A one-dimensional byte table is one editable byte per element,
+            # even when its declared length is a macro.
+            width = 1
         initializer = text[opening + 1 : closing]
-        glyphs = parse_glyph_annotations(match.group("name"), initializer, width)
+        declared_count = eval_dimension(dimensions[0]) if dimensions else None
+        glyphs = parse_glyph_annotations(match.group("name"), initializer, width, declared_count)
         if glyphs:
             # Designated initializers omit blank slots from the source text;
             # the inventory must still represent the complete runtime table.
@@ -294,16 +361,89 @@ def xml_text(value: str) -> str:
     return html.escape(value, quote=True)
 
 
-def draw_bytes(lines: list[str], data: bytes, x: int, y: int, scale: int, label: str) -> int:
+def append_grid_pattern(lines: list[str], scale: int) -> str:
+    pattern_id = f"cell-grid-{scale}"
+    lines.extend([
+        f'<pattern id="{pattern_id}" width="{scale}" height="{scale}" patternUnits="userSpaceOnUse">',
+        f'<rect width="{scale}" height="{scale}" fill="#f1f1f1"/>',
+        f'<path d="M {scale} 0H0V{scale}" fill="none" stroke="#d6dde4" stroke-width="1"/>',
+        "</pattern>",
+    ])
+    return pattern_id
+
+
+def bitmap_path(data: bytes, width: int, rows: int, x: int, y: int, scale: int) -> str:
+    """Return one compact path containing only lit horizontal runs."""
+    commands: list[str] = []
+    for row in range(rows):
+        page = row // 8
+        bit = 1 << (row % 8)
+        column = 0
+        while column < width:
+            index = page * width + column
+            if index >= len(data) or not data[index] & bit:
+                column += 1
+                continue
+            start = column
+            column += 1
+            while column < width:
+                index = page * width + column
+                if index >= len(data) or not data[index] & bit:
+                    break
+                column += 1
+            run_width = (column - start) * scale - 1
+            commands.append(
+                f"M{x + start * scale},{y + row * scale}"
+                f"h{run_width}v{scale - 1}h-{run_width}z"
+            )
+    return "".join(commands)
+
+
+def draw_bitmap(
+    lines: list[str], data: bytes, x: int, y: int, scale: int, label: str,
+    width: int, rows: int, pattern_id: str,
+) -> int:
     lines.append(f'<text x="{x}" y="{y - 7}" class="sub">{xml_text(label)}</text>')
-    for column, value in enumerate(data):
-        for row in range(8):
-            fill = "#111111" if (value >> row) & 1 else "#f1f1f1"
-            lines.append(f'<rect x="{x + column * scale}" y="{y + row * scale}" width="{scale - 1}" height="{scale - 1}" fill="{fill}"/>')
-    return y + (8 * scale)
+    lines.append(
+        f'<rect x="{x}" y="{y}" width="{width * scale}" height="{rows * scale}" '
+        f'fill="url(#{pattern_id})"/>'
+    )
+    path = bitmap_path(data, width, rows, x, y, scale)
+    if path:
+        lines.append(f'<path d="{path}" fill="#111111" shape-rendering="crispEdges"/>')
+    return y + rows * scale
 
 
-def draw_glyph_atlas(lines: list[str], array: Array, x: int, y: int, scale: int) -> int:
+def draw_font_elements(
+    lines: list[str], array: Array, x: int, y: int, scale: int, pattern_id: str,
+) -> int:
+    if not array.element_width or len(array.values) % array.element_width:
+        raise ValueError(f"{array.label} has incomplete font elements")
+    element_width = array.element_width
+    element_count = len(array.values) // element_width
+    per_row = 12 if element_width <= 7 else 8
+    cell_width = element_width * scale + 24
+    cell_height = 8 * scale + 30
+    for index in range(element_count):
+        cell_x = x + (index % per_row) * cell_width
+        cell_y = y + (index // per_row) * cell_height
+        offset = index * element_width
+        draw_bitmap(
+            lines,
+            array.values[offset : offset + element_width],
+            cell_x,
+            cell_y,
+            scale,
+            font_element_label(array.name, index),
+            element_width,
+            8,
+            pattern_id,
+        )
+    rows = (element_count + per_row - 1) // per_row
+    return y + rows * cell_height
+
+
+def draw_glyph_atlas(lines: list[str], array: Array, x: int, y: int, scale: int, pattern_id: str) -> int:
     layout = array.glyph_layout
     if layout is None:
         raise ValueError(f"no glyph layout for {array.name}")
@@ -323,19 +463,16 @@ def draw_glyph_atlas(lines: list[str], array: Array, x: int, y: int, scale: int)
         cell_x = x + (index % per_row) * cell_width
         cell_y = y + (index // per_row) * cell_height
         annotation = array.glyphs[index] if array.glyphs else None
-        code_label = f"0x{annotation['code']:02X}" if annotation else f"g{index:03d}"
+        code_label = f"0x{annotation['code']:02X}" if annotation else font_element_label(array.name, index)
         if annotation and annotation.get("label"):
             # Keep provenance in the inventory while keeping the compact SVG
             # cell label short enough not to overlap its neighbours.
             display_label = annotation["label"].split(" (", 1)[0]
             code_label += f" {display_label}"
-        lines.append(f'<text x="{cell_x}" y="{cell_y - 5}" class="sub">{xml_text(code_label)}</text>')
-        for page in range(pages):
-            page_data = glyph_data[index][page * glyph_width : (page + 1) * glyph_width]
-            for column, value in enumerate(page_data):
-                for row in range(8):
-                    fill = "#111111" if (value >> row) & 1 else "#f1f1f1"
-                    lines.append(f'<rect x="{cell_x + column * scale}" y="{cell_y + page * 8 * scale + row * scale}" width="{scale - 1}" height="{scale - 1}" fill="{fill}"/>')
+        draw_bitmap(
+            lines, glyph_data[index], cell_x, cell_y, scale, code_label,
+            glyph_width, pages * 8, pattern_id,
+        )
     rows = (glyph_count + per_row - 1) // per_row
     return y + rows * cell_height
 
@@ -345,10 +482,14 @@ def make_svg(arrays: list[Array], scale: int, wrap: int) -> str:
     lines = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" viewBox="0 0 {width} 100">',
         '<style>.title{font:bold 24px sans-serif}.meta{font:14px sans-serif}.section{font:bold 17px sans-serif}.sub{font:12px Consolas,monospace}</style>',
-        '<rect width="100%" height="100%" fill="white"/>',
+    ]
+    pattern_id = append_grid_pattern(lines, scale)
+    background_index = len(lines)
+    lines.append('<rect width="100%" height="100%" fill="white"/>')
+    lines.extend([
         '<text x="32" y="36" class="title">C bitmap/font atlas</text>',
         '<text x="32" y="60" class="meta">Each byte is one OLED column; bit 0 is at the top. Source order and conditional variants are preserved.</text>',
-    ]
+    ])
     y = 98
     for array in arrays:
         dims = "".join(f"[{d}]" for d in array.dimensions)
@@ -356,15 +497,20 @@ def make_svg(arrays: list[Array], scale: int, wrap: int) -> str:
         lines.append(f'<text x="32" y="{y + 20}" class="meta">source: {xml_text(array.source)}; element width: {array.element_width or "inferred"}</text>')
         y += 52
         if array.glyph_layout is not None:
-            y = draw_glyph_atlas(lines, array, 48, y + 20, scale) + 42
+            y = draw_glyph_atlas(lines, array, 48, y + 20, scale, pattern_id) + 42
+        elif array.category == "font" and array.element_width:
+            y = draw_font_elements(lines, array, 48, y + 20, scale, pattern_id) + 42
         else:
             for chunk_index in range(0, len(array.values), wrap):
                 chunk = array.values[chunk_index : chunk_index + wrap]
-                draw_bytes(lines, chunk, 48, y + 20, scale, f"byte offset +0x{chunk_index:04X}")
+                draw_bitmap(
+                    lines, chunk, 48, y + 20, scale,
+                    f"byte offset +0x{chunk_index:04X}", len(chunk), 8, pattern_id,
+                )
                 y += 8 * scale + 42
         y += 25
     lines[0] = lines[0].replace('viewBox="0 0 ' + str(width) + ' 100"', f'viewBox="0 0 {width} {y + 30}"')
-    lines[2] = f'<rect width="100%" height="{y + 30}" fill="white"/>'
+    lines[background_index] = f'<rect width="100%" height="{y + 30}" fill="white"/>'
     lines.append(f'<text x="32" y="{y + 5}" class="meta">arrays: {len(arrays)}; generated offline from C sources</text>')
     lines.append("</svg>")
     return "\n".join(lines) + "\n"
@@ -386,15 +532,20 @@ def make_markdown_inventory(arrays: list[Array]) -> str:
         "",
         "## 配列サマリー",
         "",
-        "| 配列 | 種類 | サイズ(byte) | 要素幅 | グリフ数 | 使用中 |",
+        "| 配列 | 種類 | サイズ(byte) | 要素幅 | 要素／グリフ数 | 使用中 |",
         "| --- | --- | ---: | ---: | ---: | ---: |",
     ]
     for array in arrays:
-        glyph_count = len(array.glyphs) if array.glyphs is not None else "—"
-        occupied = sum(glyph["occupied"] for glyph in array.glyphs) if array.glyphs else "—"
+        chunks = array.editable_chunks
+        element_count = len(array.glyphs) if array.glyphs is not None else len(chunks)
+        occupied = (
+            sum(glyph["occupied"] for glyph in array.glyphs)
+            if array.glyphs is not None
+            else sum(any(array.values[chunk["offset"] : chunk["offset"] + chunk["length"]]) for chunk in chunks)
+        )
         lines.append(
             f"| `{markdown_cell(array.label)}` | {array.category} | {len(array.values)} | "
-            f"{array.element_width or '—'} | {glyph_count} | {occupied} |"
+            f"{array.element_width or '—'} | {element_count} | {occupied} |"
         )
 
     for array in arrays:
@@ -455,7 +606,7 @@ def main() -> None:
     inventory = []
     for array in arrays:
         layout = array.glyph_layout
-        record = {"name": array.label, "category": array.category, "source": array.source, "dimensions": array.dimensions, "element_width": array.element_width, "size": len(array.values), "bytes_hex": array.values.hex(" "), "layout": f"glyph-{layout[1]}page" if layout else "column-strip"}
+        record = {"name": array.label, "category": array.category, "source": array.source, "dimensions": array.dimensions, "element_width": array.element_width, "size": len(array.values), "bytes_hex": array.values.hex(" "), "layout": f"glyph-{layout[1]}page" if layout else "column-strip", "element_count": len(array.glyphs) if array.glyphs is not None else len(array.editable_chunks)}
         if layout:
             record["glyph_width"] = layout[0]
             record["glyph_pages"] = layout[1]
@@ -467,6 +618,8 @@ def main() -> None:
                  "bytes_hex": bytes(glyph["bytes"]).hex(" ")}
                 for glyph in array.glyphs
             ]
+        else:
+            record["editable_chunks"] = array.editable_chunks
         inventory.append(record)
     (out / "bitmap_atlas_inventory.json").write_text(json.dumps({"sources": display_sources, "arrays": inventory}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     (out / "bitmap_atlas.svg").write_text(make_svg(arrays, args.scale, args.wrap), encoding="utf-8")

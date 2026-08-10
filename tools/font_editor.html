@@ -13,8 +13,8 @@ p { margin: 6px 0 14px; }
 .panel { background: white; border: 1px solid #ccd4dc; border-radius: 8px; padding: 14px; margin: 12px 0; }
 .toolbar, .selectors, .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
 label { font-weight: 600; }
-select, input[type=file], button, textarea { font: inherit; }
-button, select { border: 1px solid #98a6b5; border-radius: 5px; background: #fff; padding: 5px 9px; }
+select, input[type=file], input[type=text], button, textarea { font: inherit; }
+button, select, input[type=text] { border: 1px solid #98a6b5; border-radius: 5px; background: #fff; padding: 5px 9px; }
 button { cursor: pointer; }
 button:hover { background: #edf4fb; }
 button:disabled { cursor: not-allowed; opacity: .5; }
@@ -29,12 +29,17 @@ button:disabled { cursor: not-allowed; opacity: .5; }
 .cell.glyph-area { background: #fffbea; }
 .cell.bottom-padding { background: #eef1f4; }
 .cell.on { background: #18212b; border-color: #18212b; }
+.cell.diff-added { box-shadow: inset 0 0 0 2px #c62828; }
+.cell.diff-removed { box-shadow: inset 0 0 0 2px #1565c0; }
 .cell:focus { outline: 2px solid #1976d2; outline-offset: -2px; }
 textarea { box-sizing: border-box; width: 100%; min-height: 92px; resize: vertical; font-family: ui-monospace, Consolas, monospace; font-size: .85rem; }
 .output { margin-top: 12px; }
 .output h2 { font-size: 1rem; margin: 0 0 6px; }
 .legend { display: inline-flex; align-items: center; gap: 5px; margin-left: 12px; font-weight: 400; font-size: .85rem; }
 .swatch { display: inline-block; width: 14px; height: 14px; border: 1px solid #7e8b98; background: #18212b; }
+.diff-swatch { display: inline-block; width: 14px; height: 14px; border: 1px solid #7e8b98; background: #f9fbfc; box-shadow: inset 0 0 0 2px #1565c0; }
+.diff-swatch.added { background: #18212b; border-color: #c62828; box-shadow: inset 0 0 0 2px #c62828; }
+.diff-summary { display: block; margin-top: 6px; color: #173b5c; font-size: .88rem; }
 .layout-guide { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; margin: 10px 0; padding: 9px 10px; border: 1px solid #b8c7d6; border-radius: 5px; background: #f7fbff; }
 .layout-guide strong { color: #173b5c; }
 .layout-guide .guide-note { color: #52616f; font-size: .88rem; }
@@ -42,13 +47,16 @@ textarea { box-sizing: border-box; width: 100%; min-height: 92px; resize: vertic
 .guide-top { background: #eaf2ff; }
 .guide-glyph { background: #fffbea; }
 .guide-bottom { background: #eef1f4; }
+.string-preview { overflow: auto; border: 1px solid #ccd4dc; background: #f9fbfc; padding: 10px; }
+#stringPreview { display: block; image-rendering: pixelated; max-width: 100%; height: auto; }
+.preview-summary { min-height: 1.3em; margin-top: 7px; color: #52616f; font-size: .88rem; }
 @media (max-width: 760px) { .editor { grid-template-columns: 1fr; } main { padding: 12px; } }
 </style>
 </head>
 <body>
 <main>
   <h1>WRX-JP フォント・ドット編集</h1>
-  <p>フォント台帳の1字形をクリック編集し，ファームウェアへ貼り付けるC初期化子を生成します．ソースは自動変更しません．</p>
+  <p>フォント台帳の字形と注釈を編集し，ファームウェアへ反映するC初期化子または全変更JSONパッチを生成します．ソースは自動変更しません．</p>
 
   <section class="panel">
     <div class="toolbar">
@@ -56,7 +64,7 @@ textarea { box-sizing: border-box; width: 100%; min-height: 92px; resize: vertic
       <input id="inventoryFile" type="file" accept=".json,application/json">
       <button id="loadDefault" type="button">標準台帳を読み込む</button>
     </div>
-    <div class="hint">リポジトリ直下でローカルHTTPサーバーを起動した場合は「標準台帳を読み込む」が使えます．file://で開く場合はJSONを選択してください．</div>
+    <div class="hint">フォントの全字形とBitmap配列の各要素を選択して，ドットと注釈を編集できます．字形を切り替えても変更は保持されます．リポジトリ直下でローカルHTTPサーバーを起動した場合は「標準台帳を読み込む」が使えます．file://で開く場合はJSONを選択してください．</div>
     <div id="status" class="status" role="status">台帳JSONを読み込んでください．</div>
   </section>
 
@@ -64,8 +72,11 @@ textarea { box-sizing: border-box; width: 100%; min-height: 92px; resize: vertic
     <div class="selectors">
       <label for="arraySelect">配列</label>
       <select id="arraySelect" disabled></select>
-      <label for="glyphSelect">字形</label>
+      <label for="glyphSelect">要素／字形</label>
       <select id="glyphSelect" disabled></select>
+      <label for="annotationInput">注釈</label>
+      <input id="annotationInput" type="text" size="28" placeholder="例: 専（自作）" disabled>
+      <span id="pendingSummary" class="hint" aria-live="polite">保留中の変更: 0件</span>
       <button id="undo" type="button" disabled>元に戻す</button>
       <button id="redo" type="button" disabled>やり直す</button>
       <button id="reset" type="button" disabled>読込時に戻す</button>
@@ -81,17 +92,31 @@ textarea { box-sizing: border-box; width: 100%; min-height: 92px; resize: vertic
     </div>
   </section>
 
+  <section class="panel">
+    <div class="toolbar">
+      <label for="previewText">文字列プレビュー</label>
+      <input id="previewText" type="text" value="" placeholder="例: 受信専用" disabled>
+      <button id="previewSample" type="button" disabled>例を入れる</button>
+    </div>
+    <div class="hint">選択中の配列に含まれる字形を，入力した文字列の順に横へ並べて表示します．現在編集中の字形は編集内容を反映します．未登録の文字は赤枠で表示します．</div>
+    <div class="string-preview"><canvas id="stringPreview" aria-label="文字列プレビュー"></canvas></div>
+    <div id="previewSummary" class="preview-summary" aria-live="polite">台帳を読み込むとプレビューできます．</div>
+  </section>
+
   <section class="panel editor">
     <div>
       <div class="hint">黒が点灯，白が消灯です．左ドラッグで連続編集，右ドラッグで消去できます．セルをキーボードで選択してSpace/Enterでも編集できます．各バイトはOLED列で，bit 0が上側です．
         <span class="legend"><span class="swatch"></span>点灯</span>
+        <span class="legend"><span class="diff-swatch added"></span>元は消灯・現在は点灯</span>
+        <span class="legend"><span class="diff-swatch"></span>元は点灯・現在は消灯</span>
+        <span id="diffSummary" class="diff-summary" aria-live="polite">元データとの差分: 変更なし</span>
       </div>
       <div id="layoutGuide" class="layout-guide" aria-live="polite">
-        <strong>表示位置の基準</strong>
-        <span id="layoutSummary" class="guide-note">大字形16行: 上2行・下4行</span>
-        <span class="guide-chip guide-top">上余白 2行</span>
-        <span class="guide-chip guide-glyph">字形領域 10行</span>
-        <span class="guide-chip guide-bottom">下余白 4行</span>
+        <strong>表示位置</strong>
+        <span id="layoutSummary" class="guide-note">配列を選ぶと表示形式を示します</span>
+        <span id="guideTop" class="guide-chip guide-top">通常大字形の参考上余白</span>
+        <span id="guideGlyph" class="guide-chip guide-glyph">通常大字形の参考字形領域</span>
+        <span id="guideBottom" class="guide-chip guide-bottom">通常大字形の参考下余白</span>
         <span id="glyphSummary" class="guide-note"></span>
       </div>
       <div class="grid-wrap"><div id="grid" aria-label="ドット編集グリッド"></div></div>
@@ -107,9 +132,9 @@ textarea { box-sizing: border-box; width: 100%; min-height: 92px; resize: vertic
         <div class="actions"><button id="copyC" type="button" disabled>C初期化子をコピー</button></div>
       </div>
       <div class="output">
-        <h2>JSONパッチ</h2>
+        <h2>JSONパッチ（全変更）</h2>
         <textarea id="jsonOutput" readonly></textarea>
-        <div class="actions"><button id="downloadPatch" type="button" disabled>JSONパッチを保存</button></div>
+        <div class="actions"><button id="copyPatch" type="button" disabled>パッチをコピー</button><button id="downloadPatch" type="button" disabled>全変更を保存</button></div>
       </div>
     </div>
   </section>
@@ -120,10 +145,14 @@ textarea { box-sizing: border-box; width: 100%; min-height: 92px; resize: vertic
 const state = {
   inventory: null,
   fontArrays: [],
+  currentTargets: [],
   currentArray: null,
   currentGlyph: null,
   bytes: [],
   originalBytes: [],
+  currentLabel: "",
+  originalLabel: "",
+  edits: new Map(),
   history: [],
   future: [],
   activePointerId: null,
@@ -131,6 +160,7 @@ const state = {
   lastPoint: null,
   editChanged: false,
   drawValue: false,
+  previewTextDirty: false,
 };
 
 const $ = (id) => document.getElementById(id);
@@ -141,13 +171,72 @@ const status = (message, error = false) => {
 const hexBytes = (bytes) => bytes.map((value) => `0x${value.toString(16).padStart(2, "0")}`).join(", ");
 const displayLabel = (glyph) => {
   const label = glyph.label || "未注釈";
-  return label.split(" (", 1)[0];
+  const base = label.split(/\s+\(|（/u, 1)[0].trim();
+  return base || label;
 };
 const cloneBytes = (bytes) => bytes.slice();
+const plainHexBytes = (bytes) => bytes.map((value) => value.toString(16).padStart(2, "0")).join(" ");
+const normalizedLabel = (value) => String(value || "").trim();
+const sameBytes = (left, right) => left.length === right.length && left.every((byte, index) => byte === right[index]);
+
+function targetKey(array, target) {
+  return JSON.stringify([array.name, target.target_kind, target.code ?? null, target.offset ?? null, target.target_index]);
+}
+
+function snapshot() {
+  return { bytes: cloneBytes(state.bytes), label: state.currentLabel };
+}
+
+function restoreSnapshot(value) {
+  state.bytes = cloneBytes(value.bytes);
+  state.currentLabel = value.label;
+  $("annotationInput").value = state.currentLabel;
+}
+
+function workingLabel(target) {
+  if (state.currentGlyph && targetKey(state.currentArray, target) === targetKey(state.currentArray, state.currentGlyph)) {
+    return state.currentLabel;
+  }
+  const edit = state.edits.get(targetKey(state.currentArray, target));
+  return edit ? edit.label || "" : target.label || "";
+}
+
+function workingBytes(target) {
+  if (state.currentGlyph && targetKey(state.currentArray, target) === targetKey(state.currentArray, state.currentGlyph)) {
+    return state.bytes;
+  }
+  const edit = state.edits.get(targetKey(state.currentArray, target));
+  return edit ? parseBytes(edit.bytes_hex) : parseBytes(target.bytes_hex);
+}
+
+function stageCurrentTarget() {
+  if (!state.currentArray || !state.currentGlyph) return;
+  const original = parseBytes(state.currentGlyph.bytes_hex);
+  const label = normalizedLabel(state.currentLabel);
+  const originalLabel = normalizedLabel(state.currentGlyph.label);
+  const key = targetKey(state.currentArray, state.currentGlyph);
+  if (sameBytes(state.bytes, original) && label === originalLabel) {
+    state.edits.delete(key);
+    return;
+  }
+  state.edits.set(key, {
+    array: state.currentArray.name,
+    target_kind: state.currentGlyph.target_kind,
+    target_index: state.currentGlyph.target_index,
+    code: state.currentGlyph.target_kind === "glyph" ? state.currentGlyph.code : null,
+    offset: state.currentGlyph.target_kind === "bitmap" ? state.currentGlyph.offset : null,
+    label: label || null,
+    element_width: state.currentArray.element_width,
+    bytes_hex: plainHexBytes(state.bytes),
+  });
+}
+
+function pendingChanges() {
+  stageCurrentTarget();
+  return [...state.edits.values()];
+}
 
 const BIG_CELL_ROWS = 16;
-const BIG_TOP_PADDING = 2;
-const BIG_BOTTOM_PADDING = 4;
 function parseBytes(value) {
   const parts = Array.isArray(value) ? value : String(value || "").match(/0x[0-9a-f]+|[0-9a-f]+/gi) || [];
   const bytes = parts.map((part) => Array.isArray(value) ? Number(part) : Number.parseInt(part, 16));
@@ -158,56 +247,122 @@ function parseBytes(value) {
 }
 
 function selectedLayout() {
+  const width = Number(state.currentArray?.glyph_width);
+  const pages = Number(state.currentArray?.glyph_pages);
+  if (width > 0 && pages > 0) return { width, pages };
   return {
-    width: Number(state.currentArray.glyph_width),
-    pages: Number(state.currentArray.glyph_pages),
+    width: Math.max(1, state.bytes.length),
+    pages: 1,
   };
+}
+
+function targetEntries(array) {
+  if (Array.isArray(array.glyphs)) {
+    return array.glyphs.map((glyph, index) => ({
+      ...glyph,
+      target_kind: "glyph",
+      target_index: index,
+    }));
+  }
+  const sourceBytes = parseBytes(array.bytes_hex);
+  const configuredChunks = Array.isArray(array.editable_chunks) ? array.editable_chunks : [];
+  const inferredWidth = Number(array.element_width) || (Array.isArray(array.dimensions) && array.dimensions.length === 1 ? 1 : 64);
+  const chunkSize = Math.max(1, Math.min(inferredWidth, 64));
+  const chunks = configuredChunks.length ? configuredChunks : sourceBytes.reduce((result, _, offset) => {
+    if (offset % chunkSize === 0) result.push({ offset, length: Math.min(chunkSize, sourceBytes.length - offset), label: `element ${result.length}` });
+    return result;
+  }, []);
+  return chunks.map((chunk, index) => {
+    const offset = Number(chunk.offset);
+    const length = Number(chunk.length);
+    return {
+      code: `+0x${offset.toString(16).padStart(4, "0")}`,
+      label: chunk.label || `element ${index}`,
+      bytes_hex: plainHexBytes(sourceBytes.slice(offset, offset + length)),
+      target_kind: "bitmap",
+      target_index: index,
+      offset,
+      length,
+    };
+  });
 }
 
 function displayZone(row, rows) {
   if (rows !== BIG_CELL_ROWS) return "glyph-area";
-  if (row < BIG_TOP_PADDING) return "top-padding";
-  if (row >= rows - BIG_BOTTOM_PADDING) return "bottom-padding";
+  if (state.currentArray?.name === "gFontJapaneseExtraLarge") return "glyph-area";
+  if (!['gFontBig', 'gFontBigJapanese'].includes(state.currentArray?.name)) return "glyph-area";
+  const bounds = visibleRowBounds();
+  if (!bounds) return "glyph-area";
+  if (row < bounds.min) return "top-padding";
+  if (row > bounds.max) return "bottom-padding";
   return "glyph-area";
 }
 
 function setEnabled(enabled) {
   for (const id of ["arraySelect", "glyphSelect"]) $(id).disabled = !enabled;
-  for (const id of ["undo", "redo", "reset", "toolMode", "copyC", "downloadPatch"]) $(id).disabled = !enabled;
+  for (const id of ["undo", "redo", "reset", "toolMode", "copyC", "copyPatch", "downloadPatch", "annotationInput", "previewText", "previewSample"]) $(id).disabled = !enabled;
+}
+
+function previewSampleForArray() {
+  const name = state.currentArray?.name || "";
+  if (name === "gFontBigJapanese" || name === "gFontSmallJapanese" || name === "gFontJapaneseExtraLarge") return "受信専用";
+  if (name === "gFontBig" || name === "gFontSmall" || name === "gFontSmallBold") return "WRX-JP";
+  return state.currentTargets
+    .map((target) => displayLabel(target))
+    .filter((label) => label && label !== "未注釈" && Array.from(label).length === 1)
+    .slice(0, 8)
+    .join("");
+}
+
+function setPreviewSample() {
+  $("previewText").value = previewSampleForArray();
+  state.previewTextDirty = false;
+  renderStringPreview();
 }
 
 function loadInventory(data) {
   if (!data || !Array.isArray(data.arrays)) throw new Error("arraysを含む台帳JSONではありません");
-  const candidates = data.arrays.filter((array) => Array.isArray(array.glyphs) && array.glyph_width && array.glyph_pages);
-  if (!candidates.length) throw new Error("編集可能なフォント配列がありません");
+  const candidates = data.arrays.filter((array) => typeof array.bytes_hex === "string" && array.bytes_hex.trim());
+  if (!candidates.length) throw new Error("編集可能なフォント／Bitmap配列がありません");
   state.inventory = data;
   state.fontArrays = candidates;
+  state.edits.clear();
+  state.currentGlyph = null;
+  state.currentTargets = [];
   $("arraySelect").replaceChildren(...candidates.map((array, index) => new Option(`${array.name} (${array.category})`, String(index))));
-  const preferredArray = candidates.findIndex((array) => array.glyphs.some((glyph) => displayLabel(glyph) === "専"));
+  const preferredArray = candidates.findIndex((array) => targetEntries(array).some((target) => displayLabel(target) === "専"));
   $("arraySelect").value = String(preferredArray >= 0 ? preferredArray : 0);
   populateGlyphs();
   setEnabled(true);
-  status(`${candidates.length}個のフォント配列を読み込みました．`);
+  status(`${candidates.length}個のフォント／Bitmap配列を読み込みました．`);
 }
 
 function populateGlyphs() {
+  stageCurrentTarget();
   state.currentArray = state.fontArrays[Number($("arraySelect").value)];
-  const glyphs = state.currentArray.glyphs;
-  $("glyphSelect").replaceChildren(...glyphs.map((glyph, index) => new Option(`${glyph.code} ${displayLabel(glyph)}`, String(index))));
-  let preferred = glyphs.findIndex((glyph) => displayLabel(glyph) === "専");
-  if (preferred < 0) preferred = glyphs.findIndex((glyph) => displayLabel(glyph) === "用");
+  state.currentTargets = targetEntries(state.currentArray);
+  if (!state.previewTextDirty) $("previewText").value = previewSampleForArray();
+  $("glyphSelect").replaceChildren(...state.currentTargets.map((target, index) => new Option(`${target.code} ${displayLabel({ label: workingLabel(target) })}`, String(index))));
+  let preferred = state.currentTargets.findIndex((target) => displayLabel({ label: workingLabel(target) }) === "専");
+  if (preferred < 0) preferred = state.currentTargets.findIndex((target) => displayLabel({ label: workingLabel(target) }) === "用");
   $("glyphSelect").value = String(preferred >= 0 ? preferred : 0);
   selectGlyph();
 }
 
 function selectGlyph() {
-  state.currentGlyph = state.currentArray.glyphs[Number($("glyphSelect").value)];
-  state.bytes = parseBytes(state.currentGlyph.bytes_hex);
+  stageCurrentTarget();
+  state.currentGlyph = state.currentTargets[Number($("glyphSelect").value)];
+  if (!state.currentGlyph) throw new Error("編集対象がありません");
+  const edit = state.edits.get(targetKey(state.currentArray, state.currentGlyph));
+  state.bytes = edit ? parseBytes(edit.bytes_hex) : parseBytes(state.currentGlyph.bytes_hex);
+  state.currentLabel = edit ? edit.label || "" : state.currentGlyph.label || "";
+  state.originalLabel = state.currentGlyph.label || "";
+  $("annotationInput").value = state.currentLabel;
   const { width, pages } = selectedLayout();
   if (state.bytes.length !== width * pages) {
     throw new Error(`${state.currentArray.name} の ${state.currentGlyph.code} は ${width * pages}バイト必要です`);
   }
-  state.originalBytes = cloneBytes(state.bytes);
+  state.originalBytes = parseBytes(state.currentGlyph.bytes_hex);
   state.history = [];
   state.future = [];
   render();
@@ -218,9 +373,51 @@ function pixelIndex(x, y) {
   return Math.floor(y / 8) * width + x;
 }
 
-function pixelOn(x, y) {
+function pixelOnIn(bytes, x, y) {
   const index = pixelIndex(x, y);
-  return Boolean(state.bytes[index] & (1 << (y % 8)));
+  return Boolean(bytes[index] & (1 << (y % 8)));
+}
+
+function pixelOn(x, y) {
+  return pixelOnIn(state.bytes, x, y);
+}
+
+function diffClass(x, y) {
+  const current = pixelOnIn(state.bytes, x, y);
+  const original = pixelOnIn(state.originalBytes, x, y);
+  if (current && !original) return "diff-added";
+  if (!current && original) return "diff-removed";
+  return "";
+}
+
+function bitCount(value) {
+  let count = 0;
+  for (let bits = value; bits; bits &= bits - 1) count += 1;
+  return count;
+}
+
+function renderDiffSummary() {
+  if (!state.currentGlyph) {
+    $("diffSummary").textContent = "元データとの差分: 変更なし";
+    return;
+  }
+  const length = Math.max(state.bytes.length, state.originalBytes.length);
+  let changedBytes = 0;
+  let addedBits = 0;
+  let removedBits = 0;
+  for (let index = 0; index < length; index += 1) {
+    const current = state.bytes[index] || 0;
+    const original = state.originalBytes[index] || 0;
+    const changed = current ^ original;
+    if (!changed) continue;
+    changedBytes += 1;
+    addedBits += bitCount(current & changed);
+    removedBits += bitCount(original & changed);
+  }
+  const totalBits = addedBits + removedBits;
+  $("diffSummary").textContent = totalBits
+    ? `元データとの差分: ${totalBits} bit（追加 ${addedBits} / 削除 ${removedBits}），${changedBytes} byte`
+    : "元データとの差分: 変更なし";
 }
 
 function setPixel(x, y, on) {
@@ -245,12 +442,15 @@ function updateCell(x, y) {
   if (!cell) return;
   const on = pixelOn(x, y);
   cell.classList.toggle("on", on);
+  cell.classList.remove("diff-added", "diff-removed");
+  const difference = diffClass(x, y);
+  if (difference) cell.classList.add(difference);
   cell.setAttribute("aria-pressed", String(on));
   cell.setAttribute("aria-label", `列${x + 1} 行${y + 1} ${on ? "点灯" : "消灯"}`);
 }
 
 function beginPointerEdit() {
-  state.activeEditBefore = cloneBytes(state.bytes);
+  state.activeEditBefore = snapshot();
   state.editChanged = false;
   state.lastPoint = null;
 }
@@ -258,7 +458,7 @@ function beginPointerEdit() {
 function commitPointerEdit(cancel = false) {
   const before = state.activeEditBefore;
   if (before && state.editChanged) {
-    if (cancel) state.bytes = before;
+    if (cancel) restoreSnapshot(before);
     else {
       state.history.push(before);
       state.future = [];
@@ -344,7 +544,7 @@ function editFromKeyboard(event) {
   event.preventDefault();
   const x = Number(cell.dataset.x);
   const y = Number(cell.dataset.y);
-  const before = cloneBytes(state.bytes);
+  const before = snapshot();
   const on = !pixelOn(x, y);
   if (!setPixel(x, y, on)) return;
   state.history.push(before);
@@ -364,16 +564,18 @@ function renderGrid() {
     const cell = document.createElement("button");
     cell.type = "button";
     const zone = displayZone(y, rows);
-    cell.className = `cell ${zone}${pixelOn(x, y) ? " on" : ""}`;
+    const on = pixelOn(x, y);
+    const difference = diffClass(x, y);
+    cell.className = `cell ${zone}${on ? " on" : ""}${difference ? ` ${difference}` : ""}`;
     cell.dataset.x = String(x);
     cell.dataset.y = String(y);
-    cell.setAttribute("aria-pressed", String(pixelOn(x, y)));
-    cell.setAttribute("aria-label", `列${x + 1} 行${y + 1} ${pixelOn(x, y) ? "点灯" : "消灯"}`);
+    cell.setAttribute("aria-pressed", String(on));
+    cell.setAttribute("aria-label", `列${x + 1} 行${y + 1} ${on ? "点灯" : "消灯"}`);
     grid.appendChild(cell);
   }
 }
 
-function visibleBounds() {
+function visibleRowBounds() {
   const { width, pages } = selectedLayout();
   const rows = pages * 8;
   let min = rows;
@@ -381,38 +583,140 @@ function visibleBounds() {
   for (let y = 0; y < rows; y += 1) for (let x = 0; x < width; x += 1) {
     if (pixelOn(x, y)) { min = Math.min(min, y); max = Math.max(max, y); }
   }
-  return max < 0 ? "点灯なし" : `点灯範囲: 表示行${min + 1}–${max + 1}`;
+  return max < 0 ? null : { min, max, rows };
+}
+
+function visibleBounds() {
+  const bounds = visibleRowBounds();
+  if (!bounds) return "点灯なし";
+  const { min, max } = bounds;
+  return `点灯範囲: 表示行${min + 1}–${max + 1}`;
+}
+
+function rowRangeLabel(first, last) {
+  return first > last ? "なし" : `表示行${first + 1}–${last + 1}`;
 }
 
 function renderLayoutGuide() {
   const { width, pages } = selectedLayout();
   const rows = pages * 8;
-  if (rows === BIG_CELL_ROWS) {
-    const kind = width === 10 ? "日本語特大字形" : "大字形";
-    $("layoutSummary").textContent = `${kind} ${width}列×${rows}行: 欧文・日本語共通 / 上2行・下4行`;
+  const extraLarge = rows === BIG_CELL_ROWS && state.currentArray.name === "gFontJapaneseExtraLarge";
+  const referenceLarge = rows === BIG_CELL_ROWS && ['gFontBig', 'gFontBigJapanese'].includes(state.currentArray.name);
+  $("guideTop").hidden = !referenceLarge;
+  $("guideGlyph").hidden = !referenceLarge;
+  $("guideBottom").hidden = !referenceLarge;
+  if (extraLarge) {
+    $("layoutSummary").textContent = `${width}列×${rows}行の特大字形: 16行すべてが字形領域（固定余白なし）`;
+  } else if (referenceLarge) {
+    const bounds = visibleRowBounds();
+    $("layoutSummary").textContent = `${width}列×${rows}行の通常大字形: 選択字形の実データ範囲を表示（固定の上下余白なし）`;
+    $("guideTop").textContent = `${rowRangeLabel(0, bounds ? bounds.min - 1 : -1)}: 実データ上余白`;
+    $("guideGlyph").textContent = `${rowRangeLabel(bounds ? bounds.min : 0, bounds ? bounds.max : -1)}: 実データ字形範囲`;
+    $("guideBottom").textContent = `${rowRangeLabel(bounds ? bounds.max + 1 : 0, rows - 1)}: 実データ下余白`;
   } else {
-    $("layoutSummary").textContent = `小字形 ${width}列×${rows}行: bit 0が上（大字形の上下基準は適用しない）`;
+    $("layoutSummary").textContent = `${state.currentArray.category} ${width}列×${rows}行: bit 0が上（固定余白なし）`;
   }
   $("glyphSummary").textContent = state.currentGlyph ? ` / ${visibleBounds()}` : "";
 }
 
 function renderOutputs() {
+  const changes = pendingChanges();
+  const code = state.currentGlyph.code;
+  const label = state.currentLabel || "未注釈";
   const bytes = hexBytes(state.bytes);
   $("hexOutput").value = bytes;
-  $("cOutput").value = `{${bytes}}, //${state.currentGlyph.code} ${displayLabel(state.currentGlyph)}`;
-  $("jsonOutput").value = JSON.stringify({ array: state.currentArray.name, code: state.currentGlyph.code,
-    label: state.currentGlyph.label || null, element_width: state.currentArray.element_width, bytes_hex: bytes }, null, 2);
+  const comment = state.currentGlyph.target_kind === "bitmap"
+    ? `// ${state.currentArray.name} +0x${state.currentGlyph.offset.toString(16).padStart(4, "0")} ${label}`
+    : `//${code} ${label}`;
+  $("cOutput").value = `{${bytes}}, ${comment}`;
+  $("jsonOutput").value = JSON.stringify({
+    array: state.currentArray.name,
+    target_kind: state.currentGlyph.target_kind,
+    code: state.currentGlyph.target_kind === "glyph" ? code : null,
+    offset: state.currentGlyph.target_kind === "bitmap" ? state.currentGlyph.offset : null,
+    label: state.currentLabel || null,
+    element_width: state.currentArray.element_width,
+    bytes_hex: plainHexBytes(state.bytes),
+  }, null, 2);
+  $("annotationInput").value = state.currentLabel;
+  $("jsonOutput").value = JSON.stringify({
+    format: "wrx-jp-font-patch-v1",
+    source: "bitmap_atlas_inventory.json",
+    changes,
+  }, null, 2);
+  $("pendingSummary").textContent = `保留中の変更: ${changes.length}件`;
   $("undo").disabled = state.history.length === 0;
   $("redo").disabled = state.future.length === 0;
+  renderDiffSummary();
+  renderStringPreview();
+}
+
+function renderStringPreview() {
+  const canvas = $("stringPreview");
+  const summary = $("previewSummary");
+  if (!state.currentArray || !state.currentTargets.length) {
+    canvas.width = 1;
+    canvas.height = 1;
+    summary.textContent = "台帳を読み込むとプレビューできます．";
+    return;
+  }
+  const { width, pages } = selectedLayout();
+  const rows = pages * 8;
+  const scale = 4;
+  const gap = 5;
+  const text = $("previewText").value;
+  const byLabel = new Map();
+  for (const target of state.currentTargets) {
+    const label = displayLabel({ label: workingLabel(target) });
+    if (label && label !== "未注釈" && !byLabel.has(label)) byLabel.set(label, target);
+  }
+  const entries = Array.from(text).map((character) => ({ character, target: byLabel.get(character) || null }));
+  const tileWidth = width * scale;
+  const canvasWidth = Math.max(1, entries.length ? entries.length * (tileWidth + gap) - gap : 1);
+  canvas.width = canvasWidth;
+  canvas.height = Math.max(1, rows * scale);
+  canvas.style.width = `${canvasWidth}px`;
+  canvas.style.height = `${canvas.height}px`;
+  const context = canvas.getContext("2d");
+  context.fillStyle = "#f9fbfc";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  const missing = [];
+  entries.forEach(({ character, target }, entryIndex) => {
+    const originX = entryIndex * (tileWidth + gap);
+    if (!target) {
+      missing.push(character);
+      context.fillStyle = "#fff0f0";
+      context.fillRect(originX, 0, tileWidth, canvas.height);
+      context.strokeStyle = "#c62828";
+      context.lineWidth = 2;
+      context.strokeRect(originX + 1, 1, Math.max(0, tileWidth - 2), Math.max(0, canvas.height - 2));
+      context.fillStyle = "#b3261e";
+      context.font = `${Math.max(12, scale * 3)}px system-ui, sans-serif`;
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillText(character, originX + tileWidth / 2, canvas.height / 2);
+      return;
+    }
+    const bytes = workingBytes(target);
+    context.fillStyle = "#18212b";
+    for (let y = 0; y < rows; y += 1) for (let x = 0; x < width; x += 1) {
+      if (pixelOnIn(bytes, x, y)) context.fillRect(originX + x * scale, y * scale, scale, scale);
+    }
+  });
+  const uniqueMissing = [...new Set(missing)].join("");
+  summary.textContent = text
+    ? `${entries.length}文字を表示${uniqueMissing ? `．未登録: ${uniqueMissing}` : ""}`
+    : "文字列を入力してください．";
 }
 
 function render() { if (state.currentGlyph) { renderLayoutGuide(); renderGrid(); renderOutputs(); } }
-function undo() { if (state.history.length) { state.future.push(cloneBytes(state.bytes)); state.bytes = state.history.pop(); render(); } }
-function redo() { if (state.future.length) { state.history.push(cloneBytes(state.bytes)); state.bytes = state.future.pop(); render(); } }
+function undo() { if (state.history.length) { state.future.push(snapshot()); restoreSnapshot(state.history.pop()); render(); } }
+function redo() { if (state.future.length) { state.history.push(snapshot()); restoreSnapshot(state.future.pop()); render(); } }
 function reset() {
-  const before = cloneBytes(state.bytes);
-  if (before.every((byte, index) => byte === state.originalBytes[index])) return;
+  const before = snapshot();
+  if (sameBytes(before.bytes, state.originalBytes) && before.label === state.originalLabel) return;
   state.bytes = cloneBytes(state.originalBytes);
+  state.currentLabel = state.originalLabel;
   state.history.push(before);
   state.future = [];
   render();
@@ -423,11 +727,24 @@ async function copyC() {
   catch (_) { $("cOutput").select(); status("Ctrl+CでC初期化子をコピーしてください．", true); }
 }
 
+async function copyPatch() {
+  try { await navigator.clipboard.writeText($("jsonOutput").value); status("全変更のJSONパッチをクリップボードへコピーしました．"); }
+  catch (_) { $("jsonOutput").select(); status("Ctrl+CでJSONパッチをコピーしてください．", true); }
+}
+
+function handleAnnotationInput() {
+  if (!state.currentGlyph) return;
+  state.currentLabel = $("annotationInput").value;
+  const option = $("glyphSelect").selectedOptions[0];
+  if (option) option.textContent = `${state.currentGlyph.code} ${displayLabel({ label: state.currentLabel })}`;
+  renderOutputs();
+}
+
 function downloadPatch() {
   const blob = new Blob([$("jsonOutput").value + "\n"], { type: "application/json" });
   const anchor = document.createElement("a");
   anchor.href = URL.createObjectURL(blob);
-  anchor.download = `font-glyph-${state.currentGlyph.code}.json`;
+  anchor.download = "wrx-jp-font-patch.json";
   anchor.click();
   URL.revokeObjectURL(anchor.href);
 }
@@ -456,11 +773,15 @@ $("loadDefault").addEventListener("click", async () => {
 });
 $("arraySelect").addEventListener("change", populateGlyphs);
 $("glyphSelect").addEventListener("change", selectGlyph);
+$("previewText").addEventListener("input", () => { state.previewTextDirty = true; renderStringPreview(); });
+$("previewSample").addEventListener("click", setPreviewSample);
 $("undo").addEventListener("click", undo);
 $("redo").addEventListener("click", redo);
 $("reset").addEventListener("click", reset);
 $("copyC").addEventListener("click", copyC);
+$("copyPatch").addEventListener("click", copyPatch);
 $("downloadPatch").addEventListener("click", downloadPatch);
+$("annotationInput").addEventListener("input", handleAnnotationInput);
 $("grid").addEventListener("pointerdown", handlePointerDown);
 $("grid").addEventListener("pointermove", handlePointerMove);
 $("grid").addEventListener("pointerup", (event) => {

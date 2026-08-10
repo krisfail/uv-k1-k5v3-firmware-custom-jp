@@ -31,7 +31,7 @@ class PublicFontImportTests(unittest.TestCase):
         self.assertEqual(self.converter.jis_codepoint("専"), 0x406C)
         self.assertEqual(self.converter.jis_codepoint("用"), 0x4D51)
 
-    def test_resized_glyph_keeps_the_shared_baseline(self) -> None:
+    def test_regular_glyph_keeps_the_fixed_cell_format(self) -> None:
         source = [[0] * 16 for _ in range(16)]
         source[0][0] = 1
         source[15][15] = 1
@@ -53,6 +53,13 @@ class PublicFontImportTests(unittest.TestCase):
         for (character, width), bitmap in expected.items():
             glyph = self.converter.resize_glyph(source, width, character=character)
             self.assertEqual(bytes(self.converter.to_page_bytes(glyph, width)), bitmap)
+
+    def test_extra_large_mode_uses_all_rows(self) -> None:
+        source = [[0] * 16 for _ in range(16)]
+        glyph = self.converter.resize_glyph(source, 10, active_height=16, character="専")
+        self.assertEqual(len(glyph), 16)
+        self.assertTrue(any(glyph[0]))
+        self.assertTrue(any(glyph[15]))
 
 
 if __name__ == "__main__":

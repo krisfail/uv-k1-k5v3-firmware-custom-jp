@@ -1,10 +1,10 @@
-# K1／K5 V3版 機能監査と採否
+# K1／K5 V3版の機能採否と監査
 
-この文書を，PY32F071搭載のUV-K1／UV-K5 V3向け`wrx-jp`における機能採否の現行台帳とします．利用者向けの操作説明は[README.ja.md](../README.ja.md)，開発手順は[DEVELOPMENT.md](../DEVELOPMENT.md)，AIエージェント向けの規則は[AGENTS.md](../AGENTS.md)に分けています．
+この文書は，PY32F071搭載のUV-K1／UV-K5 V3向け`wrx-jp`における，機能採否の現行台帳です．利用者向けの操作説明は[README.ja.md](../README.ja.md)，開発手順は[DEVELOPMENT.md](../DEVELOPMENT.md)，AIエージェント向けの規則は[AGENTS.md](../AGENTS.md)に分けています．
 
 ## 判断基準
 
-受信機としての価値，安全性，LCD上の理解しやすさ，保存形式への影響，実機での確認しやすさの順に判断します．K1／K5 V3はK5よりフラッシュに余裕がありますが，送信経路，送信校正，送信を前提とする保守機能は有効にしません．
+機能は，受信機としての価値，安全性，LCD上での分かりやすさ，保存形式への影響，実機での確認しやすさの順に評価します．K1／K5 V3はK5よりフラッシュに余裕がありますが，送信経路，送信校正，送信を前提とする保守機能は有効にしません．
 
 ## 残す機能
 
@@ -27,7 +27,7 @@
 | 受信履歴やスキャン詳細 | RAM，操作性，電池消費，保存形式を確認できること |
 | 小型の受信補助表示 | メイン受信画面を圧迫せず，無効化設定と実機試験を追加できること |
 
-フラッシュに余裕があることだけを理由に，大型の送信系・解析系・保守系機能を有効化しません．受信経路とUIの品質を優先します．
+フラッシュに余裕があっても，大型の送信系・解析系・保守系機能は有効にしません．受信経路とUIの品質を優先します．
 
 ## RX専用版から外した機能
 
@@ -44,8 +44,8 @@ CHIRP通常操作とUART通信そのものは残しますが，低レベル保�
 
 1. `CMakeLists.txt`と`CMakePresets.json`の強制無効化境界，メニューの条件コンパイル，PTT分岐を確認する．
 2. `cmake --build --preset JpRxOnly -j2`とホストテストを実行する．
-3. `cmake --build --preset JpRxOnly -j2`の最後に出るFLASH／RAM使用量を記録する．
-4. [HARDWARE_TEST_PLAN.ja.md](HARDWARE_TEST_PLAN.ja.md)を実機で埋める．
+3. `cmake --build --preset JpRxOnly -j2`の最後に出るFLASH／RAMの使用量を記録する．
+4. [HARDWARE_TEST_PLAN.ja.md](HARDWARE_TEST_PLAN.ja.md)へ実機結果を記入する．
 5. フォントを変更した場合は，[BITMAP_ATLAS.ja.md](BITMAP_ATLAS.ja.md)と実機表示を確認する．
 
 ## 関連資料

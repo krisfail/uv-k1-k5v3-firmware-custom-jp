@@ -6,54 +6,54 @@
 
 ## 配列サマリー
 
-| 配列 | 種類 | サイズ(byte) | 要素幅 | グリフ数 | 使用中 |
+| 配列 | 種類 | サイズ(byte) | 要素幅 | 要素／グリフ数 | 使用中 |
 | --- | --- | ---: | ---: | ---: | ---: |
-| `gFontPowerSave` | font | 12 | 6 | — | — |
-| `gFontPttOnePush` | font | 12 | 6 | — | — |
-| `gFontPttClassic` | font | 12 | 6 | — | — |
-| `gFontF` | font | 8 | 8 | — | — |
-| `gFontS` | font | 6 | 6 | — | — |
-| `gFontKeyLock` | font | 9 | 9 | — | — |
-| `gFontLight` | font | 9 | 9 | — | — |
-| `gFontLightOff` | font | 9 | 9 | — | — |
-| `gFontMute` | font | 12 | 12 | — | — |
-| `gFontXB` | font | 12 | 6 | — | — |
-| `gFontMO` | font | 12 | 6 | — | — |
-| `gFontDWR` | font | 18 | 6 | — | — |
-| `gFontRO` | font | 12 | 6 | — | — |
-| `gFontHold` | font | 10 | 5 | — | — |
-| `BITMAP_BatteryLevel` | bitmap | 2 | 2 | — | — |
-| `BITMAP_BatteryLevel1` | bitmap | 17 | 17 | — | — |
-| `BITMAP_USB_C` | bitmap | 9 | 9 | — | — |
-| `gFontVox` | font | 12 | 6 | — | — |
-| `BITMAP_VFO_Lock` | bitmap | 7 | 7 | — | — |
-| `BITMAP_VFO_Default` | bitmap | 7 | 7 | — | — |
-| `BITMAP_VFO_NotDefault` | bitmap | 7 | 7 | — | — |
-| `BITMAP_VFO_Default [2]` | bitmap | 7 | 7 | — | — |
-| `BITMAP_VFO_NotDefault [2]` | bitmap | 7 | 7 | — | — |
-| `BITMAP_VFO_Empty` | bitmap | 7 | 7 | — | — |
-| `BITMAP_compand` | bitmap | 6 | 6 | — | — |
-| `BITMAP_Ready` | bitmap | 7 | 7 | — | — |
-| `BITMAP_NotReady` | bitmap | 7 | 7 | — | — |
-| `BITMAP_PowerUser` | bitmap | 3 | 3 | — | — |
-| `BITMAP_NOAA` | bitmap | 12 | 12 | — | — |
-| `BITMAP_FoxHuntSignal` | bitmap | 10 | 10 | — | — |
-| `BITMAP_FoxHuntSpeaker` | bitmap | 10 | 10 | — | — |
-| `BITMAP_FoxHuntUp` | bitmap | 11 | 11 | — | — |
-| `BITMAP_FoxHuntDown` | bitmap | 11 | 11 | — | — |
-| `BITMAP_FoxHuntFlat` | bitmap | 11 | 11 | — | — |
-| `BITMAP_FoxHuntBars` | bitmap | 11 | 11 | — | — |
-| `BITMAP_FoxHuntGraph` | bitmap | 15 | 15 | — | — |
-| `BITMAP_FoxHuntTx` | bitmap | 16 | 16 | — | — |
-| `BITMAP_CurrentIndicator` | bitmap | 8 | 8 | — | — |
+| `gFontPowerSave` | font | 12 | 6 | 2 | 2 |
+| `gFontPttOnePush` | font | 12 | 6 | 2 | 2 |
+| `gFontPttClassic` | font | 12 | 6 | 2 | 2 |
+| `gFontF` | font | 8 | 8 | 1 | 1 |
+| `gFontS` | font | 6 | 6 | 1 | 1 |
+| `gFontKeyLock` | font | 9 | 9 | 1 | 1 |
+| `gFontLight` | font | 9 | 9 | 1 | 1 |
+| `gFontLightOff` | font | 9 | 9 | 1 | 1 |
+| `gFontMute` | font | 12 | 12 | 1 | 1 |
+| `gFontXB` | font | 12 | 6 | 2 | 2 |
+| `gFontMO` | font | 12 | 6 | 2 | 2 |
+| `gFontDWR` | font | 18 | 6 | 3 | 3 |
+| `gFontRO` | font | 12 | 6 | 2 | 2 |
+| `gFontHold` | font | 10 | 5 | 2 | 2 |
+| `BITMAP_BatteryLevel` | bitmap | 2 | 2 | 1 | 1 |
+| `BITMAP_BatteryLevel1` | bitmap | 17 | 17 | 1 | 1 |
+| `BITMAP_USB_C` | bitmap | 9 | 9 | 1 | 1 |
+| `gFontVox` | font | 12 | 6 | 2 | 2 |
+| `BITMAP_VFO_Lock` | bitmap | 7 | 7 | 1 | 1 |
+| `BITMAP_VFO_Default` | bitmap | 7 | 7 | 1 | 1 |
+| `BITMAP_VFO_NotDefault` | bitmap | 7 | 7 | 1 | 1 |
+| `BITMAP_VFO_Default [2]` | bitmap | 7 | 7 | 1 | 1 |
+| `BITMAP_VFO_NotDefault [2]` | bitmap | 7 | 7 | 1 | 1 |
+| `BITMAP_VFO_Empty` | bitmap | 7 | 7 | 1 | 0 |
+| `BITMAP_compand` | bitmap | 6 | 6 | 1 | 1 |
+| `BITMAP_Ready` | bitmap | 7 | 7 | 1 | 1 |
+| `BITMAP_NotReady` | bitmap | 7 | 7 | 1 | 1 |
+| `BITMAP_PowerUser` | bitmap | 3 | 3 | 1 | 1 |
+| `BITMAP_NOAA` | bitmap | 12 | 12 | 1 | 1 |
+| `BITMAP_FoxHuntSignal` | bitmap | 10 | 10 | 1 | 1 |
+| `BITMAP_FoxHuntSpeaker` | bitmap | 10 | 10 | 1 | 1 |
+| `BITMAP_FoxHuntUp` | bitmap | 11 | 11 | 1 | 1 |
+| `BITMAP_FoxHuntDown` | bitmap | 11 | 11 | 1 | 1 |
+| `BITMAP_FoxHuntFlat` | bitmap | 11 | 11 | 1 | 1 |
+| `BITMAP_FoxHuntBars` | bitmap | 11 | 11 | 1 | 1 |
+| `BITMAP_FoxHuntGraph` | bitmap | 15 | 15 | 1 | 1 |
+| `BITMAP_FoxHuntTx` | bitmap | 16 | 16 | 1 | 1 |
+| `BITMAP_CurrentIndicator` | bitmap | 8 | 8 | 1 | 1 |
 | `gFontBig` | font | 1316 | 14 | 94 | 94 |
-| `gFontBigDigits` | font | 220 | 20 | — | — |
-| `gFontSmallDigits` | font | 77 | 7 | — | — |
-| `gFontSmall` | font | 564 | 6 | — | — |
-| `gFontSmallBold` | font | 564 | 6 | — | — |
-| `gFont3x5` | font | 288 | 3 | — | — |
+| `gFontBigDigits` | font | 220 | 20 | 11 | 11 |
+| `gFontSmallDigits` | font | 77 | 7 | 11 | 11 |
+| `gFontSmall` | font | 564 | 6 | 94 | 94 |
+| `gFontSmallBold` | font | 564 | 6 | 94 | 94 |
+| `gFont3x5` | font | 288 | 3 | 96 | 95 |
 | `gFontBigJapanese` | font | 1792 | 14 | 128 | 120 |
-| `gFontJapaneseExtraLargeCodes` | font | 4 | — | — | — |
+| `gFontJapaneseExtraLargeCodes` | font | 4 | 1 | 4 | 4 |
 | `gFontJapaneseExtraLarge` | font | 80 | 20 | 4 | 4 |
 | `gFontSmallJapanese` | font | 768 | 6 | 128 | 119 |
 
@@ -430,4 +430,3 @@
 | `0xFD` | 負 | 使用中 | 125 |
 | `0xFE` | 切 | 使用中 | 126 |
 | `0xFF` | 幅 | 使用中 | 127 |
-

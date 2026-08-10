@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 from pathlib import Path
 import sys
 import unittest
@@ -74,7 +75,6 @@ class FontAtlasTests(unittest.TestCase):
         self.assertEqual(array.glyph_layout, (10, 2))
         self.assertEqual([glyph["code"] for glyph in array.glyphs or []], [0x80, 0x81, 0x98, 0x99])
         self.assertTrue(all(glyph["occupied"] for glyph in array.glyphs or []))
-
     def test_large_long_vowel_uses_the_ascii_hyphen_rows(self) -> None:
         ascii_font = self.parse_array("gFontBig")
         japanese_font = self.parse_array("gFontBigJapanese")
@@ -88,6 +88,27 @@ class FontAtlasTests(unittest.TestCase):
         self.assertIn("| `gFontBigJapanese` | font |", report)
         self.assertIn("| `0xE0` | ー | 使用中 |", report)
 
+    def test_generated_inventory_exposes_bitmap_edit_chunks(self) -> None:
+        inventory = json.loads(
+            (ROOT / "docs" / "assets" / "font-atlas" / "bitmap_atlas_inventory.json").read_text(encoding="utf-8")
+        )
+        bitmap = next(array for array in inventory["arrays"] if array["name"] == "BITMAP_BatteryLevel")
+        self.assertEqual(bitmap["category"], "bitmap")
+        self.assertEqual(bitmap["editable_chunks"], [{"index": 0, "offset": 0, "length": 2, "label": "element 0"}])
+        codes = next(array for array in inventory["arrays"] if array["name"] == "gFontJapaneseExtraLargeCodes")
+        self.assertEqual(codes["element_width"], 1)
+        self.assertEqual([chunk["length"] for chunk in codes["editable_chunks"]], [1, 1, 1, 1])
+        small_bold = next(array for array in inventory["arrays"] if array["name"] == "gFontSmallBold")
+        self.assertEqual(small_bold["element_count"], 94)
+        self.assertEqual(small_bold["editable_chunks"][0]["label"], "0x21 !")
+        self.assertEqual(small_bold["editable_chunks"][-1]["label"], "0x7E ~")
+
+    def test_small_bold_font_is_rendered_element_by_element(self) -> None:
+        svg = self.atlas.make_svg([self.parse_array("gFontSmallBold")], scale=2, wrap=64)
+        self.assertIn("0x21 !", svg)
+        self.assertIn("0x7E ~", svg)
+        self.assertEqual(svg.count('fill="url(#cell-grid-2)"'), 94)
+
     def test_svg_escapes_ascii_glyph_labels(self) -> None:
         arrays = [self.parse_array("gFontBig"), self.parse_array("gFontBigJapanese")]
         svg = self.atlas.make_svg(arrays, scale=2, wrap=64)
@@ -95,6 +116,9 @@ class FontAtlasTests(unittest.TestCase):
         self.assertIn("0x26 &amp;", svg)
         self.assertIn("0x3C &lt;", svg)
         self.assertIn("0x98 専", svg)
+        self.assertIn("<pattern id=\"cell-grid-2\"", svg)
+        self.assertIn("<path d=\"", svg)
+        self.assertLess(svg.count("<rect "), 300)
         self.assertNotIn("project-authored", svg)
         self.assertNotIn("C:" + "/Users", svg)
         self.assertNotIn("C:" + "\\", svg)

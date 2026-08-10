@@ -1,12 +1,12 @@
 # WRX-JP ドキュメント
 
-日本語・受信専用ファームウェアの利用者向け案内，開発資料，フォント資料をまとめています．
+日本語・受信専用ファームウェアの利用案内，開発資料，フォント資料をまとめています．
 
 ## 利用者向け
 
 - [日本語README](README.ja.md)
 - [英語README](README.md)
-- [操作・ビルドcheatsheet](CHEATSHEET.ja.md)
+- [操作・ビルドのチートシート](CHEATSHEET.ja.md)
 
 ## 開発者向け
 
@@ -21,9 +21,10 @@
 - [フォント割り当て台帳](FONT_BITMAP_ANNOTATIONS.ja.md)
 - [フォント一覧](FONT_INVENTORY.ja.md)
 - [フォントの出所と変換](FONT_SOURCES.ja.md)
-- [bitmap/font atlasの説明](BITMAP_ATLAS.ja.md)
+- [rainy版との日本語大字形比較](FONT_RAINY_COMPARISON.ja.md)
+- [ビットマップ／フォントatlasの説明](BITMAP_ATLAS.ja.md)
 - [bitmap atlas SVG](assets/font-atlas/bitmap_atlas.svg)
 - [bitmap atlas inventory JSON](assets/font-atlas/bitmap_atlas_inventory.json)
 
-このサイトはGitHub Actionsで`docs/`とルートの利用者向け文書から自動生成されます．
+このサイトはGitHub Actionsが`docs/`とルートの利用者向け文書をHTML化して自動公開します．
 

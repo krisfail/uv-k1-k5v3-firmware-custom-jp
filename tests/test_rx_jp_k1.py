@@ -276,7 +276,7 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
             "[0xE0 - 0x7F] = {0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x00,0x00,0x00,0x00,0x00,0x00,0x00}",
             font,
         )
-        self.assertIn("same display rows as", helper)
+        self.assertIn("glyph data itself decides which rows are lit", helper)
         self.assertNotIn("FONT_BIG_JAPANESE_RENDER_SHIFT", helper)
         self.assertIn("[0xFF - 0x7F]", font)
         self.assertIn("code <= FONT_CODE_MAX", helper)
