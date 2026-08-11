@@ -23,6 +23,7 @@ class ReceiveUiAndToneTests(unittest.TestCase):
 
     def test_welcome_all_and_logo_message_are_safe(self) -> None:
         welcome = read("App/ui/welcome.c")
+        main = read("App/main.c")
         settings = read("App/settings.h")
         cmake = read("CMakePresets.json")
         font = read("App/japanese_font.c")
@@ -32,7 +33,10 @@ class ReceiveUiAndToneTests(unittest.TestCase):
         self.assertIn("POWER_ON_DISPLAY_MODE_ALL", welcome)
         self.assertIn("POWER_ON_DISPLAY_MODE_LOGO_MESSAGE", settings)
         self.assertIn('"ENABLE_FEAT_F4HWN_LOGO": true', cmake)
-        self.assertIn('UI_PrintString("JP RX-ONLY", 0, 127, 5, 10);', welcome)
+        self.assertIn('UI_PrintString("JP RX-ONLY", 0, 127, 2, 10);', welcome)
+        self.assertIn("UI_DisplayWelcomeRxOnlyMessage", welcome)
+        self.assertIn("split_logo_message", main)
+        self.assertIn("boot_counter_10ms = 125", main)
         self.assertIn("UI_PrintStringJapaneseExtraLarge(WelcomeString0, 0, 127, 0, 11);", welcome)
         self.assertIn("[0x98 - 0x7F]", font)
         self.assertIn("[0x99 - 0x7F]", font)
@@ -85,6 +89,18 @@ class ReceiveUiAndToneTests(unittest.TestCase):
         self.assertIn("if (length == 0u || Line == 0u || Line >= line_count || x_start >= LCD_WIDTH)", helper)
         self.assertIn("if (x_start > 0u)", helper)
         self.assertIn("if (x_end < LCD_WIDTH)", helper)
+
+    def test_custom_menu_layout_uses_terminated_and_clipped_labels(self) -> None:
+        header = read("App/ui/menu.h")
+        menu = read("App/ui/menu.c")
+        helper = read("App/ui/helper.c")
+        self.assertIn("const char  name[7]", header)
+        self.assertIn('{"ScnRev",       MENU_SC_REV', menu)
+        self.assertNotIn('{"ScanRev",      MENU_SC_REV', menu)
+        self.assertIn("UI_PrintStringSmallNormalClipped", helper)
+        self.assertIn("UI_PrintStringClipped", helper)
+        self.assertIn("UI_PrintStringSmallNormalClipped(MenuList[prev_index].name, 0, 47, 1);", menu)
+        self.assertIn("UI_PrintStringClipped(MenuList[menu_index].name, 0, 47, 2, 8);", menu)
 
 
 if __name__ == "__main__":

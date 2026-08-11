@@ -276,8 +276,6 @@ void UI_DisplayWelcome(void)
     else if (gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_LOGO ||
              gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_LOGO_MESSAGE) {
         UI_LoadLogo();
-        if (gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_LOGO_MESSAGE)
-            UI_PrintString("JP RX-ONLY", 0, 127, 5, 10);
     }
 #endif
     else {
@@ -420,3 +418,20 @@ void UI_DisplayWelcome(void)
         K5VIEWER_Update(true);
     #endif
 }
+
+#ifdef ENABLE_FEAT_F4HWN_LOGO
+void UI_DisplayWelcomeRxOnlyMessage(void)
+{
+    UI_StatusClear();
+
+#if defined(ENABLE_FEAT_F4HWN_CTR) || defined(ENABLE_FEAT_F4HWN_INV)
+    ST7565_ContrastAndInv();
+#endif
+    UI_DisplayClear();
+
+    UI_PrintString("JP RX-ONLY", 0, 127, 2, 10);
+
+    ST7565_BlitStatusLine();
+    ST7565_BlitFullScreen();
+}
+#endif

@@ -79,6 +79,22 @@ void _putchar(__attribute__((unused)) char c)
 
 }
 
+static bool Main_WaitForBootScreen(void)
+{
+    while (boot_counter_10ms > 0)
+    {
+        if (KEYBOARD_Poll() != KEY_INVALID)
+        {
+            // A key press skips the remaining boot screen, matching the
+            // existing behavior for the single-screen startup path.
+            boot_counter_10ms = 0;
+            return false;
+        }
+    }
+
+    return true;
+}
+
 void Main(void)
 {
     SYSTICK_Init();
@@ -223,20 +239,36 @@ void Main(void)
 
         BACKLIGHT_TurnOn();
 
+#ifdef ENABLE_FEAT_F4HWN_LOGO
+        const bool split_logo_message =
+            gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_LOGO_MESSAGE;
+#else
+        const bool split_logo_message = false;
+#endif
+
 #ifdef ENABLE_FEAT_F4HWN
         if (gEeprom.POWER_ON_DISPLAY_MODE != POWER_ON_DISPLAY_MODE_NONE && gEeprom.POWER_ON_DISPLAY_MODE != POWER_ON_DISPLAY_MODE_SOUND)
 #else
         if (gEeprom.POWER_ON_DISPLAY_MODE != POWER_ON_DISPLAY_MODE_NONE)
 #endif
-        {   // 2.55 second boot-up screen
-            while (boot_counter_10ms > 0)
+        {
+#ifdef ENABLE_FEAT_F4HWN_LOGO
+            // Give LOGO+MSG two explicit 1.25-second phases instead of
+            // drawing the logo and message on the same framebuffer.
+            if (split_logo_message)
+                boot_counter_10ms = 125;
+#endif
+            const bool boot_screen_finished = Main_WaitForBootScreen();
+
+#ifdef ENABLE_FEAT_F4HWN_LOGO
+            if (boot_screen_finished && split_logo_message)
             {
-                if (KEYBOARD_Poll() != KEY_INVALID)
-                {   // halt boot beeps
-                    boot_counter_10ms = 0;
-                    break;
-                }
+                UI_DisplayWelcomeRxOnlyMessage();
+                boot_counter_10ms = 125;
+                Main_WaitForBootScreen();
             }
+#endif
+
             RADIO_SetupRegisters(true);
         }
 

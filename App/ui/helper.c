@@ -38,18 +38,31 @@ static uint8_t UI_CenteredStart(const uint8_t start, const uint8_t end,
     return (uint8_t)(start + (uint8_t)((available - used + 1u) / 2u));
 }
 
-static void UI_CopyLargeGlyph(const uint8_t line, const unsigned int x,
-                              const uint8_t *glyph, const size_t width)
+static void UI_CopyLargeGlyphClipped(const uint8_t line, const unsigned int x,
+                                     const uint8_t *glyph, const size_t width,
+                                     const uint8_t end)
 {
     const size_t line_count = sizeof(gFrameBuffer) / sizeof(gFrameBuffer[0]);
-    if ((size_t)line + 1u >= line_count || x >= LCD_WIDTH)
+    if ((size_t)line + 1u >= line_count || x >= LCD_WIDTH || x > end)
         return;
 
     size_t copy_width = LCD_WIDTH - x;
     if (copy_width > width)
         copy_width = width;
+    if (copy_width > (size_t)end + 1u - x)
+        copy_width = (size_t)end + 1u - x;
+
+    if (copy_width == 0u)
+        return;
+
     memcpy(gFrameBuffer[line] + x, glyph, copy_width);
     memcpy(gFrameBuffer[line + 1u] + x, glyph + width, copy_width);
+}
+
+static void UI_CopyLargeGlyph(const uint8_t line, const unsigned int x,
+                              const uint8_t *glyph, const size_t width)
+{
+    UI_CopyLargeGlyphClipped(line, x, glyph, width, LCD_WIDTH - 1u);
 }
 
 void UI_GenerateChannelString(char *pString, const uint16_t Channel)
@@ -168,6 +181,31 @@ void UI_PrintString(const char *pString, uint8_t Start, uint8_t End, uint8_t Lin
     }
 }
 
+void UI_PrintStringClipped(const char *pString, uint8_t Start, uint8_t End, uint8_t Line, uint8_t Width)
+{
+    const size_t Length = strlen(pString);
+
+    if (Start >= LCD_WIDTH || End < Start)
+        return;
+
+    for (size_t i = 0; i < Length; i++)
+    {
+        const unsigned int ofs = (unsigned int)Start + (i * Width);
+        const uint8_t code = (uint8_t)pString[i];
+        if (code > ' ' && code < 127)
+        {
+            const unsigned int index = code - ' ' - 1;
+            UI_CopyLargeGlyphClipped(Line, ofs, gFontBig[index], 7u, End);
+#ifdef ENABLE_JAPANESE
+        }
+        else if (code >= 0x7F && code <= FONT_CODE_MAX)
+        {
+            UI_CopyLargeGlyphClipped(Line, ofs, gFontBigJapanese[code - 0x7F], 7u, End);
+#endif
+        }
+    }
+}
+
 #ifdef ENABLE_JAPANESE
 void UI_PrintStringJapaneseExtraLarge(const char *pString, uint8_t Start, uint8_t End, uint8_t Line, uint8_t Width)
 {
@@ -210,6 +248,19 @@ void UI_PrintStringSmall(const char *pString, uint8_t Start, uint8_t End, uint8_
 void UI_PrintStringSmallNormal(const char *pString, uint8_t Start, uint8_t End, uint8_t Line)
 {
     UI_PrintStringSmall(pString, Start, End, Line, ARRAY_SIZE(gFontSmall[0]), (const uint8_t *)gFontSmall);
+}
+
+void UI_PrintStringSmallNormalClipped(const char *pString, uint8_t Start, uint8_t End, uint8_t Line)
+{
+    const unsigned int line_count = sizeof(gFrameBuffer) / sizeof(gFrameBuffer[0]);
+    const unsigned int end = (unsigned int)End + 1u;
+
+    if (Start >= LCD_WIDTH || Line >= line_count || end <= Start)
+        return;
+
+    UI_PrintStringBufferClipped(pString, gFrameBuffer[Line] + Start,
+                                ARRAY_SIZE(gFontSmall[0]),
+                                (const uint8_t *)gFontSmall, end - Start);
 }
 
 void UI_PrintStringSmallNormalInverse(const char *pString, uint8_t Start, uint8_t End, uint8_t Line)

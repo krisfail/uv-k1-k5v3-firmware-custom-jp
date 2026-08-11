@@ -130,7 +130,7 @@ const t_menu_item MenuList[] =
     {"PriCh1",       MENU_S_PRI_CH_1   },
     {"PriCh2",       MENU_S_PRI_CH_2   },
  #endif
-    {"ScanRev",      MENU_SC_REV        },
+    {"ScnRev",       MENU_SC_REV        },
 #ifndef ENABLE_FEAT_F4HWN
     #ifdef ENABLE_NOAA
         {"NOAA-S",      MENU_NOAA_S    },
@@ -964,17 +964,17 @@ void UI_DisplayMenu(void)
                 if (prev_index < 0) {
                     prev_index = menu_count - 1;
                 }
-                UI_PrintStringSmallNormal(MenuList[prev_index].name, 0, 0, 1);
+                UI_PrintStringSmallNormalClipped(MenuList[prev_index].name, 0, 47, 1);
 
                 // current menu item - keep big n fat
-                UI_PrintString(MenuList[menu_index].name, 0, 0, 2, 8);
+                UI_PrintStringClipped(MenuList[menu_index].name, 0, 47, 2, 8);
 
                 // trailing menu item - small text
                 int next_index = menu_index + 1;
                 if (next_index >= menu_count) {
                     next_index = 0;
                 }
-                UI_PrintStringSmallNormal(MenuList[next_index].name, 0, 0, 4);
+                UI_PrintStringSmallNormalClipped(MenuList[next_index].name, 0, 47, 4);
 
 
                 // draw the menu index number/count
@@ -987,7 +987,7 @@ void UI_DisplayMenu(void)
             {   
                 // current menu item
 //              strcat(String, ":");
-                UI_PrintString(MenuList[menu_index].name, 0, 0, 0, 8);
+                UI_PrintStringClipped(MenuList[menu_index].name, 0, 47, 0, 8);
 //              UI_PrintStringSmallNormal(String, 0, 0, 0);
             }
 

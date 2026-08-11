@@ -25,6 +25,7 @@ void UI_DisplayWelcome(void);
 
 #ifdef ENABLE_FEAT_F4HWN_LOGO
 void UI_DisplayLogo(void);
+void UI_DisplayWelcomeRxOnlyMessage(void);
 #endif
 
 #ifdef ENABLE_FEAT_F4HWN_QRCODE
