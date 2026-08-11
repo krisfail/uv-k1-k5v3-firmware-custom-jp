@@ -15,8 +15,9 @@ class FontEditorTests(unittest.TestCase):
                        "guideGlyph", "guideBottom", "通常大字形", "実データ上余白", "../assets/font-atlas",
                        "targetEntries", "editable_chunks", "target_kind", "Bitmap", "元データとの差分",
                        "diff-added", "diff-removed", "renderDiffSummary", "bitCount", "previewText",
-                       "stringPreview", "renderStringPreview", "previewSample", "未登録", "annotationInput",
-                       "pendingChanges", "stageCurrentTarget", "state.edits", "wrx-jp-font-patch-v1", "copyPatch"):
+                       "stringPreview", "renderStringPreview", "previewSample", "previewJapanese", "JIS_X0201_SAMPLE", "未登録", "annotationInput",
+                       "pendingChanges", "stageCurrentTarget", "state.edits", "wrx-jp-font-patch-v1", "copyPatch", "patchFile", "loadPatch", "applyPatchData",
+                       "LABEL_ALIASES", '"｡", "。"', '"｢", "「"', '"｣", "」"'):
             self.assertIn(marker, html)
         self.assertIn("bitmap_atlas_inventory.json", html)
         self.assertNotIn("C:" + "/Users", html)
@@ -56,6 +57,15 @@ class FontEditorTests(unittest.TestCase):
         self.assertIn('context.strokeRect(originX + 1', html)
         self.assertIn('context.fillText(character', html)
         self.assertIn('未登録:', html)
+        self.assertIn('canonicalizeLabel(glyph.label', html)
+        self.assertIn('JIS_X0201_SAMPLE', html)
+        self.assertIn('JAPANESE_ARRAY_NAMES', html)
+        self.assertIn('EDITABLE_CONTROL_IDS', html)
+        self.assertIn('function setPreviewText', html)
+        self.assertIn('const lineGap = 8', html)
+        self.assertIn('const columns = Math.max(1', html)
+        self.assertIn('originY + y * scale', html)
+        self.assertNotIn('max-width: 100%', html)
 
     def test_big_font_guide_uses_actual_vertical_bounds(self) -> None:
         html = (ROOT / "tools" / "font_editor.html").read_text(encoding="utf-8")

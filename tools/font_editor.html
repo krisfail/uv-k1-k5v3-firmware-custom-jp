@@ -47,8 +47,8 @@ textarea { box-sizing: border-box; width: 100%; min-height: 92px; resize: vertic
 .guide-top { background: #eaf2ff; }
 .guide-glyph { background: #fffbea; }
 .guide-bottom { background: #eef1f4; }
-.string-preview { overflow: auto; border: 1px solid #ccd4dc; background: #f9fbfc; padding: 10px; }
-#stringPreview { display: block; image-rendering: pixelated; max-width: 100%; height: auto; }
+.string-preview { max-height: min(70vh, 620px); overflow: auto; border: 1px solid #ccd4dc; background: #f9fbfc; padding: 10px; }
+#stringPreview { display: block; image-rendering: pixelated; height: auto; }
 .preview-summary { min-height: 1.3em; margin-top: 7px; color: #52616f; font-size: .88rem; }
 @media (max-width: 760px) { .editor { grid-template-columns: 1fr; } main { padding: 12px; } }
 </style>
@@ -63,6 +63,9 @@ textarea { box-sizing: border-box; width: 100%; min-height: 92px; resize: vertic
       <label for="inventoryFile">台帳JSON</label>
       <input id="inventoryFile" type="file" accept=".json,application/json">
       <button id="loadDefault" type="button">標準台帳を読み込む</button>
+      <label for="patchFile">JSONパッチ</label>
+      <input id="patchFile" type="file" accept=".json,application/json">
+      <button id="loadPatch" type="button" disabled>パッチを読み込む</button>
     </div>
     <div class="hint">フォントの全字形とBitmap配列の各要素を選択して，ドットと注釈を編集できます．字形を切り替えても変更は保持されます．リポジトリ直下でローカルHTTPサーバーを起動した場合は「標準台帳を読み込む」が使えます．file://で開く場合はJSONを選択してください．</div>
     <div id="status" class="status" role="status">台帳JSONを読み込んでください．</div>
@@ -97,8 +100,9 @@ textarea { box-sizing: border-box; width: 100%; min-height: 92px; resize: vertic
       <label for="previewText">文字列プレビュー</label>
       <input id="previewText" type="text" value="" placeholder="例: 受信専用" disabled>
       <button id="previewSample" type="button" disabled>例を入れる</button>
+      <button id="previewJapanese" type="button" disabled>日本語例</button>
     </div>
-    <div class="hint">選択中の配列に含まれる字形を，入力した文字列の順に横へ並べて表示します．現在編集中の字形は編集内容を反映します．未登録の文字は赤枠で表示します．</div>
+    <div class="hint">選択中の配列に含まれる字形を，入力した文字列の順に横へ並べ，表示幅に応じて改行します．字形は圧縮せず，配列本来のセル幅で表示します．現在編集中の字形は編集内容を反映します．未登録の文字は赤枠で表示します．</div>
     <div class="string-preview"><canvas id="stringPreview" aria-label="文字列プレビュー"></canvas></div>
     <div id="previewSummary" class="preview-summary" aria-live="polite">台帳を読み込むとプレビューできます．</div>
   </section>
@@ -169,8 +173,13 @@ const status = (message, error = false) => {
   $("status").style.color = error ? "#b3261e" : "";
 };
 const hexBytes = (bytes) => bytes.map((value) => `0x${value.toString(16).padStart(2, "0")}`).join(", ");
+const LABEL_ALIASES = new Map([
+  ["｡", "。"], ["｢", "「"], ["｣", "」"], ["､", "、"], ["･", "・"],
+  ["ﾞ", "゛"], ["ﾟ", "゜"],
+]);
+const canonicalizeLabel = (value) => Array.from(String(value || ""), (character) => LABEL_ALIASES.get(character) || character).join("");
 const displayLabel = (glyph) => {
-  const label = glyph.label || "未注釈";
+  const label = canonicalizeLabel(glyph.label || "未注釈");
   const base = label.split(/\s+\(|（/u, 1)[0].trim();
   return base || label;
 };
@@ -190,7 +199,7 @@ function snapshot() {
 function restoreSnapshot(value) {
   state.bytes = cloneBytes(value.bytes);
   state.currentLabel = value.label;
-  $("annotationInput").value = state.currentLabel;
+  $("annotationInput").value = canonicalizeLabel(state.currentLabel);
 }
 
 function workingLabel(target) {
@@ -300,12 +309,16 @@ function displayZone(row, rows) {
 
 function setEnabled(enabled) {
   for (const id of ["arraySelect", "glyphSelect"]) $(id).disabled = !enabled;
-  for (const id of ["undo", "redo", "reset", "toolMode", "copyC", "copyPatch", "downloadPatch", "annotationInput", "previewText", "previewSample"]) $(id).disabled = !enabled;
+  for (const id of EDITABLE_CONTROL_IDS) $(id).disabled = !enabled;
 }
+
+const JIS_X0201_SAMPLE = "。「」、・ヲァィゥェォャュョッーアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワン゛゜";
+const JAPANESE_ARRAY_NAMES = new Set(["gFontBigJapanese", "gFontSmallJapanese", "gFontJapaneseExtraLarge"]);
+const EDITABLE_CONTROL_IDS = ["undo", "redo", "reset", "toolMode", "copyC", "copyPatch", "downloadPatch", "annotationInput", "previewText", "previewSample", "previewJapanese", "loadPatch"];
 
 function previewSampleForArray() {
   const name = state.currentArray?.name || "";
-  if (name === "gFontBigJapanese" || name === "gFontSmallJapanese" || name === "gFontJapaneseExtraLarge") return "受信専用";
+  if (JAPANESE_ARRAY_NAMES.has(name)) return JIS_X0201_SAMPLE;
   if (name === "gFontBig" || name === "gFontSmall" || name === "gFontSmallBold") return "WRX-JP";
   return state.currentTargets
     .map((target) => displayLabel(target))
@@ -314,10 +327,16 @@ function previewSampleForArray() {
     .join("");
 }
 
-function setPreviewSample() {
-  $("previewText").value = previewSampleForArray();
+function setPreviewText(value) {
+  $("previewText").value = value;
   state.previewTextDirty = false;
   renderStringPreview();
+}
+
+function setPreviewSample() { setPreviewText(previewSampleForArray()); }
+
+function setPreviewJapanese() {
+  setPreviewText(JIS_X0201_SAMPLE);
 }
 
 function loadInventory(data) {
@@ -357,7 +376,7 @@ function selectGlyph() {
   state.bytes = edit ? parseBytes(edit.bytes_hex) : parseBytes(state.currentGlyph.bytes_hex);
   state.currentLabel = edit ? edit.label || "" : state.currentGlyph.label || "";
   state.originalLabel = state.currentGlyph.label || "";
-  $("annotationInput").value = state.currentLabel;
+  $("annotationInput").value = canonicalizeLabel(state.currentLabel);
   const { width, pages } = selectedLayout();
   if (state.bytes.length !== width * pages) {
     throw new Error(`${state.currentArray.name} の ${state.currentGlyph.code} は ${width * pages}バイト必要です`);
@@ -638,7 +657,7 @@ function renderOutputs() {
     element_width: state.currentArray.element_width,
     bytes_hex: plainHexBytes(state.bytes),
   }, null, 2);
-  $("annotationInput").value = state.currentLabel;
+  $("annotationInput").value = canonicalizeLabel(state.currentLabel);
   $("jsonOutput").value = JSON.stringify({
     format: "wrx-jp-font-patch-v1",
     source: "bitmap_atlas_inventory.json",
@@ -664,6 +683,7 @@ function renderStringPreview() {
   const rows = pages * 8;
   const scale = 4;
   const gap = 5;
+  const lineGap = 8;
   const text = $("previewText").value;
   const byLabel = new Map();
   for (const target of state.currentTargets) {
@@ -672,9 +692,17 @@ function renderStringPreview() {
   }
   const entries = Array.from(text).map((character) => ({ character, target: byLabel.get(character) || null }));
   const tileWidth = width * scale;
-  const canvasWidth = Math.max(1, entries.length ? entries.length * (tileWidth + gap) - gap : 1);
+  const tileHeight = rows * scale;
+  const previewBox = canvas.parentElement;
+  const styles = getComputedStyle(previewBox);
+  const horizontalPadding = parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
+  const availableWidth = Math.max(tileWidth, previewBox.clientWidth - horizontalPadding);
+  const columns = Math.max(1, Math.floor((availableWidth + gap) / (tileWidth + gap)));
+  const lineCount = entries.length ? Math.ceil(entries.length / columns) : 1;
+  const canvasWidth = Math.max(1, Math.min(availableWidth, columns * tileWidth + (columns - 1) * gap));
+  const canvasHeight = Math.max(1, lineCount * tileHeight + (lineCount - 1) * lineGap);
   canvas.width = canvasWidth;
-  canvas.height = Math.max(1, rows * scale);
+  canvas.height = canvasHeight;
   canvas.style.width = `${canvasWidth}px`;
   canvas.style.height = `${canvas.height}px`;
   const context = canvas.getContext("2d");
@@ -682,30 +710,33 @@ function renderStringPreview() {
   context.fillRect(0, 0, canvas.width, canvas.height);
   const missing = [];
   entries.forEach(({ character, target }, entryIndex) => {
-    const originX = entryIndex * (tileWidth + gap);
+    const column = entryIndex % columns;
+    const line = Math.floor(entryIndex / columns);
+    const originX = column * (tileWidth + gap);
+    const originY = line * (tileHeight + lineGap);
     if (!target) {
       missing.push(character);
       context.fillStyle = "#fff0f0";
-      context.fillRect(originX, 0, tileWidth, canvas.height);
+      context.fillRect(originX, originY, tileWidth, tileHeight);
       context.strokeStyle = "#c62828";
       context.lineWidth = 2;
-      context.strokeRect(originX + 1, 1, Math.max(0, tileWidth - 2), Math.max(0, canvas.height - 2));
+      context.strokeRect(originX + 1, originY + 1, Math.max(0, tileWidth - 2), Math.max(0, tileHeight - 2));
       context.fillStyle = "#b3261e";
       context.font = `${Math.max(12, scale * 3)}px system-ui, sans-serif`;
       context.textAlign = "center";
       context.textBaseline = "middle";
-      context.fillText(character, originX + tileWidth / 2, canvas.height / 2);
+      context.fillText(character, originX + tileWidth / 2, originY + tileHeight / 2);
       return;
     }
     const bytes = workingBytes(target);
     context.fillStyle = "#18212b";
     for (let y = 0; y < rows; y += 1) for (let x = 0; x < width; x += 1) {
-      if (pixelOnIn(bytes, x, y)) context.fillRect(originX + x * scale, y * scale, scale, scale);
+      if (pixelOnIn(bytes, x, y)) context.fillRect(originX + x * scale, originY + y * scale, scale, scale);
     }
   });
   const uniqueMissing = [...new Set(missing)].join("");
   summary.textContent = text
-    ? `${entries.length}文字を表示${uniqueMissing ? `．未登録: ${uniqueMissing}` : ""}`
+    ? `${entries.length}文字を表示（${lineCount}行）${uniqueMissing ? `．未登録: ${uniqueMissing}` : ""}`
     : "文字列を入力してください．";
 }
 
@@ -749,6 +780,62 @@ function downloadPatch() {
   URL.revokeObjectURL(anchor.href);
 }
 
+function patchTarget(array, change) {
+  const targets = targetEntries(array);
+  return targets.find((target) => {
+    if (target.target_kind !== change.target_kind) return false;
+    if (target.target_kind === "glyph") return Number(target.code) === Number(change.code);
+    return Number(target.offset) === Number(change.offset);
+  });
+}
+
+function applyPatchData(data) {
+  if (!data || data.format !== "wrx-jp-font-patch-v1" || !Array.isArray(data.changes)) {
+    throw new Error("対応するWRX-JP JSONパッチではありません");
+  }
+  stageCurrentTarget();
+  const updates = data.changes.map((change) => {
+    const array = state.fontArrays.find((candidate) => candidate.name === change.array);
+    if (!array) throw new Error(`配列が見つかりません: ${change.array}`);
+    const target = patchTarget(array, change);
+    if (!target) throw new Error(`編集対象が見つかりません: ${change.array}`);
+    const bytes = parseBytes(change.bytes_hex);
+    if (bytes.length !== parseBytes(target.bytes_hex).length) {
+      throw new Error(`バイト数が一致しません: ${change.array}`);
+    }
+    return {
+      key: targetKey(array, target),
+      value: {
+        array: array.name,
+        target_kind: target.target_kind,
+        target_index: target.target_index,
+        code: target.target_kind === "glyph" ? target.code : null,
+        offset: target.target_kind === "bitmap" ? target.offset : null,
+        label: change.label == null ? null : normalizedLabel(change.label),
+        element_width: array.element_width,
+        bytes_hex: plainHexBytes(bytes),
+      },
+    };
+  });
+  for (const update of updates) state.edits.set(update.key, update.value);
+  state.currentGlyph = null;
+  populateGlyphs();
+  status(`${updates.length}件のパッチを読み込みました．`);
+}
+
+async function loadPatchFromFile() {
+  const file = $("patchFile").files[0];
+  if (!file) {
+    status("JSONパッチを選択してください．", true);
+    return;
+  }
+  try {
+    applyPatchData(JSON.parse(await file.text()));
+  } catch (error) {
+    status(`パッチ読込失敗: ${error.message}`, true);
+  }
+}
+
 $("inventoryFile").addEventListener("change", async (event) => {
   const file = event.target.files[0];
   if (!file) return;
@@ -775,6 +862,8 @@ $("arraySelect").addEventListener("change", populateGlyphs);
 $("glyphSelect").addEventListener("change", selectGlyph);
 $("previewText").addEventListener("input", () => { state.previewTextDirty = true; renderStringPreview(); });
 $("previewSample").addEventListener("click", setPreviewSample);
+$("previewJapanese").addEventListener("click", setPreviewJapanese);
+$("loadPatch").addEventListener("click", loadPatchFromFile);
 $("undo").addEventListener("click", undo);
 $("redo").addEventListener("click", redo);
 $("reset").addEventListener("click", reset);
@@ -797,6 +886,7 @@ $("grid").addEventListener("click", editFromKeyboard);
 $("grid").addEventListener("contextmenu", (event) => event.preventDefault());
 $("zoom").addEventListener("input", () => { $("zoomValue").textContent = `${$("zoom").value}px`; if (state.currentGlyph) renderGrid(); });
 window.addEventListener("blur", () => { if (state.activePointerId !== null) commitPointerEdit(true); });
+window.addEventListener("resize", () => { if (state.currentArray) renderStringPreview(); });
 </script>
 </body>
 </html>

@@ -146,6 +146,52 @@ set_target_properties(${EXE_NAME} PROPERTIES ADDITIONAL_CLEAN_FILES ${EXE_NAME}.
 target_link_options(${EXE_NAME} PRIVATE -Wl,--no-warn-rwx-segment)
 
 # -----------------------------------
+#  Font/bitmap inspection artifacts
+#
+# The JSON manifest is the source of truth for source selection and code-point
+# annotations.  The C arrays remain firmware data; this target only renders
+# inspection artifacts and never rewrites them.
+find_package(Python3 COMPONENTS Interpreter QUIET)
+set(FONT_ATLAS_DIR "${CMAKE_SOURCE_DIR}/docs/assets/font-atlas")
+set(FONT_ATLAS_MANIFEST "${CMAKE_SOURCE_DIR}/tools/font_inventory.json")
+set(FONT_ATLAS_MARKDOWN "${FONT_ATLAS_DIR}/font_inventory.generated.ja.md")
+set(FONT_ATLAS_SOURCES
+    "${CMAKE_SOURCE_DIR}/App/font.c"
+    "${CMAKE_SOURCE_DIR}/App/japanese_font.c"
+    "${CMAKE_SOURCE_DIR}/App/bitmaps.c"
+)
+
+if(Python3_Interpreter_FOUND)
+    add_custom_target(font-atlas
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${FONT_ATLAS_DIR}"
+        COMMAND ${Python3_EXECUTABLE} "${CMAKE_SOURCE_DIR}/tools/render_bitmap_atlas.py"
+            --manifest "${FONT_ATLAS_MANIFEST}"
+            --out "${FONT_ATLAS_DIR}"
+            --markdown-out "${FONT_ATLAS_MARKDOWN}"
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+        DEPENDS
+            "${CMAKE_SOURCE_DIR}/tools/render_bitmap_atlas.py"
+            "${FONT_ATLAS_MANIFEST}"
+            ${FONT_ATLAS_SOURCES}
+        BYPRODUCTS
+            "${FONT_ATLAS_DIR}/bitmap_atlas.svg"
+            "${FONT_ATLAS_DIR}/bitmap_atlas_inventory.json"
+            "${FONT_ATLAS_MARKDOWN}"
+        COMMENT "Rendering the canonical font/bitmap inventory and atlas"
+        VERBATIM
+    )
+else()
+    add_custom_target(font-atlas
+        COMMAND ${CMAKE_COMMAND} -E echo "Python 3 is required for the font-atlas target"
+        COMMAND ${CMAKE_COMMAND} -E false
+    )
+endif()
+
+add_custom_target(atlas DEPENDS font-atlas)
+add_custom_target(inventory DEPENDS font-atlas)
+add_custom_target(docs DEPENDS font-atlas)
+
+# -----------------------------------
 #  Post build processing
 #
 

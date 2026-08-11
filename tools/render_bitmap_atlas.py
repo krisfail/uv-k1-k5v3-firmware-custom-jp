@@ -225,6 +225,86 @@ def comment_label(comment: str) -> str | None:
     return " ".join(labels) or None
 
 
+def parse_manifest_code(value: str | int) -> int:
+    """Parse a firmware byte written as JSON number or hexadecimal text."""
+
+    if isinstance(value, int):
+        code = value
+    elif isinstance(value, str):
+        code = int(value, 0)
+    else:
+        raise ValueError(f"invalid firmware code {value!r}")
+    if not 0 <= code <= 0xFF:
+        raise ValueError(f"firmware code is outside one byte: 0x{code:X}")
+    return code
+
+
+def load_font_manifest(path: Path, root: Path) -> dict:
+    """Load the repository-relative font inventory manifest safely."""
+
+    manifest_path = path.resolve()
+    try:
+        manifest_path.relative_to(root)
+    except ValueError as error:
+        raise ValueError("font manifest must be inside the repository") from error
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if manifest.get("schema") != 1:
+        raise ValueError("unsupported font manifest schema")
+    if not isinstance(manifest.get("sources"), list) or not manifest["sources"]:
+        raise ValueError("font manifest must contain at least one source")
+    for source in manifest["sources"]:
+        if not isinstance(source, dict) or not isinstance(source.get("path"), str):
+            raise ValueError("each font manifest source needs a relative path")
+        candidate = (root / source["path"]).resolve()
+        try:
+            candidate.relative_to(root)
+        except ValueError as error:
+            raise ValueError(f"font source escapes repository: {source['path']}") from error
+    return manifest
+
+
+def manifest_sources(manifest: dict, root: Path) -> list[tuple[Path, set[str] | None]]:
+    """Return source paths and optional array allow-lists from the manifest."""
+
+    result = []
+    for source in manifest["sources"]:
+        arrays = source.get("arrays")
+        if arrays is not None:
+            if not isinstance(arrays, list) or not all(isinstance(name, str) for name in arrays):
+                raise ValueError("font manifest arrays must be a list of names")
+            arrays = set(arrays)
+        result.append(((root / source["path"]).resolve(), arrays))
+    return result
+
+
+def apply_font_manifest(arrays: list[Array], manifest: dict) -> list[Array]:
+    """Apply canonical selection and code-point annotations to parsed arrays."""
+
+    array_specs = manifest.get("arrays", {})
+    labels = {
+        parse_manifest_code(code): label
+        for code, label in manifest.get("codepoint_labels", {}).items()
+    }
+    selected: list[Array] = []
+    for array in arrays:
+        spec = array_specs.get(array.name, {})
+        if spec.get("include", True) is False:
+            continue
+        if array.glyphs is not None:
+            array_labels = dict(labels)
+            array_labels.update({
+                parse_manifest_code(code): value
+                for code, value in spec.get("labels", {}).items()
+            })
+            for glyph in array.glyphs:
+                if glyph["code"] in array_labels:
+                    glyph["label"] = array_labels[glyph["code"]]
+        selected.append(array)
+    if not selected:
+        raise ValueError("font manifest selected no parsed arrays")
+    return selected
+
+
 def parse_glyph_annotations(
     name: str,
     initializer: str,
@@ -443,7 +523,15 @@ def draw_font_elements(
     return y + rows * cell_height
 
 
-def draw_glyph_atlas(lines: list[str], array: Array, x: int, y: int, scale: int, pattern_id: str) -> int:
+def draw_glyph_atlas(
+    lines: list[str],
+    array: Array,
+    x: int,
+    y: int,
+    scale: int,
+    pattern_id: str,
+    wrap: int,
+) -> int:
     layout = array.glyph_layout
     if layout is None:
         raise ValueError(f"no glyph layout for {array.name}")
@@ -456,7 +544,10 @@ def draw_glyph_atlas(lines: list[str], array: Array, x: int, y: int, scale: int,
         glyph_data = [array.values[index:index + glyph_size]
                       for index in range(0, len(array.values), glyph_size)]
     glyph_count = len(glyph_data)
-    per_row = 12 if glyph_width <= 7 else 8
+    # ``wrap`` also applies to glyph atlases.  This makes focused reviews
+    # possible at a large inspection scale without clipping the last glyphs.
+    default_per_row = 12 if glyph_width <= 7 else 8
+    per_row = min(default_per_row, wrap)
     cell_width = glyph_width * scale + 24
     cell_height = pages * 8 * scale + 30
     for index in range(glyph_count):
@@ -497,7 +588,7 @@ def make_svg(arrays: list[Array], scale: int, wrap: int) -> str:
         lines.append(f'<text x="32" y="{y + 20}" class="meta">source: {xml_text(array.source)}; element width: {array.element_width or "inferred"}</text>')
         y += 52
         if array.glyph_layout is not None:
-            y = draw_glyph_atlas(lines, array, 48, y + 20, scale, pattern_id) + 42
+            y = draw_glyph_atlas(lines, array, 48, y + 20, scale, pattern_id, wrap) + 42
         elif array.category == "font" and array.element_width:
             y = draw_font_elements(lines, array, 48, y + 20, scale, pattern_id) + 42
         else:
@@ -571,6 +662,7 @@ def make_markdown_inventory(arrays: list[Array]) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source", action="append", type=Path, help="C source containing uint8_t arrays (repeatable)")
+    parser.add_argument("--manifest", type=Path, help="repository-relative JSON font inventory manifest")
     parser.add_argument("--out", type=Path, default=Path("bitmap-atlas"), help="output directory")
     parser.add_argument("--markdown-out", type=Path, help="write a human-readable Markdown font inventory")
     parser.add_argument("--scale", type=int, default=6, help="pixels per bitmap cell in SVG")
@@ -579,7 +671,17 @@ def main() -> None:
     if args.scale < 2 or args.wrap < 1:
         raise SystemExit("--scale must be >= 2 and --wrap must be >= 1")
     root = Path.cwd().resolve()
-    sources = args.source
+    manifest = None
+    manifest_source_filters: dict[Path, set[str] | None] = {}
+    if args.manifest:
+        manifest = load_font_manifest(args.manifest, root)
+        if args.source:
+            raise SystemExit("--source and --manifest cannot be used together")
+        manifest_sources_list = manifest_sources(manifest, root)
+        sources = [source for source, _ in manifest_sources_list]
+        manifest_source_filters = dict(manifest_sources_list)
+    else:
+        sources = args.source
     if not sources:
         candidates = [root / "bitmaps.c", root / "font.c", root / "App" / "bitmaps.c", root / "App" / "font.c", root / "App" / "japanese_font.c"]
         sources = [candidate for candidate in candidates if candidate.exists()]
@@ -598,9 +700,15 @@ def main() -> None:
             # Keep local inspection useful without publishing parent paths.
             source_label = source.name
         display_sources.append(source_label)
-        arrays.extend(parse_source(source, occurrences, source_label))
+        parsed = parse_source(source, occurrences, source_label)
+        allowed_arrays = manifest_source_filters.get(source)
+        if allowed_arrays is not None:
+            parsed = [array for array in parsed if array.name in allowed_arrays]
+        arrays.extend(parsed)
     if not arrays:
         raise SystemExit("no uint8_t arrays found")
+    if manifest is not None:
+        arrays = apply_font_manifest(arrays, manifest)
     out = args.out.resolve()
     out.mkdir(parents=True, exist_ok=True)
     inventory = []
@@ -621,7 +729,11 @@ def main() -> None:
         else:
             record["editable_chunks"] = array.editable_chunks
         inventory.append(record)
-    (out / "bitmap_atlas_inventory.json").write_text(json.dumps({"sources": display_sources, "arrays": inventory}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    inventory_document = {"sources": display_sources, "arrays": inventory}
+    if manifest is not None:
+        inventory_document["manifest"] = args.manifest.resolve().relative_to(root).as_posix()
+        inventory_document["encoding"] = manifest.get("encoding", {})
+    (out / "bitmap_atlas_inventory.json").write_text(json.dumps(inventory_document, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     (out / "bitmap_atlas.svg").write_text(make_svg(arrays, args.scale, args.wrap), encoding="utf-8")
     if args.markdown_out:
         markdown_out = args.markdown_out.resolve()

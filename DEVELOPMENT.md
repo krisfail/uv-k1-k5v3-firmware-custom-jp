@@ -23,7 +23,7 @@ cmake --build --preset JpRxOnly -j2
 python -m unittest discover -s tests -p "test_*.py" -v
 ```
 
-生成物は`build/JpRxOnly`以下の`wrx-jp.bin`，`wrx-jp.hex`，`wrx-jp.elf`です．UVTools2で書き込む対象はパック前の`build/JpRxOnly/wrx-jp.bin`です．リリース相当のpackedイメージは標準pack形式で生成し，版番号を付けて`release/wrx-jp-v5.8.0J5.packed.bin`へ置きます．`JpRxOnly`が唯一のサポート対象プリセットです．
+生成物は`build/JpRxOnly`以下の`wrx-jp.bin`，`wrx-jp.hex`，`wrx-jp.elf`です．UVTools2で書き込む対象はパック前の`build/JpRxOnly/wrx-jp.bin`です．このリポジトリのCMakeビルドはpacked imageを自動生成しないため，配布用イメージは署名・リリース手順で別途扱います．`JpRxOnly`が唯一のサポート対象プリセットです．
 
 変更後は少なくともホストテスト，ビルド，`git diff --check`を実行します．テストはソース構造や境界を確認するもので，RF性能，LCDの見え方，実機書き込みの成功を保証しません．
 
@@ -43,6 +43,12 @@ python -m unittest discover -s tests -p "test_*.py" -v
 | `tests/` | ホスト側の回帰テスト |
 | `tools/chirp/` | K1／K5 V3用RX-only CHIRPドライバと境界説明 |
 
+## ビルド基盤の共通境界
+
+旧UV-K5は`Makefile`を正規入口とし，K5向けCMakeは移行検証用の併行入口です．このリポジトリは`CMakePresets.json`の`JpRxOnly`を正規入口とします．両方で`JpRxOnly`，`font-atlas`，`atlas`，`inventory`，`docs`という操作契約と`tools/font_inventory.json`のmanifest形式を揃えています．
+
+一方，ファームウェアのC／ASM，ドライバ，startup，リンカースクリプトは共有しません．DP32G030とPY32F071では，BK4819／BK4829，EEPROM／外部フラッシュ，メモリーマップ，送信禁止境界が異なるためです．共通のホストツールをsubmodule化する場合は，両リポジトリから参照できる正式な共通リポジトリと固定コミットを先に用意し，親作業フォルダへの相対依存は作らないでください．
+
 ## 変更時の境界
 
 - この版は日本国内向け受信専用です．送信経路，送信メニュー，送信を誘発する操作を再導入しません．PTTはモニターとして維持します．
@@ -53,14 +59,25 @@ python -m unittest discover -s tests -p "test_*.py" -v
 
 ## フォントとatlas
 
-注釈付きatlasを生成するには，例えば次を実行します．
+### 文字コードと再構成方針
+
+正規の文字対応は[フォント割り当て台帳](docs/FONT_BITMAP_ANNOTATIONS.ja.md)に従います．`0x21`–`0x7E`はASCII，`0xA1`–`0xDF`はJIS X 0201半角カタカナです．`0x80`–`0xA0`と`0xE0`–`0xFF`はJIS文字ではなく，プロジェクト固有の拡張領域または予約領域です．`0x5C`と`0x7E`の扱いは，JIS X 0201へ再解釈せず，現行ASCIIフォントの実装を維持します．
+
+rainy由来の基準大字形には，`0x9A`–`0xA5`と`0xB0`の空白，`0xA6`／`0xDD`と`0xA7`／`0xB1`の重複，`0xA1`注釈以降の行ずれがあります．K1は大／小フォントが別配列なので，K5の配列をバイト列として移植せず，コードポイントごとに再構成してください．現行のsmall字形はカタカナの主表示には小さすぎるため，将来medium字形を導入する場合は，固定幅，文字列幅，中央寄せ，RAM，容量を同時に検証します．
+
+フォントの意味・用途・コードポイントは`tools/font_inventory.json`で管理し，C配列はビルド入力です．編集用の完全スナップショットJSONはC配列から生成し，基準バイト列との一致を検証してからCへ戻します．追跡済みatlasとinventoryを更新するには，次を実行します．この処理はファームウェアの通常ビルドには含めていません．
+
+```powershell
+cmake --build --preset JpRxOnly --target font-atlas
+```
+
+一時ディレクトリへ出力する場合は，例えば次を実行します．
 
 ```powershell
 python -X utf8 tools/render_bitmap_atlas.py `
-  --source App/font.c `
-  --source App/japanese_font.c `
-  --source App/bitmaps.c `
-  --out tmp/uv-k1-bitmap-atlas
+  --manifest tools/font_inventory.json `
+  --out tmp/uv-k1-bitmap-atlas `
+  --markdown-out tmp/uv-k1-bitmap-atlas/font_inventory.generated.ja.md
 ```
 
 rainy版との14-byte大字形のソース比較と差分表示は，[比較記録](docs/FONT_RAINY_COMPARISON.ja.md)を参照します．出力先は公開パスを含めない`tmp`配下にします．
@@ -76,17 +93,33 @@ python -X utf8 tools/compare_japanese_font.py `
 
 大字形は欧文・日本語とも16行の固定セルですが，固定の上下空白は前提にしません．字形ごとに実際の点灯範囲が異なるため，編集画面の動的な上／字形／下区分と「点灯範囲」を確認し，atlasを再生成してください．描画側に日本語専用の位置補正を追加してはいけません．
 
+### C配列とJSONの安全な往復
+
+`tools/font_source_json.py`は，コードポイント付きの完全スナップショットJSONをC配列と相互変換します．JSONの各要素には抽出時の`base_bytes_hex`と編集後の`bytes_hex`があり，適用時にC側の基準値が変わっていれば停止します．K1の指定初期化子はコードポイント式をそのまま保持し，K5のASCII配列や別配列を行番号で置換しません．
+
+```powershell
+python -X utf8 tools/font_source_json.py extract `
+  --source App\japanese_font.c --array gFontBigJapanese `
+  --output tmp/gFontBigJapanese.source.json
+python -X utf8 tools/font_source_json.py apply `
+  --source App\japanese_font.c --input tmp/gFontBigJapanese.source.json `
+  --output tmp/japanese_font.c
+```
+
+一時Cファイルのatlas，`git diff --no-index`，ビルドを確認してから，必要な場合だけ`--in-place`で反映します．既存の`wrx-jp-font-patch-v1`は簡易UIパッチであり，完全スナップショットより検証情報が少ないため，適用時は`--legacy-patch`を明示します．
+注釈のない連続配列（例：`App/font.c`の`gFontSmall`）は，先頭コードを明示して抽出します（例：`--start-code 0x21`）．
+
 ### インタラクティブ編集
 
 `tools/font_editor.html`をブラウザで開き，`docs/assets/font-atlas/bitmap_atlas_inventory.json`を読み込むと，字形のドットを編集できます．左ドラッグは連続点灯／消灯，右ドラッグは消去，描画モードでは点灯・消灯を固定できます．マウス移動が速くてもセル間を補間し，1回のドラッグを1回のUndo単位として扱います．Space/Enterによるキーボード編集，注釈の編集，C初期化子のコピーに対応します．字形を切り替えても編集内容と注釈は保持され，最後に全字形・Bitmapの変更を1つのJSONパッチとしてコピー／保存できます．HTTP経由で標準台帳を自動読込する場合は，リポジトリルートで次を実行してから表示します．
 
-「文字列プレビュー」に文字列を入力すると，選択中の配列に登録された字形を入力順に横並びで確認できます．現在編集中の字形は編集内容を即時反映し，未登録の文字は赤枠で示します．「例を入れる」では，配列に応じた確認用文字列を設定します．
+「文字列プレビュー」に文字列を入力すると，選択中の配列に登録された字形を入力順に横並びで確認できます．表示幅に応じて自動改行し，各字形は配列本来のセル幅のまま描画します．現在編集中の字形は編集内容を即時反映し，未登録の文字は赤枠で示します．「日本語例」では，配列に関係なくJIS X 0201相当の句読点・カタカナ・濁点・半濁点を設定します．「例を入れる」は配列に応じた短い確認用文字列です．JSONパッチは台帳を読み込んだ後，「JSONパッチ」から選択して読み込めます．
 
 ```powershell
 python -m http.server 8765
 ```
 
-編集結果は自動的にCソースへ反映されません．元データとの差分と注釈を確認したうえでJSONパッチを保存し，コードポイント，コメント，ソース配列を手動で反映してください．
+WebUIのJSONパッチは編集内容の確認・受け渡し用です．C配列へ反映する場合は，まず`font_source_json.py extract`で完全スナップショットを作り，編集値を移してから一時Cファイルへ`apply`します．コードポイント，コメント，ソース配列，atlasを確認してからソースへ反映してください．
 
 ### GitHub Pages
 

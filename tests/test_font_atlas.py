@@ -88,6 +88,16 @@ class FontAtlasTests(unittest.TestCase):
         self.assertIn("| `gFontBigJapanese` | font |", report)
         self.assertIn("| `0xE0` | ー | 使用中 |", report)
 
+    def test_manifest_provides_canonical_codepoint_labels(self) -> None:
+        manifest = self.atlas.load_font_manifest(ROOT / "tools" / "font_inventory.json", ROOT)
+        arrays = self.atlas.apply_font_manifest(self.parse_arrays(), manifest)
+        japanese = next(array for array in arrays if array.name == "gFontBigJapanese")
+        glyphs = japanese.glyphs
+        assert glyphs is not None
+        self.assertEqual(glyphs[0xA1 - 0x80]["label"], "｡")
+        self.assertEqual(glyphs[0xDF - 0x80]["label"], "ﾟ")
+        self.assertEqual(glyphs[0xE0 - 0x80]["label"], "ー")
+
     def test_generated_inventory_exposes_bitmap_edit_chunks(self) -> None:
         inventory = json.loads(
             (ROOT / "docs" / "assets" / "font-atlas" / "bitmap_atlas_inventory.json").read_text(encoding="utf-8")

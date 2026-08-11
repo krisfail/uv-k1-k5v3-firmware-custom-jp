@@ -1,6 +1,6 @@
 # UV-K1 / UV-K5 V3 日本語・受信専用ファームウェア
 
-[英語版README](README.md) | [操作・ビルドcheatsheet](CHEATSHEET.ja.md) | [開発者向けガイド](DEVELOPMENT.md) | [CHIRPドライバ](tools/chirp/README.ja.md) | [新機能の技術詳細](docs/FEATURES_TECHNICAL.ja.md) | [機能監査](docs/FEATURE_AUDIT.ja.md) | [実機テスト計画](docs/HARDWARE_TEST_PLAN.ja.md) | [bitmap/font atlas](docs/BITMAP_ATLAS.ja.md) | [ドキュメントサイト](docs/index.md)
+[英語版README](README.md) | [操作・ビルドcheatsheet](CHEATSHEET.ja.md) | [開発者向けガイド](DEVELOPMENT.md) | [CHIRPドライバ](tools/chirp/README.ja.md) | [新機能の技術詳細](docs/FEATURES_TECHNICAL.ja.md) | [フォントコード表](docs/FONT_BITMAP_ANNOTATIONS.ja.md) | [機能監査](docs/FEATURE_AUDIT.ja.md) | [実機テスト計画](docs/HARDWARE_TEST_PLAN.ja.md) | [bitmap/font atlas](docs/BITMAP_ATLAS.ja.md) | [ドキュメントサイト](docs/index.md)
 
 ## このリポジトリの位置づけ
 
@@ -50,7 +50,7 @@
 - `RXExt`で追加受信機能をまとめてON/OFF（初期値ON）
 - RX-onlyメニューの主要項目を日本語化（受信拡張，優先，情報，反転，音声，自動，狭帯，高速など）
 - K1のフラッシュ容量を使い，受信音声プロファイルと音声レベル履歴を有効化
-- 大きい文字と小さい文字に対応した日本語表示．大文字の長音「ー」と既存ラベルのカタカナも補完
+- 大きい文字と小さい文字に対応した日本語表示．小字形は数値・補助表示を中心とし，カタカナを含む通常の日本語表示にはmedium字形の導入を検討中
 - 起動画面の`受信専用`に使う大字形は，パブリックドメインのIzumi 16から独立変換しています．詳細は[フォントの出所と変換](docs/FONT_SOURCES.ja.md)を参照してください．
 
 メニューの`受信拡張`（従来表記`RXExt`）を`OFF`にすると，プリセット，受信モードの`SINGLE`，メモリーバンク絞り込み，`自動`スケルチ，AGCガード，一時スキップを停止します．通常受信の3段階帯域幅，受信専用・PTTモニター，日本語表示，FM放送の`76.0–95.0 MHz`制限は変わりません．周波数ステップは帯域幅と独立して選べます．既存の保存データは互換性のためONとして扱います．
@@ -75,14 +75,21 @@ cmake --build --preset JpRxOnly -j2
 - `build/JpRxOnly/wrx-jp.bin`: 書き込み用バイナリ
 - `build/JpRxOnly/wrx-jp.hex`: HEX形式
 - `build/JpRxOnly/wrx-jp.elf`: デバッグ用ELF
-- `release/wrx-jp-v5.8.0J5.packed.bin`: リリース相当のパック済みイメージ
 
 UVTools2で書き込む場合は，パック済みではない`build/JpRxOnly/wrx-jp.bin`を選択してください．`*.packed.bin`はpack形式に対応したツールや配布用に保持するファイルで，UVTools2へそのまま渡すものではありません．
+
+このリポジトリのCMakeビルドはpacked imageを自動生成しません．配布用のpacked imageが必要な場合は，署名・リリース手順に従って別途生成します．
 
 構成生成後にソースだけを変更した場合は，次のビルドだけで構いません．
 
 ```powershell
 cmake --build --preset JpRxOnly -j2
+```
+
+フォント／bitmapのatlasとinventoryはファームウェアとは別の明示的なターゲットです．追跡済み成果物を更新する場合は次を実行します．
+
+```powershell
+cmake --build --preset JpRxOnly --target font-atlas
 ```
 
 ## CHIRPドライバ
