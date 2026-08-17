@@ -14,14 +14,15 @@ def read(path: str) -> str:
 class ReceiveUiAndToneTests(unittest.TestCase):
     def test_help_is_clipped_cleared_and_time_sliced(self) -> None:
         menu = read("App/ui/menu.c")
+        menu_text = read("App/ui/menu_text.h")
         app = read("App/app/app.c")
         self.assertIn("#define UI_MENU_HELP_WIDTH 15u", menu)
         self.assertIn("memset(gFrameBuffer[6] + 18, 0, LCD_WIDTH - 18)", menu)
         self.assertIn("UI_MENU_TimeSlice500ms();", app)
-        self.assertIn('return "scan list membership";', menu)
-        self.assertIn('return "normal/reverse tone";', menu)
+        self.assertIn('#define WRX_MENU_HELP_CHANNEL_LIST', menu_text)
+        self.assertIn('#define WRX_MENU_HELP_CTCS', menu_text)
 
-    def test_welcome_all_and_logo_message_are_safe(self) -> None:
+    def test_welcome_all_and_logo_followups_are_safe(self) -> None:
         welcome = read("App/ui/welcome.c")
         main = read("App/main.c")
         settings = read("App/settings.h")
@@ -32,15 +33,18 @@ class ReceiveUiAndToneTests(unittest.TestCase):
         self.assertIn("POWER_ON_DISPLAY_MODE_MESSAGE", welcome)
         self.assertIn("POWER_ON_DISPLAY_MODE_ALL", welcome)
         self.assertIn("POWER_ON_DISPLAY_MODE_LOGO_MESSAGE", settings)
+        self.assertIn("POWER_ON_DISPLAY_MODE_LOGO_ALL", settings)
         self.assertIn('"ENABLE_FEAT_F4HWN_LOGO": true', cmake)
         self.assertIn('UI_PrintString("JP RX-ONLY", 0, 127, 2, 10);', welcome)
         self.assertIn("UI_DisplayWelcomeRxOnlyMessage", welcome)
-        self.assertIn("split_logo_message", main)
+        self.assertIn("UI_DisplayWelcomeRxOnlyAll", welcome)
+        self.assertIn("split_logo_followup", main)
         self.assertIn("boot_counter_10ms = 125", main)
         self.assertIn("UI_PrintStringJapaneseExtraLarge(WelcomeString0, 0, 127, 0, 11);", welcome)
         self.assertIn("[0x98 - 0x7F]", font)
         self.assertIn("[0x99 - 0x7F]", font)
-        self.assertIn("0x10,0x90,0x50,0x50,0xfc,0x50,0x50,0xd0,0x10,0x10", font)
+        self.assertIn("0x08,0xf8,0x58,0xfc,0x58,0xf8,0x08", font)
+        self.assertIn("0x00,0x10,0x10,0x10,0x10,0xF0,0x00", font)
 
     def test_reverse_ctcss_is_stored_displayed_and_inverted_at_runtime(self) -> None:
         dcs = read("App/dcs.h")
@@ -58,6 +62,7 @@ class ReceiveUiAndToneTests(unittest.TestCase):
     def test_txlock_menu_is_removed(self) -> None:
         header = read("App/ui/menu.h")
         menu = read("App/ui/menu.c")
+        menu_text = read("App/ui/menu_text.h")
         self.assertNotIn("MENU_TX_LOCK", header)
         self.assertNotIn("TXLock", menu)
 
@@ -93,10 +98,12 @@ class ReceiveUiAndToneTests(unittest.TestCase):
     def test_custom_menu_layout_uses_terminated_and_clipped_labels(self) -> None:
         header = read("App/ui/menu.h")
         menu = read("App/ui/menu.c")
+        menu_text = read("App/ui/menu_text.h")
         helper = read("App/ui/helper.c")
         self.assertIn("const char  name[7]", header)
-        self.assertIn('{"ScnRev",       MENU_SC_REV', menu)
-        self.assertNotIn('{"ScanRev",      MENU_SC_REV', menu)
+        self.assertIn("WRX_MENU_LABEL_SCAN_REVERSE", menu)
+        self.assertIn('"ScnRev"', menu_text)
+        self.assertNotIn('"ScanRev"', menu_text)
         self.assertIn("UI_PrintStringSmallNormalClipped", helper)
         self.assertIn("UI_PrintStringClipped", helper)
         self.assertIn("UI_PrintStringSmallNormalClipped(MenuList[prev_index].name, 0, 47, 1);", menu)

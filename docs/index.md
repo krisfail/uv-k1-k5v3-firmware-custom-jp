@@ -13,6 +13,7 @@
 ## 開発者向け
 
 - [開発者向けガイド](../DEVELOPMENT.md)
+- [メニュー文言の編集](MENU_TEXT_CATALOG.ja.md)
 - [CHIRPドライバの説明](../tools/chirp/README.ja.md)
 - [新機能の技術詳細](FEATURES_TECHNICAL.ja.md)
 - [機能監査](FEATURE_AUDIT.ja.md)
@@ -26,6 +27,8 @@
 - [フォント一覧](FONT_INVENTORY.ja.md)
 - [フォントの出所と変換](FONT_SOURCES.ja.md)
 - [rainy版との日本語大字形比較](FONT_RAINY_COMPARISON.ja.md)
+- [rainy版との全コードポイント比較（K1 Markdown）](assets/font-comparison/rainy-k1/font_diff.md)
+- [rainy版との全コードポイント比較（K1 PNG）](assets/font-comparison/rainy-k1/font_diff.png)
 - [ビットマップ／フォントatlasの説明](BITMAP_ATLAS.ja.md)
 - [bitmap atlas SVG](assets/font-atlas/bitmap_atlas.svg)
 - [bitmap atlas inventory JSON](assets/font-atlas/bitmap_atlas_inventory.json)

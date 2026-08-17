@@ -61,8 +61,10 @@ class FontAtlasTests(unittest.TestCase):
         glyphs = array.glyphs
         assert glyphs is not None
         expected = {
-            0x98: bytes.fromhex("48 e8 58 fc 58 e8 48 02 03 02 07 02 03 02"),
-            0x99: bytes.fromhex("00 fc 24 fc 24 fc 00 06 01 06 01 06 01 06"),
+            0x98: bytes.fromhex("08 f8 58 fc 58 f8 08 04 05 05 0d 15 1d 04"),
+            0x99: bytes.fromhex("00 fc 24 fc 24 24 fc 1e 01 01 07 01 11 1f"),
+            0xBA: bytes.fromhex("00 10 10 10 10 f0 00 00 10 10 10 10 3f 00"),
+            0xC6: bytes.fromhex("00 10 10 10 10 10 00 08 08 08 08 08 08 08"),
         }
         for code, bitmap in expected.items():
             glyph = glyphs[code - 0x80]

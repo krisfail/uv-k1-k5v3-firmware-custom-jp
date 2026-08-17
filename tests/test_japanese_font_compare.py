@@ -48,6 +48,41 @@ class JapaneseFontCompareTests(unittest.TestCase):
         self.assertEqual(result["rows"][0]["label"], "受")
         self.assertEqual(result["rows"][0]["changed_bytes"], [0])
 
+    def test_contiguous_parser_uses_position_and_ignores_disabled_branch(self) -> None:
+        module = load_module()
+        zero = ", ".join("0x00" for _ in range(14))
+        source = f"""
+        const unsigned char gFontBig[3][14] = {{
+        #if 0
+          {{{zero}}}, // disabled
+        #else
+          {{0x01, {', '.join('0x00' for _ in range(13))}}}, //0x80 //受
+          {{{zero}}},
+          {{0x02, {', '.join('0x00' for _ in range(13))}}}, //0x82 変
+        #endif
+        }};
+        """
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "font.c"
+            path.write_text(source, encoding="utf-8")
+            entries = module.parse_contiguous_source(path, "gFontBig", 0x80, 0x80, 0x82)
+        self.assertEqual(set(entries), {0x80, 0x81, 0x82})
+        self.assertEqual(entries[0x80].label, "受")
+        self.assertEqual(entries[0x81].data, (0,) * 14)
+        self.assertEqual(entries[0x82].label, "変")
+
+    def test_compare_explicit_range_includes_blank_unchanged_codepoints(self) -> None:
+        module = load_module()
+        reference = {0x80: module.FontEntry(0x80, (0x01,) + (0,) * 13, "受", "ref.c", 1)}
+        current = {}
+        result = module.compare(reference, current, 0x80, 0x81, 14)
+        self.assertEqual(result["summary"]["codes"], 2)
+        self.assertEqual([row["code"] for row in result["rows"]], ["0x80", "0x81"])
+        self.assertEqual(result["rows"][0]["status"], "reference-only")
+        self.assertEqual(result["rows"][1]["status"], "same")
+        self.assertEqual(result["rows"][1]["presence"], "neither")
+        self.assertEqual(result["rows"][1]["reference_bytes"], ["0x00"] * 14)
+
 
 if __name__ == "__main__":
     unittest.main()

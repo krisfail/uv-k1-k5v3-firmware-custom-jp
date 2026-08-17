@@ -19,6 +19,11 @@ HEX_RE = re.compile(r"0[xX][0-9A-Fa-f]+")
 COMMENT_CODE_RE = re.compile(r"//\s*0[xX]([0-9A-Fa-f]{2})\b")
 DESIGNATED_CODE_RE = re.compile(r"\[\s*0[xX]([0-9A-Fa-f]{2})\s*-\s*0[xX]7[Ff]\s*\]")
 INITIALIZER_RE = re.compile(r"\{(?P<body>[^{}]*)\}")
+ARRAY_DECLARATION_RE = re.compile(
+    r"(?m)^\s*(?:[A-Za-z_]\w*\s+)+[A-Za-z_]\w*(?:\s+__attribute__\s*\(.*?\))?\s+"
+    r"(?P<name>[A-Za-z_]\w*)\s*(?P<dimensions>(?:\[[^\]]*\]\s*)+)=\s*\{",
+    re.S,
+)
 
 
 @dataclass(frozen=True)
@@ -34,6 +39,7 @@ def _label(line: str) -> str | None:
     comments = line.split("//")[1:]
     for comment in comments:
         value = re.sub(r"\s+", " ", comment).strip()
+        value = re.sub(r"^0[xX][0-9A-Fa-f]{2}\s*", "", value).strip()
         if not value or re.fullmatch(r"0[xX][0-9A-Fa-f]{2}", value):
             continue
         return value
@@ -66,6 +72,183 @@ def parse_source(path: Path, start: int = 0x80, end: int = 0xFF, element_width: 
     return entries
 
 
+def matching_brace(text: str, opening: int) -> int:
+    """Return the closing brace while ignoring braces inside C comments/strings."""
+
+    depth = 0
+    in_block_comment = False
+    in_line_comment = False
+    in_string: str | None = None
+    escaped = False
+    for position in range(opening, len(text)):
+        char = text[position]
+        next_char = text[position + 1] if position + 1 < len(text) else ""
+        if in_line_comment:
+            if char in "\r\n":
+                in_line_comment = False
+            continue
+        if in_block_comment:
+            if char == "*" and next_char == "/":
+                in_block_comment = False
+            continue
+        if in_string is not None:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == in_string:
+                in_string = None
+            continue
+        if char == "/" and next_char == "*":
+            in_block_comment = True
+            continue
+        if char == "/" and next_char == "/":
+            in_line_comment = True
+            continue
+        if char in "\"'":
+            in_string = char
+            continue
+        if char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                return position
+            if depth < 0:
+                break
+    raise ValueError("配列の閉じ括弧を特定できません")
+
+
+def mask_inactive_preprocessor_lines(text: str) -> str:
+    """Mask simple C preprocessor branches without changing character offsets.
+
+    The rainy source keeps an older font in ``#if 0`` before the active array
+    contents.  Parsing both branches would duplicate every positional glyph,
+    so inactive lines are replaced with spaces while preserving newlines and
+    offsets used for diagnostics.
+    """
+
+    directive_re = re.compile(r"^\s*#\s*(if|ifdef|ifndef|elif|else|endif)\b(.*)$")
+    frames: list[dict[str, bool]] = []
+    active = True
+    output: list[str] = []
+    for line in text.splitlines(keepends=True):
+        match = directive_re.match(line.rstrip("\r\n"))
+        if match:
+            directive, expression = match.groups()
+            if directive == "if":
+                condition = expression.strip() != "0"
+                frames.append({"parent": active, "branch": condition, "taken": condition})
+                active = active and condition
+            elif directive in {"ifdef", "ifndef"}:
+                frames.append({"parent": active, "branch": True, "taken": True})
+                active = active
+            elif directive in {"elif", "else"}:
+                if not frames:
+                    raise ValueError(f"対応する#ifのない#{directive}を検出しました")
+                frame = frames[-1]
+                condition = directive == "else" or expression.strip() != "0"
+                branch = condition and not frame["taken"]
+                frame["branch"] = branch
+                frame["taken"] = frame["taken"] or condition
+                active = frame["parent"] and branch
+            elif directive == "endif":
+                if not frames:
+                    raise ValueError("対応する#ifのない#endifを検出しました")
+                frame = frames.pop()
+                active = frame["parent"]
+            output.append(line)
+            continue
+        if active:
+            output.append(line)
+        else:
+            output.append("".join("\n" if char == "\n" else "\r" if char == "\r" else " " for char in line))
+    if frames:
+        raise ValueError("閉じられていない#ifを検出しました")
+    return "".join(output)
+
+
+def top_level_initializers(text: str, start: int, end: int) -> list[tuple[int, int]]:
+    result: list[tuple[int, int]] = []
+    position = start
+    while position < end:
+        if text.startswith("//", position):
+            newline = text.find("\n", position + 2, end)
+            position = end if newline < 0 else newline + 1
+            continue
+        if text.startswith("/*", position):
+            close = text.find("*/", position + 2, end)
+            position = end if close < 0 else close + 2
+            continue
+        if text[position] == "{":
+            close = matching_brace(text, position)
+            if close > end:
+                raise ValueError("配列外まで続く初期化子を検出しました")
+            result.append((position, close))
+            position = close + 1
+            continue
+        position += 1
+    return result
+
+
+def parse_contiguous_source(
+    path: Path,
+    array: str,
+    array_start: int,
+    start: int = 0x80,
+    end: int = 0xFF,
+    element_width: int = 14,
+) -> dict[int, FontEntry]:
+    """Parse every positional element of a named C array.
+
+    ``array_start`` is the runtime code point represented by the first active
+    element.  Labels are accepted only when an inline code comment agrees with
+    the positional code; stale comments cannot silently change the mapping.
+    """
+
+    text = path.read_text(encoding="utf-8")
+    declaration = next((match for match in ARRAY_DECLARATION_RE.finditer(text) if match.group("name") == array), None)
+    if declaration is None:
+        raise ValueError(f"配列宣言が見つかりません: {array}")
+    opening = declaration.end() - 1
+    closing = matching_brace(text, opening)
+    body_start, body_end = opening + 1, closing
+    masked = mask_inactive_preprocessor_lines(text)
+    entries: dict[int, FontEntry] = {}
+    for ordinal, (initializer_open, initializer_close) in enumerate(
+        top_level_initializers(masked, body_start, body_end)
+    ):
+        code = array_start + ordinal
+        if not start <= code <= end:
+            continue
+        body = re.sub(r"/\*.*?\*/", "", text[initializer_open + 1 : initializer_close], flags=re.S)
+        body = re.sub(r"//[^\r\n]*", "", body)
+        values = tuple(int(value, 16) for value in HEX_RE.findall(body))
+        if len(values) != element_width:
+            raise ValueError(
+                f"{path}:{text.count(chr(10), 0, initializer_open) + 1}: "
+                f"0x{code:02X} の要素幅が不正です: {len(values)} (expected {element_width})"
+            )
+        line_end = text.find("\n", initializer_close)
+        if line_end < 0:
+            line_end = len(text)
+        line = text[initializer_open:line_end]
+        code_comment = COMMENT_CODE_RE.search(line)
+        label = None
+        if code_comment and int(code_comment.group(1), 16) == code:
+            label = _label(line)
+        entries[code] = FontEntry(
+            code=code,
+            data=values,
+            label=label,
+            source=path.name,
+            line=text.count("\n", 0, initializer_open) + 1,
+        )
+    if not entries:
+        raise ValueError(f"連続配列から対象範囲を読み取れません: {array}")
+    return entries
+
+
 def load_sources(paths: list[Path], start: int, end: int, element_width: int = 14) -> dict[int, FontEntry]:
     entries: dict[int, FontEntry] = {}
     for path in paths:
@@ -83,14 +266,26 @@ def _byte(data: tuple[int, ...] | None, index: int) -> int:
     return data[index] if data and index < len(data) else 0
 
 
-def compare(reference: dict[int, FontEntry], current: dict[int, FontEntry]) -> dict:
-    codes = sorted(set(reference) | set(current))
+def compare(
+    reference: dict[int, FontEntry],
+    current: dict[int, FontEntry],
+    start: int | None = None,
+    end: int | None = None,
+    element_width: int = 14,
+) -> dict:
+    if (start is None) != (end is None):
+        raise ValueError("startとendは同時に指定してください")
+    codes = list(range(start, end + 1)) if start is not None and end is not None else sorted(set(reference) | set(current))
     rows = []
     for code in codes:
         reference_entry = reference.get(code)
         current_entry = current.get(code)
-        reference_data = reference_entry.data if reference_entry else ()
-        current_data = current_entry.data if current_entry else ()
+        if start is not None:
+            reference_data = reference_entry.data if reference_entry else (0,) * element_width
+            current_data = current_entry.data if current_entry else (0,) * element_width
+        else:
+            reference_data = reference_entry.data if reference_entry else ()
+            current_data = current_entry.data if current_entry else ()
         length = max(len(reference_data), len(current_data))
         byte_changes = [index for index in range(length) if _byte(reference_data, index) != _byte(current_data, index)]
         changed_bits = sum((_byte(reference_data, index) ^ _byte(current_data, index)).bit_count() for index in range(length))
@@ -100,14 +295,22 @@ def compare(reference: dict[int, FontEntry], current: dict[int, FontEntry]) -> d
         current_only_bits = sum(
             (_byte(current_data, index) & ~_byte(reference_data, index)).bit_count() for index in range(length)
         )
-        if not reference_entry:
+        if not byte_changes:
+            status = "same"
+        elif not reference_entry:
             status = "current-only"
         elif not current_entry:
             status = "reference-only"
-        elif not byte_changes:
-            status = "same"
         else:
             status = "different"
+        if reference_entry and current_entry:
+            presence = "both"
+        elif reference_entry:
+            presence = "reference-only"
+        elif current_entry:
+            presence = "current-only"
+        else:
+            presence = "neither"
         rows.append(
             {
                 "code": f"0x{code:02X}",
@@ -120,6 +323,9 @@ def compare(reference: dict[int, FontEntry], current: dict[int, FontEntry]) -> d
                     else None
                 ),
                 "status": status,
+                "presence": presence,
+                "reference_present": bool(reference_entry),
+                "current_present": bool(current_entry),
                 "reference_bytes": [f"0x{value:02X}" for value in reference_data],
                 "current_bytes": [f"0x{value:02X}" for value in current_data],
                 "changed_bytes": byte_changes,
@@ -129,10 +335,12 @@ def compare(reference: dict[int, FontEntry], current: dict[int, FontEntry]) -> d
             }
         )
     counts = {status: sum(row["status"] == status for row in rows) for status in ("same", "different", "reference-only", "current-only")}
+    presence_counts = {presence: sum(row["presence"] == presence for row in rows) for presence in ("both", "reference-only", "current-only", "neither")}
     return {
         "summary": {
             "codes": len(rows),
             **counts,
+            "presence": presence_counts,
             "changed_bytes": sum(len(row["changed_bytes"]) for row in rows),
             "changed_bits": sum(row["changed_bits"] for row in rows),
             "reference_only_bits": sum(row["reference_only_bits"] for row in rows),
@@ -142,29 +350,40 @@ def compare(reference: dict[int, FontEntry], current: dict[int, FontEntry]) -> d
     }
 
 
-def make_markdown(result: dict, reference_paths: list[Path], current_paths: list[Path], start: int, end: int) -> str:
+def make_markdown(
+    result: dict,
+    reference_paths: list[Path],
+    current_paths: list[Path],
+    start: int,
+    end: int,
+    reference_mapping: str = "コード注釈／指定初期化子",
+    current_mapping: str = "コード注釈／指定初期化子",
+) -> str:
     summary = result["summary"]
     lines = [
         "# 日本語大字形のrainy参照比較",
         "",
-        "Cソースのコード注釈／指定初期化子から，参照側と現行側の14-byte大字形を比較した結果です．",
+        "Cソースの指定した対応付けに従い，参照側と現行側の14-byte大字形を比較した結果です．",
         "このレポートは比較用であり，参照フォントをファームウェアへコピーしたことを意味しません．",
         "",
         f"- 比較範囲: `0x{start:02X}`–`0x{end:02X}`",
         f"- 参照ソース: {', '.join(path.name for path in reference_paths)}",
         f"- 現行ソース: {', '.join(path.name for path in current_paths)}",
+        f"- 参照の対応付け: {reference_mapping}",
+        f"- 現行の対応付け: {current_mapping}",
         f"- コード数: {summary['codes']}（一致 {summary['same']}，差分 {summary['different']}，参照のみ {summary['reference-only']}，現行のみ {summary['current-only']}）",
         f"- 差分: {summary['changed_bytes']} byte，{summary['changed_bits']} bit（参照のみ {summary['reference_only_bits']} bit，現行のみ {summary['current_only_bits']} bit）",
+        f"- ソース上の要素: 両方 {summary['presence']['both']}，参照のみ {summary['presence']['reference-only']}，現行のみ {summary['presence']['current-only']}，両方なし {summary['presence']['neither']}（空白要素も比較）",
         "",
-        "| コード | 文字 | 状態 | 変更byte数 | 変更bit数 | 参照byte列 | 現行byte列 |",
-        "| --- | --- | --- | ---: | ---: | --- | --- |",
+        "| コード | 文字 | 状態 | ソース上の要素 | 変更byte数 | 変更bit数 | 参照byte列 | 現行byte列 |",
+        "| --- | --- | --- | --- | ---: | ---: | --- | --- |",
     ]
     for row in result["rows"]:
         label = row["label"] or ""
         reference_bytes = " ".join(row["reference_bytes"])
         current_bytes = " ".join(row["current_bytes"])
         lines.append(
-            f"| `{row['code']}` | {label} | {row['status']} | {len(row['changed_bytes'])} | {row['changed_bits']} | `{reference_bytes}` | `{current_bytes}` |"
+            f"| `{row['code']}` | {label} | {row['status']} | {row['presence']} | {len(row['changed_bytes'])} | {row['changed_bits']} | `{reference_bytes}` | `{current_bytes}` |"
         )
     return "\n".join(lines) + "\n"
 
@@ -217,16 +436,47 @@ def main() -> None:
     parser.add_argument("--start", type=lambda value: int(value, 0), default=0x80)
     parser.add_argument("--end", type=lambda value: int(value, 0), default=0xDF)
     parser.add_argument("--element-width", type=int, default=14, help="比較する1字形のbyte数（通常大字形は14）")
+    parser.add_argument("--reference-array", help="参照側を指定名の連続配列として位置対応する")
+    parser.add_argument("--reference-array-start", type=lambda value: int(value, 0), help="参照側連続配列の先頭コード")
+    parser.add_argument("--current-array", help="現行側を指定名の連続配列として位置対応する")
+    parser.add_argument("--current-array-start", type=lambda value: int(value, 0), help="現行側連続配列の先頭コード")
     args = parser.parse_args()
     if args.start > args.end:
         parser.error("--start must not exceed --end")
-    reference = load_sources(args.reference_source, args.start, args.end, args.element_width)
-    current = load_sources(args.current_source, args.start, args.end, args.element_width)
-    result = compare(reference, current)
+    if args.reference_array and args.reference_array_start is None:
+        parser.error("--reference-array-start is required with --reference-array")
+    if args.current_array and args.current_array_start is None:
+        parser.error("--current-array-start is required with --current-array")
+    if args.reference_array and len(args.reference_source) != 1:
+        parser.error("連続配列の参照ソースは1つだけ指定してください")
+    if args.current_array and len(args.current_source) != 1:
+        parser.error("連続配列の現行ソースは1つだけ指定してください")
+    if args.reference_array:
+        reference = parse_contiguous_source(
+            args.reference_source[0], args.reference_array, args.reference_array_start,
+            args.start, args.end, args.element_width
+        )
+        reference_mapping = f"`{args.reference_array}`連続配列を`0x{args.reference_array_start:02X}`起点で順序対応"
+    else:
+        reference = load_sources(args.reference_source, args.start, args.end, args.element_width)
+        reference_mapping = "コード注釈／指定初期化子"
+    if args.current_array:
+        current = parse_contiguous_source(
+            args.current_source[0], args.current_array, args.current_array_start,
+            args.start, args.end, args.element_width
+        )
+        current_mapping = f"`{args.current_array}`連続配列を`0x{args.current_array_start:02X}`起点で順序対応"
+    else:
+        current = load_sources(args.current_source, args.start, args.end, args.element_width)
+        current_mapping = "コード注釈／指定初期化子"
+    result = compare(reference, current, args.start, args.end, args.element_width)
     args.out.mkdir(parents=True, exist_ok=True)
     (args.out / "font_diff.json").write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     (args.out / "font_diff.md").write_text(
-        make_markdown(result, args.reference_source, args.current_source, args.start, args.end), encoding="utf-8"
+        make_markdown(
+            result, args.reference_source, args.current_source, args.start, args.end,
+            reference_mapping, current_mapping,
+        ), encoding="utf-8"
     )
     (args.out / "font_diff.svg").write_text(make_svg(result), encoding="utf-8")
     print(json.dumps(result["summary"], ensure_ascii=False, sort_keys=True))

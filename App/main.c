@@ -240,10 +240,11 @@ void Main(void)
         BACKLIGHT_TurnOn();
 
 #ifdef ENABLE_FEAT_F4HWN_LOGO
-        const bool split_logo_message =
-            gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_LOGO_MESSAGE;
+        const bool split_logo_followup =
+            gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_LOGO_MESSAGE ||
+            gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_LOGO_ALL;
 #else
-        const bool split_logo_message = false;
+        const bool split_logo_followup = false;
 #endif
 
 #ifdef ENABLE_FEAT_F4HWN
@@ -253,17 +254,20 @@ void Main(void)
 #endif
         {
 #ifdef ENABLE_FEAT_F4HWN_LOGO
-            // Give LOGO+MSG two explicit 1.25-second phases instead of
+            // Give LOGO+MSG and LOGO+ALL two explicit 1.25-second phases instead of
             // drawing the logo and message on the same framebuffer.
-            if (split_logo_message)
+            if (split_logo_followup)
                 boot_counter_10ms = 125;
 #endif
             const bool boot_screen_finished = Main_WaitForBootScreen();
 
 #ifdef ENABLE_FEAT_F4HWN_LOGO
-            if (boot_screen_finished && split_logo_message)
+            if (boot_screen_finished && split_logo_followup)
             {
-                UI_DisplayWelcomeRxOnlyMessage();
+                if (gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_LOGO_ALL)
+                    UI_DisplayWelcomeRxOnlyAll();
+                else
+                    UI_DisplayWelcomeRxOnlyMessage();
                 boot_counter_10ms = 125;
                 Main_WaitForBootScreen();
             }

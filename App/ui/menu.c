@@ -43,6 +43,7 @@
 #include "helper.h"
 #include "inputbox.h"
 #include "menu.h"
+#include "menu_text.h"
 #include "ui.h"
 #include "welcome.h"
 
@@ -50,332 +51,204 @@
 const t_menu_item MenuList[] =
 {
 //   text,          menu ID
- #ifdef ENABLE_JAPANESE
-    {{0xBD, 0xC3, 0xAF, 0xCC, 0xDF}, MENU_STEP}, // ステップ
- #else
-    {"Step",        MENU_STEP          },
- #endif
+    {WRX_MENU_LABEL_STEP, MENU_STEP},
  #ifndef ENABLE_RX_ONLY
-    {"Power",       MENU_TXP           }, // was "TXP"
+    {WRX_MENU_LABEL_POWER, MENU_TXP},
  #endif
- #ifdef ENABLE_JAPANESE
-    {{0x80, 0x81, 'D', 'C', 'S'}, MENU_R_DCS}, // 受信DCS
-    {{0x80, 0x81, 'C', 'T', 'C', 'S'}, MENU_R_CTCS}, // 受信CTCS
- #else
-    {"RxDCS",       MENU_R_DCS         }, // was "R_DCS"
-    {"RxCTCS",      MENU_R_CTCS        }, // was "R_CTCS"
- #endif
+    {WRX_MENU_LABEL_RX_DCS, MENU_R_DCS},
+    {WRX_MENU_LABEL_RX_CTCS, MENU_R_CTCS},
  #ifndef ENABLE_RX_ONLY
-    {"TxDCS",       MENU_T_DCS         }, // was "T_DCS"
-    {"TxCTCS",      MENU_T_CTCS        }, // was "T_CTCS"
-    {"TxODir",      MENU_SFT_D         }, // was "SFT_D"
-    {"TxOffs",      MENU_OFFSET        }, // was "OFFSET"
+    {WRX_MENU_LABEL_TX_DCS, MENU_T_DCS},
+    {WRX_MENU_LABEL_TX_CTCS, MENU_T_CTCS},
+    {WRX_MENU_LABEL_TX_OFFSET_DIR, MENU_SFT_D},
+    {WRX_MENU_LABEL_TX_OFFSET, MENU_OFFSET},
  #endif
-#ifdef ENABLE_JAPANESE
-    {{0xEE, 0xFF}, MENU_W_N}, // 帯幅
-#else
-    {"W/N",         MENU_W_N           },
-#endif
+    {WRX_MENU_LABEL_W_N, MENU_W_N},
 #ifdef ENABLE_RX_ONLY
- #ifdef ENABLE_JAPANESE
-    {{0x80, 0x81, 0xE1, 0xE2}, MENU_RX_EXT}, // 受信拡張
- #else
-    {"RXExt",       MENU_RX_EXT       },
- #endif
-    {"Bank",        MENU_RX_BANK       },
- #ifdef ENABLE_JAPANESE
-    {{0xF5, 0xF6}, MENU_RX_BANK_SET}, // 設定
- #else
-    {"BnkSet",      MENU_RX_BANK_SET   },
- #endif
+    {WRX_MENU_LABEL_RX_EXT, MENU_RX_EXT},
+    {WRX_MENU_LABEL_RX_BANK, MENU_RX_BANK},
+    {WRX_MENU_LABEL_RX_BANK_SET, MENU_RX_BANK_SET},
 #endif
 #ifndef ENABLE_FEAT_F4HWN
-    {"Scramb",      MENU_SCR           }, // was "SCR"
+    {WRX_MENU_LABEL_SCRAMBLER, MENU_SCR},
 #endif
  #ifndef ENABLE_RX_ONLY
-    {"BusyCL",      MENU_BCL           }, // was "BCL"
+    {WRX_MENU_LABEL_BUSY_CANCEL, MENU_BCL},
  #endif
-    {"Compnd",      MENU_COMPAND       },
- #ifdef ENABLE_JAPANESE
-    {{0x82, 0x83}, MENU_AM}, // 変調
- #else
-    {"Mode",        MENU_AM            }, // was "AM"
- #endif
-#ifdef ENABLE_JAPANESE
-    {{'C', 'H', 0xD8, 0xBD, 0xC4}, MENU_LIST_CH}, // CHリスト
-#else
-    {"ChList",      MENU_LIST_CH       },
-#endif
- #ifdef ENABLE_JAPANESE
-    {{'C', 'H', 0x86, 0x87}, MENU_MEM_CH}, // CH保存
-    {{'C', 'H', 0x88, 0x89}, MENU_DEL_CH}, // CH削除
-    {{'C', 'H', 0x8A}, MENU_MEM_NAME}, // CH名
- #else
-    {"ChSave",      MENU_MEM_CH        }, // was "MEM-CH"
-    {"ChDele",      MENU_DEL_CH        }, // was "DEL-CH"
-    {"ChName",      MENU_MEM_NAME      },
- #endif
+    {WRX_MENU_LABEL_COMPANDER, MENU_COMPAND},
+    {WRX_MENU_LABEL_MODULATION, MENU_AM},
+    {WRX_MENU_LABEL_CHANNEL_LIST, MENU_LIST_CH},
+    {WRX_MENU_LABEL_SAVE_CHANNEL, MENU_MEM_CH},
+    {WRX_MENU_LABEL_DELETE_CHANNEL, MENU_DEL_CH},
+    {WRX_MENU_LABEL_CHANNEL_NAME, MENU_MEM_NAME},
 
-#ifdef ENABLE_JAPANESE
-    {{'S', 0xD8, 0xBD, 0xC4}, MENU_S_LIST}, // Sリスト
-#else
-    {"ScList",       MENU_S_LIST       },
-#endif
- #ifdef ENABLE_JAPANESE
-    {{0xE3, 0xE4}, MENU_S_PRI}, // 優先
-    {{0xE3, 0xE4, '1'}, MENU_S_PRI_CH_1}, // 優先1
-    {{0xE3, 0xE4, '2'}, MENU_S_PRI_CH_2}, // 優先2
- #else
-    {"ScPri",        MENU_S_PRI        },
-    {"PriCh1",       MENU_S_PRI_CH_1   },
-    {"PriCh2",       MENU_S_PRI_CH_2   },
- #endif
-    {"ScnRev",       MENU_SC_REV        },
+    {WRX_MENU_LABEL_SCAN_LIST, MENU_S_LIST},
+    {WRX_MENU_LABEL_PRIORITY, MENU_S_PRI},
+    {WRX_MENU_LABEL_PRIORITY1, MENU_S_PRI_CH_1},
+    {WRX_MENU_LABEL_PRIORITY2, MENU_S_PRI_CH_2},
+    {WRX_MENU_LABEL_SCAN_REVERSE, MENU_SC_REV},
 #ifndef ENABLE_FEAT_F4HWN
     #ifdef ENABLE_NOAA
-        {"NOAA-S",      MENU_NOAA_S    },
+        {WRX_MENU_LABEL_NOAA_SCAN, MENU_NOAA_S},
     #endif
 #endif
- #ifdef ENABLE_JAPANESE
-    {{'F', '1', 0x8C, 0x8D}, MENU_F1SHRT}, // F1短押
-    {{'F', '1', 0x8B, 0x8D}, MENU_F1LONG}, // F1長押
-    {{'F', '2', 0x8C, 0x8D}, MENU_F2SHRT}, // F2短押
-    {{'F', '2', 0x8B, 0x8D}, MENU_F2LONG}, // F2長押
-    {{'M', 0x8B, 0x8D}, MENU_MLONG}, // M長押
- #else
-    {"F1Shrt",      MENU_F1SHRT        },
-    {"F1Long",      MENU_F1LONG        },
-    {"F2Shrt",      MENU_F2SHRT        },
-    {"F2Long",      MENU_F2LONG        },
-    {"M Long",      MENU_MLONG         },
- #endif
+    {WRX_MENU_LABEL_F1_SHORT, MENU_F1SHRT},
+    {WRX_MENU_LABEL_F1_LONG, MENU_F1LONG},
+    {WRX_MENU_LABEL_F2_SHORT, MENU_F2SHRT},
+    {WRX_MENU_LABEL_F2_LONG, MENU_F2LONG},
+    {WRX_MENU_LABEL_M_LONG, MENU_MLONG},
 
- #ifdef ENABLE_JAPANESE
-    {{0xB7, 0xE0, 0xDB, 0xAF, 0xB8}, MENU_AUTOLK}, // キーロック
- #else
-    {"KeyLck",      MENU_AUTOLK        }, // was "AUTOLk"
- #endif
+    {WRX_MENU_LABEL_KEY_LOCK, MENU_AUTOLK},
 #ifndef ENABLE_RX_ONLY
-    {"TxTOut",      MENU_TOT           }, // was "TOT"
+    {WRX_MENU_LABEL_TX_TIMEOUT, MENU_TOT},
 #endif
- #ifdef ENABLE_JAPANESE
-    {{0x8F, 0xF7}, MENU_SAVE}, // 電池
- #else
-    {"BatSav",      MENU_SAVE          }, // was "SAVE"
- #endif
- #ifdef ENABLE_JAPANESE
-    {{0x8F, 0x92, '%', 0x93, 0x94}, MENU_BAT_TXT}, // 電圧/%表示
- #else
-    {"BatTxt",      MENU_BAT_TXT       },
-#endif
+    {WRX_MENU_LABEL_BATTERY_SAVE, MENU_SAVE},
+    {WRX_MENU_LABEL_BATTERY_TEXT, MENU_BAT_TXT},
 #ifndef ENABLE_RX_ONLY
-    {"Mic",         MENU_MIC           },
-    {"MicBar",      MENU_MIC_BAR       },
+    {WRX_MENU_LABEL_MIC, MENU_MIC},
+    {WRX_MENU_LABEL_MIC_BAR, MENU_MIC_BAR},
 #endif
- #ifdef ENABLE_JAPANESE
-    {{'C', 'H', 0x93, 0x94}, MENU_MDF}, // CH表示
-    {{'O', 'N', 0x95, 0x96}, MENU_PONMSG}, // ON画面
- #else
-    {"ChDisp",      MENU_MDF           }, // was "MDF"
-    {"POnMsg",      MENU_PONMSG        },
- #endif
-#ifdef ENABLE_JAPANESE
-    {{0x95, 0x96, 0x93, 0x94}, MENU_ABR}, // 画面表示
-    {{0x95, 0x96, 'M', 'i', 'n'}, MENU_ABR_MIN}, // 画面Min
-    {{0x95, 0x96, 'M', 'a', 'x'}, MENU_ABR_MAX}, // 画面Max
-#else
-    {"BLTime",      MENU_ABR           }, // was "ABR"
-    {"BLMin",       MENU_ABR_MIN       },
-    {"BLMax",       MENU_ABR_MAX       },
-#endif
+    {WRX_MENU_LABEL_CHANNEL_DISPLAY, MENU_MDF},
+    {WRX_MENU_LABEL_POWER_ON, MENU_PONMSG},
+    {WRX_MENU_LABEL_BACKLIGHT, MENU_ABR},
+    {WRX_MENU_LABEL_BACKLIGHT_MIN, MENU_ABR_MIN},
+    {WRX_MENU_LABEL_BACKLIGHT_MAX, MENU_ABR_MAX},
 #ifndef ENABLE_RX_ONLY
-    {"BLTxRx",      MENU_ABR_ON_TX_RX  },
+    {WRX_MENU_LABEL_BACKLIGHT_TXRX, MENU_ABR_ON_TX_RX},
 #endif
- #ifdef ENABLE_JAPANESE
-    {{0xB7, 0xE0, 0x8E}, MENU_BEEP}, // キー音
- #else
-    {"Beep",        MENU_BEEP          },
- #endif
+    {WRX_MENU_LABEL_BEEP, MENU_BEEP},
 #ifdef ENABLE_VOICE
-    {"Voice",       MENU_VOICE         },
+    {WRX_MENU_LABEL_VOICE, MENU_VOICE},
 #endif
 #ifndef ENABLE_RX_ONLY
-    {"Roger",       MENU_ROGER         },
-    {"STE",         MENU_STE           },
-    {"RP STE",      MENU_RP_STE        },
-    {"1 Call",      MENU_1_CALL        },
+    {WRX_MENU_LABEL_ROGER, MENU_ROGER},
+    {WRX_MENU_LABEL_STE, MENU_STE},
+    {WRX_MENU_LABEL_RP_STE, MENU_RP_STE},
+    {WRX_MENU_LABEL_CALL1, MENU_1_CALL},
 #endif
 #ifdef ENABLE_ALARM
 #ifndef ENABLE_RX_ONLY
-    {"AlarmT",      MENU_AL_MOD        },
+    {WRX_MENU_LABEL_ALARM, MENU_AL_MOD},
 #endif
 #endif
 #ifdef ENABLE_DTMF_CALLING
 #ifndef ENABLE_RX_ONLY
-    {"ANI ID",      MENU_ANI_ID        },
+    {WRX_MENU_LABEL_ANI, MENU_ANI_ID},
 #endif
 #endif
 #ifndef ENABLE_RX_ONLY
-    {"UPCode",      MENU_UPCODE        },
-    {"DWCode",      MENU_DWCODE        },
-    {"PTT ID",      MENU_PTT_ID        },
-    {"D ST",        MENU_D_ST          },
+    {WRX_MENU_LABEL_UP_CODE, MENU_UPCODE},
+    {WRX_MENU_LABEL_DOWN_CODE, MENU_DWCODE},
+    {WRX_MENU_LABEL_PTT_ID, MENU_PTT_ID},
+    {WRX_MENU_LABEL_DTMF_ST, MENU_D_ST},
 #endif
 #ifdef ENABLE_DTMF_CALLING
 #ifndef ENABLE_RX_ONLY
-    {"D Resp",      MENU_D_RSP         },
-    {"D Hold",      MENU_D_HOLD        },
+    {WRX_MENU_LABEL_DTMF_RESPONSE, MENU_D_RSP},
+    {WRX_MENU_LABEL_DTMF_HOLD, MENU_D_HOLD},
 #endif
 #endif
 #ifndef ENABLE_RX_ONLY
-    {"D Prel",      MENU_D_PRE         },
+    {WRX_MENU_LABEL_DTMF_PRE, MENU_D_PRE},
 #endif
 #ifdef ENABLE_DTMF_CALLING
 #ifndef ENABLE_RX_ONLY
-    {"D Decd",      MENU_D_DCD         },
-    {"D List",      MENU_D_LIST        },
+    {WRX_MENU_LABEL_DTMF_DECODE, MENU_D_DCD},
+    {WRX_MENU_LABEL_DTMF_LIST, MENU_D_LIST},
 #endif
 #endif
-    {"D Live",      MENU_D_LIVE_DEC    }, // live DTMF decoder
+    {WRX_MENU_LABEL_DTMF_LIVE, MENU_D_LIVE_DEC},
 #ifndef ENABLE_FEAT_F4HWN
     #ifdef ENABLE_AM_FIX
-        {"AM Fix",      MENU_AM_FIX        },
+        {WRX_MENU_LABEL_AM_FIX, MENU_AM_FIX},
 #endif
 #endif
 #ifndef ENABLE_RX_ONLY
-    {"VOX",         MENU_VOX           },
+    {WRX_MENU_LABEL_VOX, MENU_VOX},
 #endif
 #ifdef ENABLE_FEAT_F4HWN
  #ifdef ENABLE_JAPANESE
-    {{0xE5, 0xE6}, MENU_VOL}, // 情報
+    {WRX_MENU_LABEL_INFO, MENU_VOL},
  #else
-    {"SysInf",      MENU_VOL           }, // was "VOL"
+    {WRX_MENU_LABEL_INFO, MENU_VOL},
  #endif
 #else
 #ifdef ENABLE_JAPANESE
-    {{0xCA, 0xDE, 0xAF, 0xC3, 0xD8, '-'}, MENU_VOL}, // バッテリー
+    {WRX_MENU_LABEL_INFO, MENU_VOL},
 #else
-    {"BatVol",      MENU_VOL           }, // was "VOL"
+    {WRX_MENU_LABEL_BATTERY_VOLTAGE, MENU_VOL},
 #endif
 #endif
  #ifdef ENABLE_JAPANESE
-    {{0x80, 0x81, 0xD3, 0xE0, 0xC4, 0xDE}, MENU_TDR}, // 受信モード
-    {{0xBD, 0xB9, 0xD9, 0xC1}, MENU_SQL}, // スケルチ
+    {WRX_MENU_LABEL_RX_MODE, MENU_TDR},
+    {WRX_MENU_LABEL_SQUELCH, MENU_SQL},
  #else
-    {"RxMode",      MENU_TDR           },
-    {"Sql",         MENU_SQL           },
+    {WRX_MENU_LABEL_RX_MODE, MENU_TDR},
+    {WRX_MENU_LABEL_SQUELCH, MENU_SQL},
  #endif
 #ifdef ENABLE_FEAT_F4HWN
 #ifndef ENABLE_RX_ONLY
-    {"SetPwr",      MENU_SET_PWR       },
-    {"SetPTT",      MENU_SET_PTT       },
-    {"SetTOT",      MENU_SET_TOT       },
-    {"SetEOT",      MENU_SET_EOT       },
+    {WRX_MENU_LABEL_SET_POWER, MENU_SET_PWR},
+    {WRX_MENU_LABEL_SET_PTT, MENU_SET_PTT},
+    {WRX_MENU_LABEL_SET_TOT, MENU_SET_TOT},
+    {WRX_MENU_LABEL_SET_EOT, MENU_SET_EOT},
 #endif
-    {"SetCtr",      MENU_SET_CTR       },
- #ifdef ENABLE_JAPANESE
-    {{0xE7, 0xE8}, MENU_SET_INV}, // 反転
- #else
-    {"SetInv",      MENU_SET_INV       },
- #endif
- #ifdef ENABLE_JAPANESE
-    {{0xB7, 0xE0, 0xDB, 0xAF, 0xB8}, MENU_SET_LCK}, // キーロック
- #else
-    {"SetLck",      MENU_SET_LCK       },
- #endif
-#ifdef ENABLE_JAPANESE
-    {{0x93, 0x94}, MENU_SET_MET}, // 表示
-#else
-    {"SetMet",      MENU_SET_MET       },
-#endif
- #ifdef ENABLE_JAPANESE
-    {{0x95, 0x96}, MENU_SET_GUI}, // 画面
- #else
-    {"SetGUI",      MENU_SET_GUI       },
- #endif
+    {WRX_MENU_LABEL_SET_CONTRAST, MENU_SET_CTR},
+    {WRX_MENU_LABEL_SET_INV, MENU_SET_INV},
+    {WRX_MENU_LABEL_SET_MENU_LOCK, MENU_SET_LCK},
+    {WRX_MENU_LABEL_SET_METER, MENU_SET_MET},
+    {WRX_MENU_LABEL_SET_GUI, MENU_SET_GUI},
 #ifdef ENABLE_FEAT_F4HWN_AUDIO    
- #ifdef ENABLE_JAPANESE
-    {{0xE9, 0xEA}, MENU_SET_AUD}, // 音声
- #else
-    {"SetRxA",      MENU_SET_AUD       },
- #endif
+    {WRX_MENU_LABEL_SET_AUDIO, MENU_SET_AUD},
 #endif
 #ifndef ENABLE_RX_ONLY
-    {"SetTmr",      MENU_SET_TMR       },
+    {WRX_MENU_LABEL_SET_TIMER, MENU_SET_TMR},
 #endif
 #ifdef ENABLE_FEAT_F4HWN_SLEEP
- #ifdef ENABLE_JAPANESE
-    {{0xEB, 0xEC}, MENU_SET_OFF}, // 自動
- #else
-    {"SetOff",       MENU_SET_OFF      },
- #endif
+    {WRX_MENU_LABEL_SET_SLEEP, MENU_SET_OFF},
 #endif
 #ifdef ENABLE_FEAT_F4HWN_NARROWER
- #ifdef ENABLE_JAPANESE
-    {{0xED, 0xEE}, MENU_SET_NFM}, // 狭帯
- #else
-    {"SetNFM",      MENU_SET_NFM       },
- #endif
+    {WRX_MENU_LABEL_SET_NFM, MENU_SET_NFM},
 #endif
 #ifdef ENABLE_FEAT_F4HWN_VOL
- #ifdef ENABLE_JAPANESE
-    {{0xE9, 0xEF}, MENU_SET_VOL}, // 音量
- #else
-    {"SetVol",      MENU_SET_VOL       },
- #endif
+    {WRX_MENU_LABEL_SET_VOLUME, MENU_SET_VOL},
 #endif
 #ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
-    {"SetKey",      MENU_SET_KEY       },
+    {WRX_MENU_LABEL_SET_KEY, MENU_SET_KEY},
 #endif
 #ifdef ENABLE_NOAA
-    {"SetNWR",      MENU_NOAA_S    },
+    {WRX_MENU_LABEL_SET_NWR, MENU_NOAA_S},
 #endif
 #ifdef ENABLE_FEAT_F4HWN_SCAN_FASTER
- #ifdef ENABLE_JAPANESE
-    {{0xF0, 0xF1}, MENU_SET_SCN}, // 高速
- #else
-    {"SetScn",      MENU_SET_SCN       },
- #endif
+    {WRX_MENU_LABEL_SET_SCAN, MENU_SET_SCN},
 #endif
 #ifdef ENABLE_FEAT_F4HWN_LOGO_SAV
- #ifdef ENABLE_JAPANESE
-    {{0x86, 0x87}, MENU_SET_SAV}, // 保存
- #else
-    {"SetSav",      MENU_SET_SAV       },
- #endif
+    {WRX_MENU_LABEL_SET_SAVE, MENU_SET_SAV},
 #endif
 #endif
     // hidden menu items from here on
     // enabled if pressing both the PTT and upper side button at power-on
 #ifndef ENABLE_RX_ONLY
-    {"F Lock",      MENU_F_LOCK        },
+    {WRX_MENU_LABEL_F_LOCK, MENU_F_LOCK},
 #endif
 #ifndef ENABLE_RX_ONLY
 #ifndef ENABLE_FEAT_F4HWN
-    {"Tx 200",      MENU_200TX         }, // was "200TX"
-    {"Tx 350",      MENU_350TX         }, // was "350TX"
-    {"Tx 500",      MENU_500TX         }, // was "500TX"
+    {WRX_MENU_LABEL_TX_200, MENU_200TX},
+    {WRX_MENU_LABEL_TX_350, MENU_350TX},
+    {WRX_MENU_LABEL_TX_500, MENU_500TX},
 #endif
-    {"350 En",      MENU_350EN         }, // was "350EN"
+    {WRX_MENU_LABEL_350_ENABLE, MENU_350EN},
 #endif
 #ifndef ENABLE_FEAT_F4HWN
-    {"ScraEn",      MENU_SCREN         }, // was "SCREN"
+    {WRX_MENU_LABEL_SCRAMBLER_EN, MENU_SCREN},
 #endif
 #ifdef ENABLE_F_CAL_MENU
-    {"FrCali",      MENU_F_CALI        }, // reference xtal calibration
+    {WRX_MENU_LABEL_FREQ_CAL, MENU_F_CALI},
 #endif
-#ifdef ENABLE_JAPANESE
-    {{0x8F, 0xF7, 0xFB, 0xFC}, MENU_BATCAL}, // 電池校正
-#else
-    {"BatCal",      MENU_BATCAL        }, // battery voltage calibration
-#endif
-    {"BatTyp",      MENU_BATTYP        }, // battery type 1600/2200mAh
-    {"SetNav",      MENU_SET_NAV       }, // set navigation (LEFT / RIGHT or UP / DOWN)
- #ifdef ENABLE_JAPANESE
-    {{0xF8, 0xF9, 0xFA}, MENU_RESET}, // 初期化
- #else
-    {"Reset",       MENU_RESET         }, // might be better to move this to the hidden menu items ?
- #endif
+    {WRX_MENU_LABEL_BATTERY_CAL, MENU_BATCAL},
+    {WRX_MENU_LABEL_BATTERY_TYPE, MENU_BATTYP},
+    {WRX_MENU_LABEL_SET_NAV, MENU_SET_NAV},
+    {WRX_MENU_LABEL_RESET, MENU_RESET},
 
     {"",                              0xff               }  // end of list - DO NOT delete or move this this
 };
@@ -510,6 +383,7 @@ const char* const gSubMenu_PONMSG[] =
 #ifdef ENABLE_FEAT_F4HWN_LOGO
     "LOGO",
     "LOGO+MSG",
+    "LOGO+ALL",
 #endif
     "NONE"
 };
@@ -775,14 +649,14 @@ static const char *UI_MENU_GetRxHelp(const int menuId)
 {
     switch (menuId)
     {
-        case MENU_SQL:         return "AUTO=measure noise";
-        case MENU_W_N:         return "W+25 W20 N12 N-6";
-        case MENU_LIST_CH:     return "scan list membership";
-        case MENU_R_CTCS:      return "normal/reverse tone";
+        case MENU_SQL:         return WRX_MENU_HELP_SQL;
+        case MENU_W_N:         return WRX_MENU_HELP_W_N;
+        case MENU_LIST_CH:     return WRX_MENU_HELP_CHANNEL_LIST;
+        case MENU_R_CTCS:      return WRX_MENU_HELP_CTCS;
 #ifdef ENABLE_RX_ONLY
-        case MENU_RX_EXT:      return "RX features master";
-        case MENU_RX_BANK:     return "scan bank filter";
-        case MENU_RX_BANK_SET: return "set channel bank";
+        case MENU_RX_EXT:      return WRX_MENU_HELP_RX_EXT;
+        case MENU_RX_BANK:     return WRX_MENU_HELP_RX_BANK;
+        case MENU_RX_BANK_SET: return WRX_MENU_HELP_RX_BANK_SET;
 #endif
         default:               return NULL;
     }

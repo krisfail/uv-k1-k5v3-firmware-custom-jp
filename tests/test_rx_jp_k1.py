@@ -24,9 +24,11 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
     def test_master_switch_is_exposed_in_radio_menu_and_resets_active_scan_range(self):
         menu_header = source("App/ui/menu.h")
         menu_ui = source("App/ui/menu.c")
+        menu_text = source("App/ui/menu_text.h")
         menu = source("App/app/menu.c")
         self.assertIn("MENU_RX_EXT", menu_header)
-        self.assertIn('"RXExt"', menu_ui)
+        self.assertIn("WRX_MENU_LABEL_RX_EXT", menu_ui)
+        self.assertIn('"RXExt"', menu_text)
         self.assertIn("MENU_RX_EXT", menu_ui)
         self.assertIn("case MENU_RX_EXT", menu)
         self.assertIn("RX_FEATURE_STATE_SetEnabled", menu)
@@ -209,6 +211,7 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
         app = source("App/app/app.c")
         scanner = source("App/app/chFrScanner.c")
         menu = source("App/ui/menu.c")
+        menu_text = source("App/ui/menu_text.h")
 
         self.assertIn('"ENABLE_FEAT_F4HWN_AUDIO_SCOPE": true', cmake)
         self.assertIn("REG_64", ui)
@@ -216,7 +219,7 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
         self.assertIn("RX_FEATURE_STATE_IsEnabled()", app)
         self.assertIn("watchChannel", scanner)
         self.assertIn("UI_MENU_GetRxHelp", menu)
-        self.assertIn('"AUTO=measure noise"', menu)
+        self.assertIn('#define WRX_MENU_HELP_SQL              "AUTO=measure noise"', menu_text)
 
     def test_band_state_uses_k1_external_flash_map(self):
         state = source("App/app/rx_feature_state.c")
@@ -255,14 +258,15 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
         font = source("App/japanese_font.c")
         helper = source("App/ui/helper.c")
         menu = source("App/ui/menu.c")
+        menu_text = source("App/ui/menu_text.h")
         menu_header = source("App/ui/menu.h")
         self.assertIn("gFontBigJapanese", font)
         self.assertIn("gFontSmallJapanese", font)
         self.assertIn("gFontBigJapanese[code - 0x7F]", helper)
         self.assertIn("gFontSmallJapanese[code - 0x7F]", helper)
-        self.assertIn("0x80, 0x81, 'D', 'C', 'S'", menu)
-        self.assertIn("0x95, 0x96", menu)
-        self.assertIn("0xD8, 0xBD, 0xC4", menu)
+        self.assertIn("0x80, 0x81, 'D', 'C', 'S'", menu_text)
+        self.assertIn("0x95, 0x96", menu_text)
+        self.assertIn("0xD8, 0xBD, 0xC4", menu_text)
         self.assertIn("gSubMenu_RXMode[3]", menu_header)
 
     def test_extended_japanese_font_covers_large_long_vowel_and_added_terms(self):
@@ -283,14 +287,15 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
 
     def test_rx_only_menu_uses_expanded_japanese_labels(self):
         menu = source("App/ui/menu.c")
-        self.assertIn("{{0x80, 0x81, 0xE1, 0xE2}, MENU_RX_EXT}", menu)
-        self.assertIn("{{0xEE, 0xFF}, MENU_W_N}", menu)
-        self.assertIn("{{0xE3, 0xE4}, MENU_S_PRI}", menu)
-        self.assertIn("{{0xE5, 0xE6}, MENU_VOL}", menu)
-        self.assertIn("{{0xE7, 0xE8}, MENU_SET_INV}", menu)
-        self.assertIn("{{0xE9, 0xEA}, MENU_SET_AUD}", menu)
-        self.assertIn("{{0xEB, 0xEC}, MENU_SET_OFF}", menu)
-        self.assertIn("{{0x93, 0x94}, MENU_SET_MET}", menu)
+        menu_text = source("App/ui/menu_text.h")
+        self.assertIn("0x80, 0x81, 0xE1, 0xE2", menu_text)
+        self.assertIn("0xEE, 0xFF", menu_text)
+        self.assertIn("0xE3, 0xE4", menu_text)
+        self.assertIn("0xE5, 0xE6", menu_text)
+        self.assertIn("0xE7, 0xE8", menu_text)
+        self.assertIn("0xE9, 0xEA", menu_text)
+        self.assertIn("0xEB, 0xEC", menu_text)
+        self.assertIn("0x93, 0x94", menu_text)
         menu_list = menu.split("const t_menu_item MenuList[]", 1)[1].split("};", 1)[0]
         self.assertIn("#ifndef ENABLE_RX_ONLY", menu_list)
         self.assertIn("MENU_BATCAL", menu_list)
