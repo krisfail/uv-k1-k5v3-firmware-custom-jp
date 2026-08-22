@@ -106,8 +106,8 @@ class ReceiveUiAndToneTests(unittest.TestCase):
         self.assertNotIn('"ScanRev"', menu_text)
         self.assertIn("UI_PrintStringSmallNormalClipped", helper)
         self.assertIn("UI_PrintStringClipped", helper)
-        self.assertIn("UI_PrintStringSmallNormalClipped(MenuList[prev_index].name, 0, 47, 1);", menu)
-        self.assertIn("UI_PrintStringClipped(MenuList[menu_index].name, 0, 47, 2, 8);", menu)
+        self.assertIn("UI_PrintStringSmallNormalClipped(MenuList[gMenuIndices[prev_index]].name, 0, 47, 1);", menu)
+        self.assertIn("UI_PrintStringClipped(MenuList[gMenuIndices[menu_index]].name, 0, 47, 2, 8);", menu)
 
 
 if __name__ == "__main__":

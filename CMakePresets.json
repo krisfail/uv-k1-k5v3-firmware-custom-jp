@@ -80,13 +80,15 @@
                 "ENABLE_FEAT_F4HWN_RXTX_LOG_K5VIEWER": false,
                 "ENABLE_FEAT_F4HWN_LOGO": true,
                 "ENABLE_FEAT_F4HWN_LOGO_SAV": true,
+                "ENABLE_FEAT_F4HWN_ACTION_PICKER": true,
+                "ENABLE_FEAT_F4HWN_MENU_CAT": true,
                 "ENABLE_AGC_SHOW_DATA": false,
                 "ENABLE_UART_RW_BK_REGS": false,
                 "ENABLE_SWD": false,
                 "AUTHOR_STRING_1": "EGZUMER",
                 "AUTHOR_STRING_2": "Kris",
                 "VERSION_STRING_1": "v0.22",
-                "VERSION_STRING_2": "v5.8.0J5",
+                "VERSION_STRING_2": "v5.9.0J1",
                 "EDITION_STRING": "JP-RX-Only",
                 "TARGET": "wrx-jp"
             }

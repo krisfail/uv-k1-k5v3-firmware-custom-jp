@@ -165,4 +165,32 @@
 #define WRX_MENU_HELP_RX_BANK          "scan bank filter"
 #define WRX_MENU_HELP_RX_BANK_SET      "set channel bank"
 
+/* The category header uses the large font. Keep these labels short so the
+ * category picker remains legible on the 128-pixel LCD. */
+#ifdef ENABLE_JAPANESE
+#define WRX_MENU_CATEGORY_CHANNELS     "CH"
+#define WRX_MENU_CATEGORY_SCAN         "SCAN"
+#define WRX_MENU_CATEGORY_KEYS         "KEY"
+#define WRX_MENU_CATEGORY_POWER        "PWR"
+#define WRX_MENU_CATEGORY_DISPLAY      "DSP"
+#define WRX_MENU_CATEGORY_TIMERS       "TMR"
+#define WRX_MENU_CATEGORY_AUDIO        "AUDIO"
+#define WRX_MENU_CATEGORY_RADIO        "RADIO"
+#define WRX_MENU_CATEGORY_DTMF         "DTMF"
+#define WRX_MENU_CATEGORY_SERVICE      "SVC"
+#define WRX_MENU_CATEGORY_ALL          "ALL"
+#else
+#define WRX_MENU_CATEGORY_CHANNELS     "Channels"
+#define WRX_MENU_CATEGORY_SCAN         "Scan"
+#define WRX_MENU_CATEGORY_KEYS         "Keys"
+#define WRX_MENU_CATEGORY_POWER        "Power"
+#define WRX_MENU_CATEGORY_DISPLAY      "Display"
+#define WRX_MENU_CATEGORY_TIMERS       "Timers"
+#define WRX_MENU_CATEGORY_AUDIO        "Audio"
+#define WRX_MENU_CATEGORY_RADIO        "Radio"
+#define WRX_MENU_CATEGORY_DTMF         "DTMF"
+#define WRX_MENU_CATEGORY_SERVICE      "Service"
+#define WRX_MENU_CATEGORY_ALL          "All"
+#endif
+
 #endif

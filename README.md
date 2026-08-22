@@ -52,7 +52,7 @@ The outputs are under `build/JpRxOnly`:
 - `wrx-jp.bin`: firmware image.
 - `wrx-jp.hex`: HEX image.
 - `wrx-jp.elf`: ELF image for debugging.
-- `release/wrx-jp-v5.8.0J5.packed.bin`: versioned release-equivalent packed image.
+- `release/wrx-jp-v5.9.0J1.packed.bin`: versioned release-equivalent packed image.
 
 ## CHIRP driver
 

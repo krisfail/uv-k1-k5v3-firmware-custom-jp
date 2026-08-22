@@ -10,7 +10,7 @@
 
 | 版 | 用途 | 送信 |
 | --- | --- | --- |
-| `JpRxOnly` | 日本語・受信専用（v5.8.0J5） | 無効．PTTはモニター |
+| `JpRxOnly` | 日本語・受信専用（v5.9.0J1） | 無効．PTTはモニター |
 
 このリポジトリで提供する日本語版は`JpRxOnly`のみです．上流系の送信可能な構成は国内向け受信機版として扱わないでください．
 
@@ -28,7 +28,7 @@ cmake --build --preset JpRxOnly -j2
 
 出力: `build/JpRxOnly/wrx-jp.bin`
 
-リリース相当packed: `release/wrx-jp-v5.8.0J5.packed.bin`
+リリース相当packed: `release/wrx-jp-v5.9.0J1.packed.bin`
 
 UVTools2で書き込むのはパック前の`build/JpRxOnly/wrx-jp.bin`です．`*.packed.bin`はpack対応ツール用です．
 

@@ -75,7 +75,7 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
             '"ENABLE_DTMF_CALLING": false',
         ):
             self.assertIn(flag, cmake)
-        self.assertIn('"VERSION_STRING_2": "v5.8.0J5"', cmake)
+        self.assertIn('"VERSION_STRING_2": "v5.9.0J1"', cmake)
         self.assertIn('"EDITION_STRING": "JP-RX-Only"', cmake)
         for flag in (
             '"ENABLE_FEAT_F4HWN_SCAN_PROGRESS": true',
@@ -83,14 +83,37 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
             '"ENABLE_FEAT_F4HWN_SCAN_RSSI": true',
             '"ENABLE_FEAT_F4HWN_SCAN_SUBAUDIBLE": true',
             '"ENABLE_FEAT_F4HWN_AUDIO": true',
+            '"ENABLE_FEAT_F4HWN_ACTION_PICKER": true',
+            '"ENABLE_FEAT_F4HWN_MENU_CAT": true',
             '"ENABLE_FEAT_F4HWN_SPECTRUM": false',
             '"ENABLE_FEAT_F4HWN_CA": false',
         ):
             self.assertIn(flag, cmake)
 
+    def test_upstream_non_tx_features_are_enabled_and_tx_actions_are_filtered(self):
+        cmake = source("CMakePresets.json")
+        action = source("App/app/action.c")
+        menu = source("App/ui/menu.c")
+        app = source("App/app/app.c")
+        main_ui = source("App/ui/main.c")
+
+        self.assertIn('"ENABLE_FEAT_F4HWN_ACTION_PICKER": true', cmake)
+        self.assertIn('"ENABLE_FEAT_F4HWN_MENU_CAT": true', cmake)
+        self.assertIn("ACTION_IsReceiveOnlyBlocked", action)
+        self.assertIn("case ACTION_OPT_POWER:", action)
+        self.assertIn("case ACTION_OPT_PTT:", action)
+        self.assertIn("#ifndef ENABLE_RX_ONLY\n    {\"POWER\"", menu)
+        self.assertIn("#ifndef ENABLE_RX_ONLY\n    {\"PTT\"", menu)
+        self.assertIn("gFmRadioMode && gFM_ScanState != FM_SCAN_OFF", app)
+        self.assertIn("UI_MAIN_ShouldHoldScanResume", app)
+        self.assertIn("UI_MENU_CategoryItemCount(c) == 0", menu)
+        self.assertIn("sprintf(str, \"%02u\", UI_MENU_CategoryItemCount", menu)
+        self.assertIn("UI_PrintActionPickerLabel", main_ui)
+
     def test_rx_only_policy_is_enforced_at_cmake_boundary(self):
         root = source("CMakeLists.txt")
         app = source("App/CMakeLists.txt")
+        cmake = source("CMakePresets.json")
 
         self.assertIn("set(ENABLE_RX_ONLY ON CACHE BOOL", root)
         for feature in (
@@ -114,14 +137,18 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
         ):
             self.assertIn(feature, root)
 
-        for source_file in (
-            "app/aircopy.c",
-            "ui/aircopy.c",
-            "app/beam.c",
-            "app/foxhunt.c",
-            "app/rxtx_log.c",
-        ):
+        for source_file in ("app/aircopy.c", "ui/aircopy.c"):
             self.assertNotIn(source_file, app)
+
+        # Upstream keeps optional sources in the common CMake file.  They must
+        # remain behind feature guards; the JpRxOnly preset disables them.
+        for feature, source_file in (
+            ("ENABLE_FEAT_F4HWN_BEAM", "app/beam.c"),
+            ("ENABLE_FEAT_F4HWN_FOXHUNT", "app/foxhunt.c"),
+            ("ENABLE_FEAT_F4HWN_RXTX_LOG", "app/rxtx_log.c"),
+        ):
+            self.assertIn(f"enable_feature({feature}\n    {source_file}", app)
+            self.assertIn(f'"{feature}": false', cmake)
 
     def test_rx_driver_guards_rf_tx_primitives(self):
         driver = source("App/driver/bk4829.c")
