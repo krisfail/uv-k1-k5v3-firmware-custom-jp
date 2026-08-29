@@ -19,6 +19,9 @@
 #include "driver/st7565.h"
 #include "external/printf/printf.h"
 #include "font.h"
+#ifdef ENABLE_JAPANESE
+#include "japanese_font.h"
+#endif
 #include "ui/helper.h"
 #include "ui/inputbox.h"
 #include "misc.h"
@@ -227,6 +230,136 @@ void UI_PrintStringJapaneseExtraLarge(const char *pString, uint8_t Start, uint8_
             }
         }
     }
+}
+
+static bool UI_DecodeExternalUtf8(const uint8_t *input, size_t remaining,
+                                  size_t *used, uint16_t *codepoint)
+{
+    const uint8_t first = input[0];
+
+    if (first < 0x80u)
+    {
+        if (first < 0x20u || first > 0x7Eu)
+            return false;
+        *used = 1u;
+        *codepoint = first;
+        return true;
+    }
+
+    if (first >= 0xC2u && first <= 0xDFu)
+    {
+        if (remaining < 2u || (input[1] & 0xC0u) != 0x80u)
+            return false;
+        *used = 2u;
+        *codepoint = (uint16_t)(((first & 0x1Fu) << 6) |
+                                (input[1] & 0x3Fu));
+        return true;
+    }
+
+    if (first >= 0xE0u && first <= 0xEFu)
+    {
+        if (remaining < 3u || (input[1] & 0xC0u) != 0x80u ||
+            (input[2] & 0xC0u) != 0x80u)
+            return false;
+
+        const uint16_t value = (uint16_t)(((first & 0x0Fu) << 12) |
+                                          ((input[1] & 0x3Fu) << 6) |
+                                          (input[2] & 0x3Fu));
+        if (value < 0x0800u || (value >= 0xD800u && value <= 0xDFFFu))
+            return false;
+        *used = 3u;
+        *codepoint = value;
+        return true;
+    }
+
+    // Stage A accepts BMP names only. Four-byte UTF-8 is deliberately out.
+    return false;
+}
+
+static void UI_CopyExternalGlyph(uint8_t line, uint8_t x, uint8_t end,
+                                 const uint8_t *glyph)
+{
+    if (line + 1u >= (sizeof(gFrameBuffer) / sizeof(gFrameBuffer[0])) ||
+        x >= LCD_WIDTH || x > end)
+        return;
+
+    uint8_t width = LCD_WIDTH - x;
+    if (width > 16u)
+        width = 16u;
+    if (width > (uint8_t)(end + 1u - x))
+        width = (uint8_t)(end + 1u - x);
+
+    for (uint8_t page = 0; page < 2u; page++)
+    {
+        for (uint8_t column = 0; column < width; column++)
+        {
+            uint8_t value = 0;
+            for (uint8_t row = 0; row < 8u; row++)
+            {
+                const uint8_t absolute_row = (uint8_t)(page * 8u + row);
+                const uint16_t bitmap_row = (uint16_t)glyph[absolute_row * 2u] |
+                                             ((uint16_t)glyph[absolute_row * 2u + 1u] << 8);
+                if (bitmap_row & (uint16_t)(0x8000u >> column))
+                    value |= (uint8_t)(1u << row);
+            }
+            gFrameBuffer[line + page][x + column] = value;
+        }
+    }
+}
+
+bool UI_PrintJapaneseChannelName(uint16_t channel, uint8_t Start, uint8_t End, uint8_t Line)
+{
+    char name[JAPANESE_NAME_RECORD_SIZE];
+    const uint8_t length = JPFONT_ReadChannelName(channel, name, sizeof(name));
+    uint16_t codepoints[JAPANESE_NAME_PAYLOAD_MAX];
+    size_t codepoint_count = 0;
+    size_t offset = 0;
+    uint16_t pixel_width = 0;
+
+    if (length == 0u || Line + 1u >= (sizeof(gFrameBuffer) / sizeof(gFrameBuffer[0])))
+        return false;
+
+    while (offset < length)
+    {
+        size_t used;
+        uint16_t codepoint;
+        if (codepoint_count >= ARRAY_SIZE(codepoints) ||
+            !UI_DecodeExternalUtf8((const uint8_t *)name + offset,
+                                   length - offset, &used, &codepoint))
+            return false;
+        codepoints[codepoint_count++] = codepoint;
+        offset += used;
+        pixel_width = (uint16_t)(pixel_width +
+                     (codepoint < 0x80u ? 8u : 16u));
+    }
+
+    const uint8_t right = End == 0u ? LCD_WIDTH - 1u : End;
+    if (Start >= LCD_WIDTH || Start > right || pixel_width > right + 1u - Start)
+        return false;
+
+    uint8_t x = Start;
+    for (size_t index = 0; index < codepoint_count; index++)
+    {
+        const uint16_t codepoint = codepoints[index];
+        if (codepoint < 0x80u)
+        {
+            if (codepoint > ' ')
+                UI_CopyLargeGlyphClipped(Line, x,
+                                         gFontBig[codepoint - ' ' - 1u],
+                                         7u, right);
+            x = (uint8_t)(x + 8u);
+        }
+        else
+        {
+            uint8_t glyph[JAPANESE_FONT_GLYPH_BYTES];
+            if (!JPFONT_ReadGlyph(codepoint, glyph))
+                return false;
+            UI_CopyExternalGlyph(Line, x, right, glyph);
+            x = (uint8_t)(x + 16u);
+        }
+    }
+
+    return true;
 }
 #endif
 

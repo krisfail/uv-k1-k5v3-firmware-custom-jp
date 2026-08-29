@@ -67,7 +67,10 @@ endif()
 
 if(ENABLE_JAPANESE)
     target_compile_definitions(App INTERFACE ENABLE_JAPANESE)
-    target_sources(App INTERFACE japanese_font.c)
+    target_sources(App INTERFACE
+        japanese_font.c
+        japanese_font_external.c
+    )
 endif()
 
 

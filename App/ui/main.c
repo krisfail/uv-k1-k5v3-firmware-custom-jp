@@ -1911,63 +1911,97 @@ void UI_DisplayMain(void)
                     case MDF_NAME:      // show the channel name
                     case MDF_NAME_FREQ: // show the channel name and frequency
 
-                        SETTINGS_FetchChannelName(String, gEeprom.ScreenChannel[vfo_num]);
-                        if (String[0] == 0)
-                        {   // no channel name, show the channel number instead
-                            sprintf(String, "CH-%04u", gEeprom.ScreenChannel[vfo_num] + 1);
-                        }
+                        #ifdef ENABLE_JAPANESE
+                        const bool hasExternalName = UI_PrintJapaneseChannelName(
+                            gEeprom.ScreenChannel[vfo_num], 33, 127, line);
+                        #else
+                        const bool hasExternalName = false;
+                        #endif
 
-                        if (gEeprom.CHANNEL_DISPLAY_MODE == MDF_NAME) {
-                            String[10] = 0;
-                            UI_PrintString(String, 33, 0, line, 8);
-                        }
-                        else {
-#ifdef ENABLE_FEAT_F4HWN
-                            if (isMainOnly())
-                            {
+                        if (!hasExternalName) {
+                            SETTINGS_FetchChannelName(String, gEeprom.ScreenChannel[vfo_num]);
+                            if (String[0] == 0)
+                            {   // no channel name, show the channel number instead
+                                sprintf(String, "CH-%04u", gEeprom.ScreenChannel[vfo_num] + 1);
+                            }
+
+                            if (gEeprom.CHANNEL_DISPLAY_MODE == MDF_NAME) {
                                 String[10] = 0;
                                 UI_PrintString(String, 33, 0, line, 8);
                             }
-                            else
-                            {
-                                if(activeTxVFO == vfo_num) {
-                                    UI_PrintStringSmallBold(String, 32 + 4, 0, line);
+                            else {
+#ifdef ENABLE_FEAT_F4HWN
+                                if (isMainOnly())
+                                {
+                                    String[10] = 0;
+                                    UI_PrintString(String, 33, 0, line, 8);
                                 }
                                 else
                                 {
-                                    UI_PrintStringSmallNormal(String, 32 + 4, 0, line);     
+                                    if(activeTxVFO == vfo_num) {
+                                        UI_PrintStringSmallBold(String, 32 + 4, 0, line);
+                                    }
+                                    else
+                                    {
+                                        UI_PrintStringSmallNormal(String, 32 + 4, 0, line);
+                                    }
                                 }
-                            }
 #else
-                            UI_PrintStringSmallBold(String, 32 + 4, 0, line);
+                                UI_PrintStringSmallBold(String, 32 + 4, 0, line);
 #endif
 
+#ifdef ENABLE_FEAT_F4HWN
+                                if (isMainOnly())
+                                {
+                                    UI_FormatFrequency(frequency, String);
+                                    if(frequency < _1GHz_in_KHz) {
+                                        // show the remaining 2 small frequency digits
+                                        UI_PrintStringSmallNormal(String + 7, 113, 0, line + 4);
+                                        String[7] = 0;
+                                        // show the main large frequency digits
+                                        UI_DisplayFrequency(String, 32, line + 3, false);
+                                    }
+                                    else
+                                    {
+                                        // show the frequency in the main font
+                                        UI_PrintString(String, 32, 0, line + 3, 8);
+                                    }
+                                }
+                                else
+                                {
+                                    sprintf(String, "%03u.%05u", frequency / 100000, frequency % 100000);
+                                    UI_PrintStringSmallNormal(String, 32 + 4, 0, line + 1);
+                                }
+#else                           // show the channel frequency below the channel number/name
+                                sprintf(String, "%03u.%05u", frequency / 100000, frequency % 100000);
+                                UI_PrintStringSmallNormal(String, 32 + 4, 0, line + 1);
+#endif
+                            }
+                        }
+                        else if (gEeprom.CHANNEL_DISPLAY_MODE == MDF_NAME_FREQ)
+                        {
+                            // The external glyph is 16 pixels high. Leave one
+                            // page between it and the small frequency line.
+                            sprintf(String, "%03u.%05u", frequency / 100000, frequency % 100000);
 #ifdef ENABLE_FEAT_F4HWN
                             if (isMainOnly())
                             {
                                 UI_FormatFrequency(frequency, String);
                                 if(frequency < _1GHz_in_KHz) {
-                                    // show the remaining 2 small frequency digits
                                     UI_PrintStringSmallNormal(String + 7, 113, 0, line + 4);
                                     String[7] = 0;
-                                    // show the main large frequency digits
                                     UI_DisplayFrequency(String, 32, line + 3, false);
                                 }
                                 else
                                 {
-                                    // show the frequency in the main font
                                     UI_PrintString(String, 32, 0, line + 3, 8);
                                 }
                             }
                             else
-                            {
-                                sprintf(String, "%03u.%05u", frequency / 100000, frequency % 100000);
-                                UI_PrintStringSmallNormal(String, 32 + 4, 0, line + 1);
-                            }
-#else                           // show the channel frequency below the channel number/name
-                            sprintf(String, "%03u.%05u", frequency / 100000, frequency % 100000);
-                            UI_PrintStringSmallNormal(String, 32 + 4, 0, line + 1);
 #endif
+                            {
+                                UI_PrintStringSmallNormal(String, 32 + 4, 0, line + 2);
+                            }
                         }
 
                         break;

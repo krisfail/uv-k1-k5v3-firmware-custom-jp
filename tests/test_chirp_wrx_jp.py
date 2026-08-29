@@ -159,6 +159,61 @@ class TestWRXJPDriver(unittest.TestCase):
         self.assertEqual(radio._mmap[0x4000:0x4006], b"\x00\x00\x00\x00\x00\x00")
         self.assertEqual(radio._mmap[0x8000] & 0x07, 2)
 
+    def test_k1_exposes_japanese_name_contract_but_legacy_profile_does_not(self):
+        k1 = DRIVER.WRXJPUVK1K5V3()
+        legacy = DRIVER.WRXJPUVK5()
+
+        k1_features = k1.get_features()
+        legacy_features = legacy.get_features()
+        self.assertEqual(k1_features.valid_name_length, 31)
+        for character in "日本語":
+            self.assertIn(character, k1_features.valid_characters)
+        self.assertEqual(legacy_features.valid_name_length, 10)
+        self.assertNotIn("日", legacy_features.valid_characters)
+
+    def test_japanese_name_is_stored_in_external_table_and_round_trips(self):
+        radio = DRIVER.WRXJPUVK1K5V3()
+        radio._mmap = bytearray(radio.PROFILE.image_size)
+        memory = types.SimpleNamespace(
+            number=1, extd_number=None, empty=False, freq=145500000,
+            offset=0, duplex="", mode="FM", tmode="", tuning_step=12.5,
+            name="日本語", extra=[])
+
+        radio.set_memory(memory)
+        record = "日本語".encode("utf-8")
+        self.assertEqual(
+            bytes(radio._japanese_names[:DRIVER.JAPANESE_NAME_RECORD_SIZE]),
+            record.ljust(DRIVER.JAPANESE_NAME_RECORD_SIZE, b"\x00"))
+        self.assertEqual(bytes(radio._mmap[0x4000:0x4010]), b"\x00" * 16)
+        self.assertTrue(radio._japanese_names_dirty)
+        self.assertEqual(radio.get_memory(1).name, "日本語")
+
+    def test_replacing_japanese_name_with_ascii_clears_external_record(self):
+        radio = DRIVER.WRXJPUVK1K5V3()
+        radio._mmap = bytearray(radio.PROFILE.image_size)
+        japanese = types.SimpleNamespace(
+            number=1, extd_number=None, empty=False, freq=145500000,
+            offset=0, duplex="", mode="FM", tmode="", tuning_step=12.5,
+            name="日本語", extra=[])
+        ascii_name = types.SimpleNamespace(
+            number=1, extd_number=None, empty=False, freq=145500000,
+            offset=0, duplex="", mode="FM", tmode="", tuning_step=12.5,
+            name="CALL", extra=[])
+
+        radio.set_memory(japanese)
+        radio.set_memory(ascii_name)
+        self.assertEqual(bytes(radio._japanese_names[:32]), b"\x00" * 32)
+        self.assertEqual(bytes(radio._mmap[0x4000:0x4004]), b"CALL")
+        self.assertEqual(radio.get_memory(1).name, "CALL")
+
+    def test_japanese_name_validation_rejects_unsupported_or_too_wide_names(self):
+        self.assertEqual(DRIVER._validate_japanese_name("日本語"),
+                         "日本語".encode("utf-8"))
+        with self.assertRaises(DRIVER.errors.RadioError):
+            DRIVER._validate_japanese_name("日本語日本語")
+        with self.assertRaises(DRIVER.errors.RadioError):
+            DRIVER._validate_japanese_name("😀")
+
     def test_fm_settings_use_japanese_76_to_95_range(self):
         radio = DRIVER.WRXJPUVK1K5V3()
         radio._mmap = bytearray(radio.PROFILE.image_size)

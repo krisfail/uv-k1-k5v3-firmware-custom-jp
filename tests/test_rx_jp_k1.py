@@ -261,6 +261,29 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
         self.assertIn("PY25Q16_WriteBuffer", state)
         self.assertIn("if (channel >= MR_CHANNELS_MAX)", state)
 
+    def test_external_japanese_font_and_name_table_use_fixed_k1_contract(self):
+        cmake = source("App/CMakeLists.txt")
+        header = source("App/japanese_font_external.h")
+        font = source("App/japanese_font_external.c")
+        uart = source("App/app/uart.c")
+        helper = source("App/ui/helper.c")
+        driver = source("tools/chirp/wrx_jp.py")
+
+        self.assertIn("japanese_font_external.c", cmake)
+        self.assertIn("#define JAPANESE_FONT_FLASH_BASE       0x020000u", header)
+        self.assertIn("#define JAPANESE_NAME_TABLE_BASE       0x040000u", header)
+        self.assertIn("#define JAPANESE_NAME_RECORD_SIZE      32u", header)
+        self.assertIn("JPFONT_IsExternalRange", font)
+        self.assertIn("PY25Q16_ReadBuffer", font)
+        self.assertIn("PY25Q16_WriteBuffer", font)
+        self.assertIn("case 0x0531:", uart)
+        self.assertIn("case 0x0533:", uart)
+        self.assertIn("JPFONT_SessionIsValid", uart)
+        self.assertIn("UI_PrintJapaneseChannelName", helper)
+        self.assertIn("_write_external_verified", driver)
+        self.assertIn("_japanese_names", driver)
+        self.assertIn("JAPANESE_NAME_PAYLOAD_MAX = 31", driver)
+
     def test_presets_cover_k1_extended_receive_use_cases(self):
         presets = source("App/app/rx_band_presets.c")
         for name in (

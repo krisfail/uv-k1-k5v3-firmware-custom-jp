@@ -56,7 +56,7 @@ The outputs are under `build/JpRxOnly`:
 
 ## CHIRP driver
 
-Copy `tools/chirp/wrx_jp.py` into the CHIRP driver directory and select `UV-K1 / UV-K5 V3 (wrx-jp RX-only)`. The same module contains a separate legacy UV-K5 profile; do not use it for K1 or UV-K5 V3. The driver is RX-only and its upload whitelist excludes calibration data. Read the [CHIRP guide](tools/chirp/README.ja.md) before writing.
+Copy `tools/chirp/wrx_jp.py` into the CHIRP driver directory and select `UV-K1 / UV-K5 V3 (wrx-jp RX-only)`. The same module contains a separate legacy UV-K5 profile; do not use it for K1 or UV-K5 V3. For K1/UV-K5 V3 Japanese channel names, also place the generated font binary and manifest beside the driver; see [external Japanese font](docs/fonts/README.ja.md). The driver is RX-only and its upload whitelist excludes calibration data. Read the [CHIRP guide](tools/chirp/README.ja.md) before writing.
 
 After configuration, source-only changes can be rebuilt with:
 

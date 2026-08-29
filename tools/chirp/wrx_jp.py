@@ -19,6 +19,8 @@ the legacy UV-K5, even though the serial protocol is compatible.
 """
 
 import logging
+import json
+from pathlib import Path
 import struct
 
 from chirp import chirp_common, directory, errors, memmap
@@ -34,8 +36,51 @@ from chirp.settings import (
 LOG = logging.getLogger(__name__)
 
 MEM_BLOCK = 0x80
+EXTERNAL_BLOCK = 0x80
+EXTERNAL_WRITE_RETRIES = 3
+EXTERNAL_SESSION_TIMESTAMP = 0x6457396A
+JAPANESE_NAME_RECORD_SIZE = 32
+JAPANESE_NAME_PAYLOAD_MAX = 31
+JAPANESE_NAME_TABLE_SIZE = 1024 * JAPANESE_NAME_RECORD_SIZE
 FM_MIN = 760  # 76.0 MHz, stored in 0.1 MHz units
 FM_MAX = 950  # 95.0 MHz, Japanese FM broadcast limit
+
+
+_DRIVER_DIR = Path(__file__).resolve().parent
+_REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
+
+
+def _resource_path(name, repository_relative):
+    bundled = _DRIVER_DIR / name
+    return bundled if bundled.is_file() else _REPOSITORY_ROOT / repository_relative
+
+
+JAPANESE_FONT_MANIFEST_PATH = _resource_path(
+    "japanese_font_manifest.json", Path("tools") / "japanese_font_manifest.json")
+JAPANESE_FONT_BINARY_PATH = _resource_path(
+    "japanese_font.bin", Path("docs") / "fonts" / "japanese_font.bin")
+
+
+def _load_japanese_font_manifest():
+    try:
+        with JAPANESE_FONT_MANIFEST_PATH.open("r", encoding="utf-8") as source:
+            return json.load(source)
+    except (OSError, ValueError):
+        return {
+            "flash_base": 0x020000,
+            "total_bytes": 0,
+            "name_table_base": 0x040000,
+            "codepoints": [],
+        }
+
+
+_JAPANESE_FONT_MANIFEST = _load_japanese_font_manifest()
+JAPANESE_FONT_BASE = int(_JAPANESE_FONT_MANIFEST["flash_base"])
+JAPANESE_FONT_SIZE = int(_JAPANESE_FONT_MANIFEST["total_bytes"])
+JAPANESE_NAME_BASE = int(_JAPANESE_FONT_MANIFEST["name_table_base"])
+JAPANESE_CODEPOINTS = frozenset(
+    int(codepoint) for codepoint in _JAPANESE_FONT_MANIFEST.get("codepoints", [])
+)
 
 BANDS_WIDE = (
     (18.0, 108.0),
@@ -222,6 +267,98 @@ def _write_memory(serport, offset, data):
         raise errors.RadioError("Bad response to memory write")
 
 
+def _read_external(serport, address, length):
+    if length <= 0:
+        return b""
+    result = bytearray()
+    offset = 0
+    while offset < length:
+        block_length = min(EXTERNAL_BLOCK, length - offset)
+        command = struct.pack(
+            "<HHIB3xI", 0x0531, 12, address + offset, block_length,
+            EXTERNAL_SESSION_TIMESTAMP)
+        _send_command(serport, command)
+        reply = _receive_reply(serport)
+        if (len(reply) < 12 + block_length or
+                struct.unpack_from("<H", reply, 0)[0] != 0x0532 or
+                struct.unpack_from("<I", reply, 4)[0] != address + offset or
+                reply[8] != block_length):
+            raise errors.RadioError("Bad response to external flash read")
+        result.extend(reply[12:12 + block_length])
+        offset += block_length
+    return bytes(result)
+
+
+def _write_external_once(serport, address, data):
+    if len(data) == 0 or len(data) > EXTERNAL_BLOCK:
+        raise errors.RadioError("External flash writes must be 1..128 bytes")
+    command = struct.pack(
+        "<HHIBBHI", 0x0533, 12 + len(data), address, len(data), 1, 0,
+        EXTERNAL_SESSION_TIMESTAMP) + data
+    _send_command(serport, command)
+    reply = _receive_reply(serport)
+    if (len(reply) < 12 or
+            struct.unpack_from("<H", reply, 0)[0] != 0x0534 or
+            struct.unpack_from("<I", reply, 4)[0] != address or
+            reply[8] != len(data) or reply[9] != 0):
+        raise errors.RadioError("External flash write rejected")
+
+
+def _write_external_verified(serport, address, data):
+    for offset in range(0, len(data), EXTERNAL_BLOCK):
+        block = data[offset:offset + EXTERNAL_BLOCK]
+        for _attempt in range(EXTERNAL_WRITE_RETRIES):
+            _write_external_once(serport, address + offset, block)
+            if _read_external(serport, address + offset, len(block)) == block:
+                break
+        else:
+            raise errors.RadioError(
+                "External flash readback failed at 0x{:06X}".format(address + offset))
+
+
+def _ensure_external_font(serport):
+    if JAPANESE_FONT_SIZE <= 0:
+        raise errors.RadioError("Japanese font manifest is missing")
+    try:
+        font_data = JAPANESE_FONT_BINARY_PATH.read_bytes()
+    except OSError as exc:
+        raise errors.RadioError(
+            "Japanese font binary is missing: {}".format(JAPANESE_FONT_BINARY_PATH)) from exc
+    if len(font_data) != JAPANESE_FONT_SIZE:
+        raise errors.RadioError("Japanese font binary size does not match the manifest")
+    if _read_external(serport, JAPANESE_FONT_BASE, len(font_data)) != font_data:
+        _write_external_verified(serport, JAPANESE_FONT_BASE, font_data)
+
+
+def _decode_name_record(record):
+    payload = bytes(record).split(b"\x00", 1)[0].split(b"\xFF", 1)[0]
+    if not payload:
+        return ""
+    try:
+        return payload.decode("utf-8")
+    except UnicodeDecodeError:
+        return ""
+
+
+def _validate_japanese_name(name):
+    if len(name.encode("utf-8")) > JAPANESE_NAME_PAYLOAD_MAX:
+        raise errors.RadioError("Channel name exceeds 31 UTF-8 bytes")
+
+    pixel_width = 0
+    for character in name:
+        codepoint = ord(character)
+        if codepoint < 0x20 or codepoint > 0x7E:
+            if codepoint not in JAPANESE_CODEPOINTS:
+                raise errors.RadioError(
+                    "Channel name character U+{:04X} is not in the Japanese font".format(codepoint))
+            pixel_width += 16
+        else:
+            pixel_width += 8
+    if pixel_width > 95:
+        raise errors.RadioError("Channel name exceeds the LCD display width")
+    return name.encode("utf-8")
+
+
 def _reset_radio(serport):
     _send_command(serport, b"\xDD\x05\x00\x00")
 
@@ -279,6 +416,16 @@ def _upload(radio):
             done += length
             status.cur = done
             radio.status_fn(status)
+    if radio._supports_external_japanese():
+        status.msg = "Checking Japanese font"
+        radio.status_fn(status)
+        _ensure_external_font(serport)
+        if radio._japanese_names_dirty:
+            status.msg = "Uploading Japanese channel names"
+            radio.status_fn(status)
+            _write_external_verified(
+                serport, JAPANESE_NAME_BASE, radio._japanese_names)
+            radio._japanese_names_dirty = False
     status.msg = "Uploaded RX-only image"
     radio.status_fn(status)
     _reset_radio(serport)
@@ -297,6 +444,31 @@ class _WRXJPBase(chirp_common.CloneModeRadio):
     NEEDS_COMPAT_SERIAL = False
     FIRMWARE_VERSION = ""
     PROFILE = None
+
+    def __init__(self):
+        super().__init__()
+        self._japanese_names = bytearray(JAPANESE_NAME_TABLE_SIZE)
+        self._japanese_names_dirty = False
+
+    def _supports_external_japanese(self):
+        return self.PROFILE is PY32_PROFILE
+
+    def _external_name_offset(self, index):
+        return index * JAPANESE_NAME_RECORD_SIZE
+
+    def _clear_external_name(self, index):
+        if not self._supports_external_japanese():
+            return
+        offset = self._external_name_offset(index)
+        self._japanese_names[offset:offset + JAPANESE_NAME_RECORD_SIZE] = \
+            b"\x00" * JAPANESE_NAME_RECORD_SIZE
+        self._japanese_names_dirty = True
+
+    def _set_external_name(self, index, encoded):
+        offset = self._external_name_offset(index)
+        self._japanese_names[offset:offset + JAPANESE_NAME_RECORD_SIZE] = \
+            encoded.ljust(JAPANESE_NAME_RECORD_SIZE, b"\x00")
+        self._japanese_names_dirty = True
 
     @classmethod
     def get_prompts(cls):
@@ -447,7 +619,9 @@ class _WRXJPBase(chirp_common.CloneModeRadio):
         features.has_comment = False
         features.has_rx_dtcs = True
         features.has_ctone = True
-        features.valid_name_length = 10
+        features.valid_name_length = (JAPANESE_NAME_PAYLOAD_MAX
+                                      if self._supports_external_japanese()
+                                      else 10)
         features.valid_special_chans = self._special_names()
         features.valid_bands = [
             (int(low * 1000000), int(high * 1000000))
@@ -458,7 +632,11 @@ class _WRXJPBase(chirp_common.CloneModeRadio):
         features.valid_tuning_steps = sorted(STEPS)
         features.valid_tmodes = ["", "TSQL", "DTCS"]
         features.valid_cross_modes = []
-        features.valid_characters = chirp_common.CHARSET_ASCII
+        if self._supports_external_japanese():
+            features.valid_characters = chirp_common.CHARSET_ASCII + "".join(
+                chr(codepoint) for codepoint in sorted(JAPANESE_CODEPOINTS))
+        else:
+            features.valid_characters = chirp_common.CHARSET_ASCII
         features.valid_skips = [""]
         features.memory_bounds = (1, self.PROFILE.memory_channels)
         features.valid_power_levels = []
@@ -466,6 +644,10 @@ class _WRXJPBase(chirp_common.CloneModeRadio):
 
     def sync_in(self):
         self._mmap = _download(self)
+        if self._supports_external_japanese():
+            self._japanese_names[:] = _read_external(
+                self.pipe, JAPANESE_NAME_BASE, JAPANESE_NAME_TABLE_SIZE)
+            self._japanese_names_dirty = False
 
     def sync_out(self):
         _upload(self)
@@ -485,10 +667,18 @@ class _WRXJPBase(chirp_common.CloneModeRadio):
             memory.name = memory.extd_number
             memory.immutable = ["name", "scanlists"]
         else:
-            raw_name = bytes(self._mmap[self._name_offset(index):
-                                        self._name_offset(index) + 16])
-            memory.name = raw_name.split(b"\x00", 1)[0].split(
-                b"\xFF", 1)[0].decode("ascii", errors="ignore").rstrip()
+            external_name = ""
+            if self._supports_external_japanese():
+                offset = self._external_name_offset(index)
+                external_name = _decode_name_record(
+                    self._japanese_names[offset:offset + JAPANESE_NAME_RECORD_SIZE])
+            if external_name:
+                memory.name = external_name
+            else:
+                raw_name = bytes(self._mmap[self._name_offset(index):
+                                            self._name_offset(index) + 16])
+                memory.name = raw_name.split(b"\x00", 1)[0].split(
+                    b"\xFF", 1)[0].decode("ascii", errors="ignore").rstrip()
 
         offset = self._channel_offset(special, index)
         raw = bytes(self._mmap[offset:offset + 16])
@@ -527,6 +717,7 @@ class _WRXJPBase(chirp_common.CloneModeRadio):
             if not special:
                 self._mmap[self._name_offset(index):
                            self._name_offset(index) + 16] = b"\x00" * 16
+                self._clear_external_name(index)
             return memory
 
         band = self._find_band(memory.freq)
@@ -548,10 +739,25 @@ class _WRXJPBase(chirp_common.CloneModeRadio):
         self._mmap[offset:offset + 16] = bytes(raw)
 
         if not special:
-            name = str(getattr(memory, "name", "")).encode(
-                "ascii", errors="ignore")[:10]
-            self._mmap[self._name_offset(index):
-                       self._name_offset(index) + 16] = name.ljust(16, b"\x00")
+            name_text = str(getattr(memory, "name", ""))
+            if self._supports_external_japanese():
+                encoded = _validate_japanese_name(name_text)
+                if any(ord(character) > 0x7E for character in name_text):
+                    self._set_external_name(index, encoded)
+                    self._mmap[self._name_offset(index):
+                               self._name_offset(index) + 16] = b"\x00" * 16
+                else:
+                    if len(name_text) > 10:
+                        raise errors.RadioError(
+                            "ASCII channel names remain limited to 10 characters")
+                    self._mmap[self._name_offset(index):
+                               self._name_offset(index) + 16] = encoded.ljust(
+                                   16, b"\x00")
+                    self._clear_external_name(index)
+            else:
+                name = name_text.encode("ascii", errors="ignore")[:10]
+                self._mmap[self._name_offset(index):
+                           self._name_offset(index) + 16] = name.ljust(16, b"\x00")
 
         self._set_band(special, index, band)
         self._set_scanlists(special, index,

@@ -28,6 +28,16 @@ python -m unittest discover -s tests -p "test_*.py" -v
 
 変更後は少なくともホストテスト，ビルド，`git diff --check`を実行します．テストはソース構造や境界を確認するもので，RF性能，LCDの見え方，実機書き込みの成功を保証しません．
 
+## 外部日本語フォント
+
+段階AのK1／K5 V3チャンネル名は、外部Flash上の固定フォントデータと1024件のUTF-8名前テーブルを使います。フォントデータの入力、SHA-256、生成形式は[外部日本語フォントREADME](docs/fonts/README.ja.md)と生成manifestに記録します。
+
+確認済みBDFから派生物を再生成する場合は、リポジトリルートで次を実行します。
+
+    python -X utf8 tools/generate_japanese_font.py tmp/japanese-font/izmg16-2004-1.bdf
+
+生成物の外部配置はフォントデータ0x020000、名前テーブル0x040000です。CHIRPは外部Flash書き込み後にブロック単位のreadbackを行います。ホストテストとビルドは、実機の外部Flash容量、LCD表示、書き込み、再起動後の動作を保証しません。
+
 ## 受信専用ビルド境界
 
 利用可能なCMakeプリセットは`JpRxOnly`だけです．ルートのCMake設定で`ENABLE_RX_ONLY`を強制し，AirCopy，VOX，アラーム，送信トーン，送信タイマー，RFログなどの送信系モジュールを登録しません．PTTはモニター操作として維持します．UART，USB，SPI，I2Cの制御通信はRF送信ではないため，必要な保守経路として区別します．

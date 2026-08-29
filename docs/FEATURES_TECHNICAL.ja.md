@@ -188,6 +188,8 @@ Fox Hunt／Beacon，BYP／BYP+，送信タイマー，送信電力・送信ト�
 | `0x00B000` | グローバル状態 | 8 bytes |
 | `0x00B100` | チャンネルバンク | 1 byte / channel |
 | `0x00B500` | 旧WIDE+互換メタデータ | 1 bit / channel |
+| 0x020000 | 外部日本語bitmapフォント | 125604 bytes、Izumi 16 |
+| 0x040000 | 日本語チャンネル名 | 1024 × 32 bytes、UTF-8 payloadは最大31 bytes |
 
 グローバル領域（8 bytes）の配置は次のとおりです．
 
@@ -234,8 +236,10 @@ K1の大きい長音「ー」は拡張コード`0xE0`です．フォント配列
 | [M+ Fonts](https://mplusfonts.github.io/) | SIL Open Font License．小型表示向け系列もあるが，現行のbitmap配列への変換が必要 | 現行版では不採用 |
 | [PixelMplus](https://github.com/itouhiro/PixelMplus) | M+系ライセンス，アウトラインTrueType．10/12 pixel向けで，埋込み配列への変換・表示確認が必要 | 現行版では不採用 |
 | [Misaki](https://littlelimit.net/misaki.htm) | 8×8 bitmap，M+ Fonts license．現行7×14大文字と6 byte小文字へ変換する工程が必要 | 現行版では不採用 |
-| [Izumi 16](https://unifoundry.com/japanese/) | パブリックドメイン，JIS X 0213:2004の16×16 BDF | `専`／`用`などに採用 |
+| [Izumi 16](https://unifoundry.com/japanese/) | BDF記載はPublic Domain，JIS X 0213:2004 Plane 1の16×16 bitmap BDF | 段階Aの外部フォントに採用 |
 | [GNU Unifont](https://unifoundry.com/unifont/index.html) | GPL+例外 / SIL OFLのデュアルライセンス，8/16×16グリッド | 現行版では不採用 |
+
+段階Aの外部フォントはIzumi 16からJIS X 0208第1水準相当の漢字，かな，記号を含む3489字を生成します。16×16 native geometryを維持し，ASCIIは重複収録せず既存gFontBigを互換フォールバックとします。生成形式，対象コードポイント，入力SHA-256，外部Flash配置は，font manifestと[外部日本語フォントREADME](fonts/README.ja.md)を正本とします。
 
 既存フォントは継続使用し，プレースホルダだった`専`／`用`を公開フォントの線構造を手掛かりに独立再構成しました．変換スクリプト，字形レビュー，ライセンス文書，容量評価を同じ変更単位で管理しています．既存部分の帰属はルートの[NOTICE](../NOTICE)にも記載しています．
 
