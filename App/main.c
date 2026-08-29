@@ -24,6 +24,9 @@
 
 #include "audio.h"
 #include "board.h"
+#ifdef ENABLE_RX_ONLY
+    #include "app/rx_feature_state.h"
+#endif
 #ifdef ENABLE_FEAT_F4HWN_RXTX_LOG
     #include "app/rxtx_log.h"
 #endif
@@ -76,6 +79,22 @@ void _putchar(__attribute__((unused)) char c)
 
 }
 
+static bool Main_WaitForBootScreen(void)
+{
+    while (boot_counter_10ms > 0)
+    {
+        if (KEYBOARD_Poll() != KEY_INVALID)
+        {
+            // A key press skips the remaining boot screen, matching the
+            // existing behavior for the single-screen startup path.
+            boot_counter_10ms = 0;
+            return false;
+        }
+    }
+
+    return true;
+}
+
 void Main(void)
 {
     SYSTICK_Init();
@@ -101,6 +120,10 @@ void Main(void)
     BOARD_ADC_GetBatteryInfo(&gBatteryCurrentVoltage, &gBatteryCurrent);
 
     SETTINGS_InitEEPROM();
+
+#ifdef ENABLE_RX_ONLY
+    RX_FEATURE_STATE_Init();
+#endif
 
 #ifdef ENABLE_FEAT_F4HWN_RXTX_LOG
     RXTX_LOG_Init();
@@ -169,7 +192,9 @@ void Main(void)
                 gMenuCategory = CAT_ALL;
             #endif
             gMenuCursor = UI_MENU_GetMenuIdx(FIRST_HIDDEN_MENU_ITEM);
+#ifndef ENABLE_RX_ONLY
             gSubMenuSelection = gSetting_F_LOCK;
+#endif
         #endif
     }
 
@@ -212,20 +237,40 @@ void Main(void)
 
         BACKLIGHT_TurnOn();
 
+#ifdef ENABLE_FEAT_F4HWN_LOGO
+        const bool split_logo_followup =
+            gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_LOGO_MESSAGE ||
+            gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_LOGO_ALL;
+#else
+        const bool split_logo_followup = false;
+#endif
+
 #ifdef ENABLE_FEAT_F4HWN
         if (gEeprom.POWER_ON_DISPLAY_MODE != POWER_ON_DISPLAY_MODE_NONE && gEeprom.POWER_ON_DISPLAY_MODE != POWER_ON_DISPLAY_MODE_SOUND)
 #else
         if (gEeprom.POWER_ON_DISPLAY_MODE != POWER_ON_DISPLAY_MODE_NONE)
 #endif
-        {   // 2.55 second boot-up screen
-            while (boot_counter_10ms > 0)
+        {
+#ifdef ENABLE_FEAT_F4HWN_LOGO
+            // Give LOGO+MSG and LOGO+ALL two explicit 1.25-second phases instead of
+            // drawing the logo and message on the same framebuffer.
+            if (split_logo_followup)
+                boot_counter_10ms = 125;
+#endif
+            const bool boot_screen_finished = Main_WaitForBootScreen();
+
+#ifdef ENABLE_FEAT_F4HWN_LOGO
+            if (boot_screen_finished && split_logo_followup)
             {
-                if (KEYBOARD_Poll() != KEY_INVALID)
-                {   // halt boot beeps
-                    boot_counter_10ms = 0;
-                    break;
-                }
+                if (gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_LOGO_ALL)
+                    UI_DisplayWelcomeRxOnlyAll();
+                else
+                    UI_DisplayWelcomeRxOnlyMessage();
+                boot_counter_10ms = 125;
+                Main_WaitForBootScreen();
             }
+#endif
+
             RADIO_SetupRegisters(true);
         }
 

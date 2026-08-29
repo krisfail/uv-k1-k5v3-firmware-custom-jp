@@ -34,6 +34,24 @@
     #include "k5viewer.h"
 #endif
 
+#ifdef ENABLE_RX_ONLY
+static const char UI_RxOnlyWelcome0[] = {0x80, 0x81, 0x98, 0x99, 0}; // 受信専用
+static const char UI_RxOnlyWelcome1[] = "JP RX-ONLY";
+#endif
+
+static void UI_SanitizeWelcomeString(char *string, const size_t size)
+{
+    string[size - 1u] = '\0';
+    for (size_t i = 0; i < size - 1u; i++)
+    {
+        if ((uint8_t)string[i] == 0xFFu)
+        {
+            string[i] = '\0';
+            break;
+        }
+    }
+}
+
 #ifdef ENABLE_FEAT_F4HWN_LOGO
 // Boot logo storage in PY25Q16 external flash, aligned on a 4 KB sector,
 // placed past the calibration zone (0x010000-0x010200).
@@ -255,26 +273,41 @@ void UI_DisplayWelcome(void)
     }
 #endif
 #ifdef ENABLE_FEAT_F4HWN_LOGO
-    else if (gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_LOGO) {
+    else if (gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_LOGO ||
+             gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_LOGO_MESSAGE ||
+             gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_LOGO_ALL) {
         UI_LoadLogo();
     }
 #endif
     else {
-        char WelcomeString0[16];
-        char WelcomeString1[16];
+        char WelcomeString0[17];
+        char WelcomeString1[17];
         char WelcomeString2[16];
         char WelcomeString3[32];
 
         // 0x0EB0
+        memset(WelcomeString0, 0, sizeof(WelcomeString0));
+        memset(WelcomeString1, 0, sizeof(WelcomeString1));
         PY25Q16_ReadBuffer(0x00A0C8, WelcomeString0, 16);
         // 0x0EC0
         PY25Q16_ReadBuffer(0x00A0D8, WelcomeString1, 16);
+        UI_SanitizeWelcomeString(WelcomeString0, sizeof(WelcomeString0));
+        UI_SanitizeWelcomeString(WelcomeString1, sizeof(WelcomeString1));
 
         sprintf(WelcomeString2, "%u.%02uV %u%%",
                 gBatteryVoltageAverage / 100,
                 gBatteryVoltageAverage % 100,
                 BATTERY_VoltsToPercent(gBatteryVoltageAverage));
 
+#ifdef ENABLE_RX_ONLY
+        if (gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_ALL ||
+            gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_MESSAGE)
+        {
+            memcpy(WelcomeString0, UI_RxOnlyWelcome0, sizeof(UI_RxOnlyWelcome0));
+            memcpy(WelcomeString1, UI_RxOnlyWelcome1, sizeof(UI_RxOnlyWelcome1));
+        }
+        else
+#endif
         if (gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_VOLTAGE)
         {
             strcpy(WelcomeString0, "VOLTAGE");
@@ -309,7 +342,17 @@ void UI_DisplayWelcome(void)
             }
         }
 
-        UI_PrintString(WelcomeString0, 0, 127, 0, 10);
+#if defined(ENABLE_RX_ONLY) && defined(ENABLE_JAPANESE)
+        if (gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_ALL ||
+            gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_MESSAGE)
+        {
+            UI_PrintStringJapaneseExtraLarge(WelcomeString0, 0, 127, 0, 11);
+        }
+        else
+#endif
+        {
+            UI_PrintString(WelcomeString0, 0, 127, 0, 10);
+        }
         UI_PrintString(WelcomeString1, 0, 127, 2, 10);
 
 #ifdef ENABLE_FEAT_F4HWN
@@ -376,3 +419,76 @@ void UI_DisplayWelcome(void)
         K5VIEWER_Update(true);
     #endif
 }
+
+#ifdef ENABLE_FEAT_F4HWN_LOGO
+void UI_DisplayWelcomeRxOnlyMessage(void)
+{
+    UI_StatusClear();
+
+#if defined(ENABLE_FEAT_F4HWN_CTR) || defined(ENABLE_FEAT_F4HWN_INV)
+    ST7565_ContrastAndInv();
+#endif
+    UI_DisplayClear();
+
+    UI_PrintString("JP RX-ONLY", 0, 127, 2, 10);
+
+    ST7565_BlitStatusLine();
+    ST7565_BlitFullScreen();
+}
+
+void UI_DisplayWelcomeRxOnlyAll(void)
+{
+    char WelcomeString3[32];
+
+    UI_StatusClear();
+
+#if defined(ENABLE_FEAT_F4HWN_CTR) || defined(ENABLE_FEAT_F4HWN_INV)
+    ST7565_ContrastAndInv();
+#endif
+    UI_DisplayClear();
+
+#ifdef ENABLE_JAPANESE
+    UI_PrintStringJapaneseExtraLarge(UI_RxOnlyWelcome0, 0, 127, 0, 11);
+#else
+    UI_PrintString("RX-ONLY", 0, 127, 0, 10);
+#endif
+    UI_PrintString(UI_RxOnlyWelcome1, 0, 127, 2, 10);
+
+#ifdef ENABLE_FEAT_F4HWN
+    const size_t version_width = strlen(DisplayVersion) * (ARRAY_SIZE(gFontSmall[0]) + 1u);
+    const uint8_t version_x = version_width < LCD_WIDTH
+        ? (uint8_t)((LCD_WIDTH - version_width + 1u) / 2u)
+        : 0u;
+    const uint8_t capsule_left = version_x > 2u ? (uint8_t)(version_x - 3u) : 0u;
+    const size_t capsule_right_candidate = version_x + version_width + 2u;
+    const uint8_t capsule_right = capsule_right_candidate < LCD_WIDTH
+        ? (uint8_t)capsule_right_candidate
+        : (LCD_WIDTH - 1u);
+
+    UI_PrintStringSmallNormal(DisplayVersion, version_x, 0, 4);
+    if (capsule_left > 0u)
+    {
+        UI_DrawLineBuffer(gFrameBuffer, 0, 35, capsule_left - 1u, 35, 1);
+    }
+    gFrameBuffer[4][capsule_left] ^= 0x7F;
+    for (uint8_t x = capsule_left + 1u; x < capsule_right; x++)
+    {
+        gFrameBuffer[4][x] ^= 0xFF;
+        gFrameBuffer[3][x] ^= 0x80;
+    }
+    gFrameBuffer[4][capsule_right] ^= 0x7F;
+    if (capsule_right < LCD_WIDTH - 1u)
+    {
+        UI_DrawLineBuffer(gFrameBuffer, capsule_right + 1u, 35, LCD_WIDTH - 1u, 35, 1);
+    }
+
+    sprintf(WelcomeString3, "%s Edition", Edition);
+    UI_PrintStringSmallNormal(WelcomeString3, 0, 127, 6);
+#else
+    UI_PrintStringSmallNormal(Version, 0, 127, 6);
+#endif
+
+    ST7565_BlitStatusLine();
+    ST7565_BlitFullScreen();
+}
+#endif

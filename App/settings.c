@@ -18,6 +18,9 @@
 #include <string.h>
 
 #include "app/dtmf.h"
+#ifdef ENABLE_RX_ONLY
+    #include "app/rx_feature_state.h"
+#endif
 #ifdef ENABLE_FMRADIO
     #include "app/fm.h"
 #endif
@@ -234,6 +237,11 @@ gEeprom.FreqChannel[1]   = IS_FREQ_CHANNEL(Data16[5]) ? Data16[5] : (FREQ_CHANNE
         PY25Q16_ReadBuffer(0x00A020, &fmCfg, 4);
 
         gEeprom.FM_Band = fmCfg.band;
+#ifdef ENABLE_RX_ONLY
+        // Domestic FM broadcast receive range: 76.0--95.0 MHz.
+        // Keep the persisted hardware band at the BK1080 76--108 MHz mode.
+        gEeprom.FM_Band = 1;
+#endif
         //gEeprom.FM_Space = fmCfg.space;
 
         uint16_t freqLoLimit = BK1080_GetFreqLoLimit(gEeprom.FM_Band);
@@ -262,7 +270,11 @@ gEeprom.FreqChannel[1]   = IS_FREQ_CHANNEL(Data16[5]) ? Data16[5] : (FREQ_CHANNE
     gEeprom.SCAN_RESUME_MODE             = (Data[5] < 105)            ? Data[5] : 14;
     gEeprom.AUTO_KEYPAD_LOCK             = (Data[6] < 41)             ? Data[6] : 0;
 #ifdef ENABLE_FEAT_F4HWN
-    gEeprom.POWER_ON_DISPLAY_MODE        = (Data[7] < 6)              ? Data[7] : POWER_ON_DISPLAY_MODE_VOLTAGE;
+ #ifdef ENABLE_FEAT_F4HWN_LOGO
+    gEeprom.POWER_ON_DISPLAY_MODE        = (Data[7] < 8)              ? Data[7] : POWER_ON_DISPLAY_MODE_VOLTAGE;
+ #else
+    gEeprom.POWER_ON_DISPLAY_MODE        = (Data[7] < 5)              ? Data[7] : POWER_ON_DISPLAY_MODE_VOLTAGE;
+ #endif
 #else
     gEeprom.POWER_ON_DISPLAY_MODE        = (Data[7] < 4)              ? Data[7] : POWER_ON_DISPLAY_MODE_VOLTAGE;
 #endif
@@ -1194,7 +1206,7 @@ void SETTINGS_SaveChannel(uint16_t Channel, uint8_t VFO, const VFO_Info_t *pVFO,
             | (pVFO->TX_LOCK << 6)
             | (pVFO->BUSY_CHANNEL_LOCK << 5)
             | (pVFO->OUTPUT_POWER      << 2)
-            | (pVFO->CHANNEL_BANDWIDTH << 1)
+            | ((RADIO_BandwidthIsWide(pVFO->CHANNEL_BANDWIDTH) ? 0u : 1u) << 1)
             | (pVFO->FrequencyReverse  << 0);
         State -> _8[5] = ((pVFO->DTMF_PTT_ID_TX_MODE & 7u) << 1)
 #ifdef ENABLE_DTMF_CALLING
@@ -1203,12 +1215,21 @@ void SETTINGS_SaveChannel(uint16_t Channel, uint8_t VFO, const VFO_Info_t *pVFO,
         ;
         State -> _8[6] =  pVFO->STEP_SETTING;
 #ifdef ENABLE_FEAT_F4HWN
+#ifdef ENABLE_RX_ONLY
+        State -> _8[7] = RADIO_BANDWIDTH_EXT_MARKER | (pVFO->CHANNEL_BANDWIDTH & 3u);
+#else
         State -> _8[7] =  0;
+#endif
 #else
         State -> _8[7] =  pVFO->SCRAMBLING_TYPE;
 #endif
 
         PY25Q16_WriteBuffer(OffsetVFO, Buf, 0x10, false);
+
+#ifdef ENABLE_RX_ONLY
+        if (IS_MR_CHANNEL(Channel))
+            RX_FEATURE_STATE_SetWidePlus(Channel, pVFO->WIDE_PLUS);
+#endif
 
         SETTINGS_UpdateChannel(Channel, pVFO, true);
 

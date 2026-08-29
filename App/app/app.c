@@ -39,6 +39,9 @@
 #include "app/generic.h"
 #include "app/main.h"
 #include "app/menu.h"
+#ifdef ENABLE_RX_ONLY
+    #include "app/rx_feature_state.h"
+#endif
 #ifdef ENABLE_FEAT_F4HWN_RXTX_LOG
     #include "app/rxtx_log.h"
 #endif
@@ -391,6 +394,13 @@ static void CheckForIncoming(void)
     }
 }
 
+static bool APP_CtcssMatch(void)
+{
+    return gCurrentCodeType == CODE_TYPE_REVERSE_CONTINUOUS_TONE
+        ? g_CTCSS_Lost
+        : !g_CTCSS_Lost;
+}
+
 static void HandleIncoming(void)
 {
     if (!g_SquelchLost) {   // squelch is closed
@@ -405,6 +415,7 @@ static void HandleIncoming(void)
         return;
     }
 
+    const bool ctcss_match = APP_CtcssMatch();
     bool bFlag = (gScanStateDir == SCAN_OFF && gCurrentCodeType == CODE_TYPE_OFF);
 
 #ifdef ENABLE_NOAA
@@ -414,7 +425,9 @@ static void HandleIncoming(void)
     }
 #endif
 
-    if (g_CTCSS_Lost && gCurrentCodeType == CODE_TYPE_CONTINUOUS_TONE) {
+    if (!ctcss_match &&
+        (gCurrentCodeType == CODE_TYPE_CONTINUOUS_TONE ||
+         gCurrentCodeType == CODE_TYPE_REVERSE_CONTINUOUS_TONE)) {
         bFlag       = true;
         gFoundCTCSS = false;
     }
@@ -490,9 +503,19 @@ static void HandleReceive(void)
             break;
 
         case CODE_TYPE_CONTINUOUS_TONE:
+        case CODE_TYPE_REVERSE_CONTINUOUS_TONE:
+            if (gFoundCTCSS && gFoundCTCSSCountdown_10ms == 0)
+            {
+                gFoundCTCSS = false;
+                gFoundCDCSS = false;
+                Mode        = END_OF_RX_MODE_END;
+                goto Skip;
+            }
+            break;
+
         case CODE_TYPE_DIGITAL:
         case CODE_TYPE_REVERSE_DIGITAL:
-            if ((gFoundCTCSS && gFoundCTCSSCountdown_10ms == 0) || (gFoundCDCSS && gFoundCDCSSCountdown_10ms == 0))
+            if (gFoundCDCSS && gFoundCDCSSCountdown_10ms == 0)
             {
                 gFoundCTCSS = false;
                 gFoundCDCSS = false;
@@ -524,7 +547,8 @@ static void HandleReceive(void)
                     break;
 
                 case CODE_TYPE_CONTINUOUS_TONE:
-                    if (g_CTCSS_Lost)
+                case CODE_TYPE_REVERSE_CONTINUOUS_TONE:
+                    if (!APP_CtcssMatch())
                     {
                         gFoundCTCSS = false;
                     }
@@ -1595,6 +1619,11 @@ void APP_TimeSlice10ms(void)
 {
     gNextTimeslice = false;
 
+#ifdef ENABLE_RX_ONLY
+    RX_FEATURE_STATE_Save();
+    RX_FEATURE_STATE_ProcessAgcGuard();
+#endif
+
     SETTINGS_SaveVfoIndicesFlush();
 
 #ifdef ENABLE_FEAT_F4HWN_RXTX_LOG
@@ -1641,8 +1670,11 @@ void APP_TimeSlice10ms(void)
     }
 
 #ifdef ENABLE_FEAT_F4HWN_AUDIO_SCOPE
-    if (gSetting_mic_bar && (gFlashLightBlinkCounter % (20 / 10)) == 0) // once every 20ms
-        // Sample audio amplitude and refresh display during TX only (FM RX has no usable audio register)
+    if (((gSetting_mic_bar && gCurrentFunction == FUNCTION_TRANSMIT)
+#ifdef ENABLE_RX_ONLY
+         || (RX_FEATURE_STATE_IsEnabled() && FUNCTION_IsRx() && gScanStateDir == SCAN_OFF)
+#endif
+        ) && (gFlashLightBlinkCounter % (20 / 10)) == 0) // once every 20ms
         UI_DisplayAudioScope();
 #endif
 
@@ -1654,7 +1686,9 @@ void APP_TimeSlice10ms(void)
     }
 
 #ifdef ENABLE_FEAT_F4HWN_LOGO_SAV
+#ifdef ENABLE_FEAT_F4HWN_K5VIEWER
     bool screenSaverRendered = false;
+#endif
 
     if (gScreenSaverDisplayed) {
         if (gUpdateDisplayCurrent) {
@@ -1668,13 +1702,17 @@ void APP_TimeSlice10ms(void)
             if (++gScreenSaverTick >= 8u) {
                 gScreenSaverTick = 0;
                 ScreenSaverRenderMatrix(false);
+#ifdef ENABLE_FEAT_F4HWN_K5VIEWER
                 screenSaverRendered = true;
+#endif
             }
         } else if (gSetting_set_sav == SET_SAV_LOGO_PLUS) {
             if (++gScreenSaverTick >= 16u) {
                 gScreenSaverTick = 0;
                 ScreenSaverRenderLogoPlus(false);
+#ifdef ENABLE_FEAT_F4HWN_K5VIEWER
                 screenSaverRendered = true;
+#endif
             }
         }
     }
@@ -1830,6 +1868,7 @@ void cancelUserInputModes(void)
 void APP_TimeSlice500ms(void)
 {
     gNextTimeslice_500ms = false;
+    UI_MENU_TimeSlice500ms();
 #ifdef ENABLE_FEAT_F4HWN_ACTION_PICKER
     if (gActionPickerKey != 0 && gActionPickerTimeout_500ms > 0 &&
         --gActionPickerTimeout_500ms == 0)
@@ -1838,7 +1877,6 @@ void APP_TimeSlice500ms(void)
         gUpdateDisplay = true;
     }
 #endif
-
     bool exit_menu = false;
 
     // Skipped authentic device check

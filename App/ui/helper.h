@@ -23,7 +23,17 @@
 void UI_GenerateChannelString(char *pString, const uint16_t Channel);
 void UI_GenerateChannelStringEx(char *pString, const bool bShowPrefix, const uint16_t ChannelNumber);
 void UI_PrintString(const char *pString, uint8_t Start, uint8_t End, uint8_t Line, uint8_t Width);
+// Draw large text left-aligned and clipped to the inclusive [Start, End] range.
+void UI_PrintStringClipped(const char *pString, uint8_t Start, uint8_t End, uint8_t Line, uint8_t Width);
+#ifdef ENABLE_JAPANESE
+void UI_PrintStringJapaneseExtraLarge(const char *pString, uint8_t Start, uint8_t End, uint8_t Line, uint8_t Width);
+// Draw one external UTF-8 channel name using the fixed 16x16 bitmap font.
+// Returns false when no valid external name is stored for the channel.
+bool UI_PrintJapaneseChannelName(uint16_t channel, uint8_t Start, uint8_t End, uint8_t Line);
+#endif
 void UI_PrintStringSmallNormal(const char *pString, uint8_t Start, uint8_t End, uint8_t Line);
+// Draw small normal text left-aligned and clipped to the inclusive [Start, End] range.
+void UI_PrintStringSmallNormalClipped(const char *pString, uint8_t Start, uint8_t End, uint8_t Line);
 void UI_PrintStringSmallNormalInverse(const char *pString, uint8_t Start, uint8_t End, uint8_t Line);
 void UI_PrintStringSmallBold(const char *pString, uint8_t Start, uint8_t End, uint8_t Line);
 void UI_PrintStringSmallBufferNormal(const char *pString, uint8_t *buffer);
@@ -31,6 +41,7 @@ void UI_PrintStringSmallBufferBold(const char *pString, uint8_t * buffer);
 void UI_DisplayFrequency(const char *string, uint8_t X, uint8_t Y, bool center);
 
 void UI_DisplayPopup(const char *string);
+void UI_DisplayUnavailable(const char *string);
 
 void UI_DrawPixelBuffer(uint8_t (*buffer)[128], uint8_t x, uint8_t y, bool black);
 #ifdef ENABLE_FEAT_F4HWN

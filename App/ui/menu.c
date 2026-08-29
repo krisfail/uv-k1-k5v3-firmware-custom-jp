@@ -32,6 +32,9 @@
 #include "../helper/battery.h"
 #include "../misc.h"
 #include "../settings.h"
+#ifdef ENABLE_RX_ONLY
+    #include "../app/rx_feature_state.h"
+#endif
 
 #ifdef ENABLE_FEAT_F4HWN
     #include "../version.h"
@@ -40,6 +43,7 @@
 #include "helper.h"
 #include "inputbox.h"
 #include "menu.h"
+#include "menu_text.h"
 #include "ui.h"
 #include "welcome.h"
 
@@ -47,158 +51,215 @@
 const t_menu_item MenuList[] =
 {
 //   text,          menu ID
-    {"Step",        MENU_STEP          },
-    {"Power",       MENU_TXP           }, // was "TXP"
-    {"RxDCS",       MENU_R_DCS         }, // was "R_DCS"
-    {"RxCTCS",      MENU_R_CTCS        }, // was "R_CTCS"
-    {"TxDCS",       MENU_T_DCS         }, // was "T_DCS"
-    {"TxCTCS",      MENU_T_CTCS        }, // was "T_CTCS"
-    {"TxODir",      MENU_SFT_D         }, // was "SFT_D"
-    {"TxOffs",      MENU_OFFSET        }, // was "OFFSET"
-    {"W/N",         MENU_W_N           },
+    {WRX_MENU_LABEL_STEP, MENU_STEP},
+ #ifndef ENABLE_RX_ONLY
+    {WRX_MENU_LABEL_POWER, MENU_TXP},
+ #endif
+    {WRX_MENU_LABEL_RX_DCS, MENU_R_DCS},
+    {WRX_MENU_LABEL_RX_CTCS, MENU_R_CTCS},
+ #ifndef ENABLE_RX_ONLY
+    {WRX_MENU_LABEL_TX_DCS, MENU_T_DCS},
+    {WRX_MENU_LABEL_TX_CTCS, MENU_T_CTCS},
+    {WRX_MENU_LABEL_TX_OFFSET_DIR, MENU_SFT_D},
+    {WRX_MENU_LABEL_TX_OFFSET, MENU_OFFSET},
+ #endif
+    {WRX_MENU_LABEL_W_N, MENU_W_N},
+#ifdef ENABLE_RX_ONLY
+    {WRX_MENU_LABEL_RX_EXT, MENU_RX_EXT},
+    {WRX_MENU_LABEL_RX_BANK, MENU_RX_BANK},
+    {WRX_MENU_LABEL_RX_BANK_SET, MENU_RX_BANK_SET},
+#endif
 #ifndef ENABLE_FEAT_F4HWN
-    {"Scramb",      MENU_SCR           }, // was "SCR"
+    {WRX_MENU_LABEL_SCRAMBLER, MENU_SCR},
 #endif
-    {"BusyCL",      MENU_BCL           }, // was "BCL"
-    {"Compnd",      MENU_COMPAND       },
-    {"Mode",        MENU_AM            }, // was "AM"
-#ifdef ENABLE_FEAT_F4HWN
-    {"TXLock",      MENU_TX_LOCK       }, 
-#endif
-    {"ChList",      MENU_LIST_CH       },
-    {"ChSave",      MENU_MEM_CH        }, // was "MEM-CH"
-    {"ChDele",      MENU_DEL_CH        }, // was "DEL-CH"
-    {"ChName",      MENU_MEM_NAME      },
+ #ifndef ENABLE_RX_ONLY
+    {WRX_MENU_LABEL_BUSY_CANCEL, MENU_BCL},
+ #endif
+    {WRX_MENU_LABEL_COMPANDER, MENU_COMPAND},
+    {WRX_MENU_LABEL_MODULATION, MENU_AM},
+    {WRX_MENU_LABEL_CHANNEL_LIST, MENU_LIST_CH},
+    {WRX_MENU_LABEL_SAVE_CHANNEL, MENU_MEM_CH},
+    {WRX_MENU_LABEL_DELETE_CHANNEL, MENU_DEL_CH},
+    {WRX_MENU_LABEL_CHANNEL_NAME, MENU_MEM_NAME},
 
-    {"ScList",       MENU_S_LIST       },
-    {"ScPri",        MENU_S_PRI        },
-    {"PriCh1",       MENU_S_PRI_CH_1   },
-    {"PriCh2",       MENU_S_PRI_CH_2   },
-    {"ScnRev",      MENU_SC_REV        },
+    {WRX_MENU_LABEL_SCAN_LIST, MENU_S_LIST},
+    {WRX_MENU_LABEL_PRIORITY, MENU_S_PRI},
+    {WRX_MENU_LABEL_PRIORITY1, MENU_S_PRI_CH_1},
+    {WRX_MENU_LABEL_PRIORITY2, MENU_S_PRI_CH_2},
+    {WRX_MENU_LABEL_SCAN_REVERSE, MENU_SC_REV},
 #ifndef ENABLE_FEAT_F4HWN
     #ifdef ENABLE_NOAA
-        {"NOAA-S",      MENU_NOAA_S    },
+        {WRX_MENU_LABEL_NOAA_SCAN, MENU_NOAA_S},
     #endif
 #endif
-    {"F1Shrt",      MENU_F1SHRT        },
-    {"F1Long",      MENU_F1LONG        },
-    {"F2Shrt",      MENU_F2SHRT        },
-    {"F2Long",      MENU_F2LONG        },
-    {"M Long",      MENU_MLONG         },
+    {WRX_MENU_LABEL_F1_SHORT, MENU_F1SHRT},
+    {WRX_MENU_LABEL_F1_LONG, MENU_F1LONG},
+    {WRX_MENU_LABEL_F2_SHORT, MENU_F2SHRT},
+    {WRX_MENU_LABEL_F2_LONG, MENU_F2LONG},
+    {WRX_MENU_LABEL_M_LONG, MENU_MLONG},
 
-    {"KeyLck",      MENU_AUTOLK        }, // was "AUTOLk"
-    {"TxTOut",      MENU_TOT           }, // was "TOT"
-    {"BatSav",      MENU_SAVE          }, // was "SAVE"
-    {"BatTxt",      MENU_BAT_TXT       },
-    {"Mic",         MENU_MIC           },
-    {"MicBar",      MENU_MIC_BAR       },
-    {"ChDisp",      MENU_MDF           }, // was "MDF"
-    {"POnMsg",      MENU_PONMSG        },
-    {"BLTime",      MENU_ABR           }, // was "ABR"
-    {"BLMin",       MENU_ABR_MIN       },
-    {"BLMax",       MENU_ABR_MAX       },
-    {"BLTxRx",      MENU_ABR_ON_TX_RX  },
-    {"Beep",        MENU_BEEP          },
+    {WRX_MENU_LABEL_KEY_LOCK, MENU_AUTOLK},
+#ifndef ENABLE_RX_ONLY
+    {WRX_MENU_LABEL_TX_TIMEOUT, MENU_TOT},
+#endif
+    {WRX_MENU_LABEL_BATTERY_SAVE, MENU_SAVE},
+    {WRX_MENU_LABEL_BATTERY_TEXT, MENU_BAT_TXT},
+#ifndef ENABLE_RX_ONLY
+    {WRX_MENU_LABEL_MIC, MENU_MIC},
+    {WRX_MENU_LABEL_MIC_BAR, MENU_MIC_BAR},
+#endif
+    {WRX_MENU_LABEL_CHANNEL_DISPLAY, MENU_MDF},
+    {WRX_MENU_LABEL_POWER_ON, MENU_PONMSG},
+    {WRX_MENU_LABEL_BACKLIGHT, MENU_ABR},
+    {WRX_MENU_LABEL_BACKLIGHT_MIN, MENU_ABR_MIN},
+    {WRX_MENU_LABEL_BACKLIGHT_MAX, MENU_ABR_MAX},
+#ifndef ENABLE_RX_ONLY
+    {WRX_MENU_LABEL_BACKLIGHT_TXRX, MENU_ABR_ON_TX_RX},
+#endif
+    {WRX_MENU_LABEL_BEEP, MENU_BEEP},
 #ifdef ENABLE_VOICE
-    {"Voice",       MENU_VOICE         },
+    {WRX_MENU_LABEL_VOICE, MENU_VOICE},
 #endif
-    {"Roger",       MENU_ROGER         },
-    {"STE",         MENU_STE           },
-    {"RP STE",      MENU_RP_STE        },
-    {"1 Call",      MENU_1_CALL        },
+#ifndef ENABLE_RX_ONLY
+    {WRX_MENU_LABEL_ROGER, MENU_ROGER},
+    {WRX_MENU_LABEL_STE, MENU_STE},
+    {WRX_MENU_LABEL_RP_STE, MENU_RP_STE},
+    {WRX_MENU_LABEL_CALL1, MENU_1_CALL},
+#endif
 #ifdef ENABLE_ALARM
-    {"AlarmT",      MENU_AL_MOD        },
+#ifndef ENABLE_RX_ONLY
+    {WRX_MENU_LABEL_ALARM, MENU_AL_MOD},
+#endif
 #endif
 #ifdef ENABLE_DTMF_CALLING
-    {"ANI ID",      MENU_ANI_ID        },
+#ifndef ENABLE_RX_ONLY
+    {WRX_MENU_LABEL_ANI, MENU_ANI_ID},
 #endif
-    {"UPCode",      MENU_UPCODE        },
-    {"DWCode",      MENU_DWCODE        },
-    {"PTT ID",      MENU_PTT_ID        },
-    {"D ST",        MENU_D_ST          },
+#endif
+#ifndef ENABLE_RX_ONLY
+    {WRX_MENU_LABEL_UP_CODE, MENU_UPCODE},
+    {WRX_MENU_LABEL_DOWN_CODE, MENU_DWCODE},
+    {WRX_MENU_LABEL_PTT_ID, MENU_PTT_ID},
+    {WRX_MENU_LABEL_DTMF_ST, MENU_D_ST},
+#endif
 #ifdef ENABLE_DTMF_CALLING
-    {"D Resp",      MENU_D_RSP         },
-    {"D Hold",      MENU_D_HOLD        },
+#ifndef ENABLE_RX_ONLY
+    {WRX_MENU_LABEL_DTMF_RESPONSE, MENU_D_RSP},
+    {WRX_MENU_LABEL_DTMF_HOLD, MENU_D_HOLD},
 #endif
-    {"D Prel",      MENU_D_PRE         },
+#endif
+#ifndef ENABLE_RX_ONLY
+    {WRX_MENU_LABEL_DTMF_PRE, MENU_D_PRE},
+#endif
 #ifdef ENABLE_DTMF_CALLING
-    {"D Decd",      MENU_D_DCD         },
-    {"D List",      MENU_D_LIST        },
+#ifndef ENABLE_RX_ONLY
+    {WRX_MENU_LABEL_DTMF_DECODE, MENU_D_DCD},
+    {WRX_MENU_LABEL_DTMF_LIST, MENU_D_LIST},
 #endif
-    {"D Live",      MENU_D_LIVE_DEC    }, // live DTMF decoder
+#endif
+    {WRX_MENU_LABEL_DTMF_LIVE, MENU_D_LIVE_DEC},
 #ifndef ENABLE_FEAT_F4HWN
     #ifdef ENABLE_AM_FIX
-        {"AM Fix",      MENU_AM_FIX        },
-    #endif
+        {WRX_MENU_LABEL_AM_FIX, MENU_AM_FIX},
 #endif
-    {"VOX",         MENU_VOX           },
+#endif
+#ifndef ENABLE_RX_ONLY
+    {WRX_MENU_LABEL_VOX, MENU_VOX},
+#endif
 #ifdef ENABLE_FEAT_F4HWN
-    {"SysInf",      MENU_VOL           }, // was "VOL"
+ #ifdef ENABLE_JAPANESE
+    {WRX_MENU_LABEL_INFO, MENU_VOL},
+ #else
+    {WRX_MENU_LABEL_INFO, MENU_VOL},
+ #endif
 #else
-    {"BatVol",      MENU_VOL           }, // was "VOL"
+#ifdef ENABLE_JAPANESE
+    {WRX_MENU_LABEL_INFO, MENU_VOL},
+#else
+    {WRX_MENU_LABEL_BATTERY_VOLTAGE, MENU_VOL},
 #endif
-    {"RxMode",      MENU_TDR           },
-    {"Sql",         MENU_SQL           },
+#endif
+ #ifdef ENABLE_JAPANESE
+    {WRX_MENU_LABEL_RX_MODE, MENU_TDR},
+    {WRX_MENU_LABEL_SQUELCH, MENU_SQL},
+ #else
+    {WRX_MENU_LABEL_RX_MODE, MENU_TDR},
+    {WRX_MENU_LABEL_SQUELCH, MENU_SQL},
+ #endif
 #ifdef ENABLE_FEAT_F4HWN
-    {"SetPwr",      MENU_SET_PWR       },
-    {"SetPTT",      MENU_SET_PTT       },
-    {"SetTOT",      MENU_SET_TOT       },
-    {"SetEOT",      MENU_SET_EOT       },
-    {"SetCtr",      MENU_SET_CTR       },
-    {"SetInv",      MENU_SET_INV       },
-    {"SetLck",      MENU_SET_LCK       },
-    {"SetMet",      MENU_SET_MET       },
-    {"SetGUI",      MENU_SET_GUI       },
-#ifdef ENABLE_FEAT_F4HWN_AUDIO    
-    {"SetRxA",      MENU_SET_AUD       },
+#ifndef ENABLE_RX_ONLY
+    {WRX_MENU_LABEL_SET_POWER, MENU_SET_PWR},
+    {WRX_MENU_LABEL_SET_PTT, MENU_SET_PTT},
+    {WRX_MENU_LABEL_SET_TOT, MENU_SET_TOT},
+    {WRX_MENU_LABEL_SET_EOT, MENU_SET_EOT},
 #endif
-    {"SetTmr",      MENU_SET_TMR       },
+    {WRX_MENU_LABEL_SET_CONTRAST, MENU_SET_CTR},
+    {WRX_MENU_LABEL_SET_INV, MENU_SET_INV},
+    {WRX_MENU_LABEL_SET_MENU_LOCK, MENU_SET_LCK},
+    {WRX_MENU_LABEL_SET_METER, MENU_SET_MET},
+    {WRX_MENU_LABEL_SET_GUI, MENU_SET_GUI},
+#ifdef ENABLE_FEAT_F4HWN_AUDIO    
+    {WRX_MENU_LABEL_SET_AUDIO, MENU_SET_AUD},
+#endif
+#ifndef ENABLE_RX_ONLY
+    {WRX_MENU_LABEL_SET_TIMER, MENU_SET_TMR},
+#endif
 #ifdef ENABLE_FEAT_F4HWN_SLEEP
-    {"SetOff",       MENU_SET_OFF      },
+    {WRX_MENU_LABEL_SET_SLEEP, MENU_SET_OFF},
 #endif
 #ifdef ENABLE_FEAT_F4HWN_NARROWER
-    {"SetNFM",      MENU_SET_NFM       },
+    {WRX_MENU_LABEL_SET_NFM, MENU_SET_NFM},
 #endif
 #ifdef ENABLE_FEAT_F4HWN_VOL
-    {"SetVol",      MENU_SET_VOL       },
+    {WRX_MENU_LABEL_SET_VOLUME, MENU_SET_VOL},
 #endif
 #ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
-    {"SetKey",      MENU_SET_KEY       },
+    {WRX_MENU_LABEL_SET_KEY, MENU_SET_KEY},
 #endif
 #ifdef ENABLE_NOAA
-    {"SetNWR",      MENU_NOAA_S    },
+    {WRX_MENU_LABEL_SET_NWR, MENU_NOAA_S},
 #endif
 #ifdef ENABLE_FEAT_F4HWN_SCAN_FASTER
-    {"SetScn",      MENU_SET_SCN       },
+    {WRX_MENU_LABEL_SET_SCAN, MENU_SET_SCN},
 #endif
 #ifdef ENABLE_FEAT_F4HWN_LOGO_SAV
-    {"SetSav",      MENU_SET_SAV       },
+    {WRX_MENU_LABEL_SET_SAVE, MENU_SET_SAV},
 #endif
 #endif
     // hidden menu items from here on
     // enabled if pressing both the PTT and upper side button at power-on
-    {"F Lock",      MENU_F_LOCK        },
-#ifndef ENABLE_FEAT_F4HWN
-    {"Tx 200",      MENU_200TX         }, // was "200TX"
-    {"Tx 350",      MENU_350TX         }, // was "350TX"
-    {"Tx 500",      MENU_500TX         }, // was "500TX"
+#ifndef ENABLE_RX_ONLY
+    {WRX_MENU_LABEL_F_LOCK, MENU_F_LOCK},
 #endif
-    {"350 En",      MENU_350EN         }, // was "350EN"
+#ifndef ENABLE_RX_ONLY
 #ifndef ENABLE_FEAT_F4HWN
-    {"ScraEn",      MENU_SCREN         }, // was "SCREN"
+    {WRX_MENU_LABEL_TX_200, MENU_200TX},
+    {WRX_MENU_LABEL_TX_350, MENU_350TX},
+    {WRX_MENU_LABEL_TX_500, MENU_500TX},
+#endif
+    {WRX_MENU_LABEL_350_ENABLE, MENU_350EN},
+#endif
+#ifndef ENABLE_FEAT_F4HWN
+    {WRX_MENU_LABEL_SCRAMBLER_EN, MENU_SCREN},
 #endif
 #ifdef ENABLE_F_CAL_MENU
-    {"FrCali",      MENU_F_CALI        }, // reference xtal calibration
+    {WRX_MENU_LABEL_FREQ_CAL, MENU_F_CALI},
 #endif
-    {"BatCal",      MENU_BATCAL        }, // battery voltage calibration
-    {"BatTyp",      MENU_BATTYP        }, // battery type 1600/2200mAh
-    {"SetNav",      MENU_SET_NAV       }, // set navigation (LEFT / RIGHT or UP / DOWN)
-    {"Reset",       MENU_RESET         }, // might be better to move this to the hidden menu items ?
+    {WRX_MENU_LABEL_BATTERY_CAL, MENU_BATCAL},
+    {WRX_MENU_LABEL_BATTERY_TYPE, MENU_BATTYP},
+    {WRX_MENU_LABEL_SET_NAV, MENU_SET_NAV},
+    {WRX_MENU_LABEL_RESET, MENU_RESET},
 
     {"",                              0xff               }  // end of list - DO NOT delete or move this this
 };
 
+#ifdef ENABLE_RX_ONLY
+// Keep the hidden-menu boot path available for EEPROM initialization and
+// battery calibration.  TX-related entries remain excluded above.
+const uint8_t FIRST_HIDDEN_MENU_ITEM = MENU_BATCAL;
+#else
 const uint8_t FIRST_HIDDEN_MENU_ITEM = MENU_F_LOCK;
+#endif
 
 const char* const gSubMenu_TXP[] =
 {
@@ -221,9 +282,28 @@ const char* const gSubMenu_SFT_D[] =
 
 const char* const gSubMenu_W_N[] =
 {
+#ifdef ENABLE_RX_ONLY
+    "W+",
+    "W",
+    "N",
+    "N-"
+#else
     "WIDE",
     "NARROW"
+#endif
 };
+
+#ifdef ENABLE_RX_ONLY
+const char* const gSubMenu_RX_BANK[] =
+{
+    "ALL", "B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8"
+};
+
+const char* const gSubMenu_RX_BANK_SET[] =
+{
+    "NONE", "B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8"
+};
+#endif
 
 const char* const gSubMenu_OFF_ON[] =
 {
@@ -235,10 +315,16 @@ const char* gSubMenu_NA = "N/A";
 
 const char* const gSubMenu_RXMode[] =
 {
+#ifdef ENABLE_RX_ONLY
+    "MAIN\nONLY",
+    "DUAL RX",
+    "SINGLE",
+#else
     "MAIN\nONLY",       // TX and RX on main only
     "DUAL RX\nRESPOND", // Watch both and respond
     "CROSS\nBAND",      // TX on main, RX on secondary
     "MAIN TX\nDUAL RX"  // always TX on main, but RX on both
+#endif
 };
 
 #ifdef ENABLE_VOICE
@@ -297,6 +383,8 @@ const char* const gSubMenu_PONMSG[] =
     "VOLTAGE",
 #ifdef ENABLE_FEAT_F4HWN_LOGO
     "LOGO",
+    "LOGO+MSG",
+    "LOGO+ALL",
 #endif
     "NONE"
 };
@@ -484,7 +572,9 @@ const t_sidefunction gSubMenu_SIDEFUNCTIONS[] =
 #ifdef ENABLE_FLASHLIGHT
     {"FLASH\nLIGHT",    ACTION_OPT_FLASHLIGHT},
 #endif
+#ifndef ENABLE_RX_ONLY
     {"POWER",           ACTION_OPT_POWER},
+#endif
     {"MONITOR",         ACTION_OPT_MONITOR},
     {"SCAN",            ACTION_OPT_SCAN},
 #ifdef ENABLE_VOX
@@ -509,7 +599,9 @@ const t_sidefunction gSubMenu_SIDEFUNCTIONS[] =
 #ifdef ENABLE_FEAT_F4HWN
     {"RX MODE",         ACTION_OPT_RXMODE},
     {"MAIN ONLY",       ACTION_OPT_MAINONLY},
+#ifndef ENABLE_RX_ONLY
     {"PTT",             ACTION_OPT_PTT},
+#endif
     {"WIDE\nNARROW",    ACTION_OPT_WN},
     {"MUTE",            ACTION_OPT_MUTE},
     #ifdef ENABLE_FEAT_F4HWN_AUDIO
@@ -573,17 +665,17 @@ uint8_t UI_MENU_GetViewPos(uint8_t id)
 // (ex. SetPwr colle a Power). CAT_ALL n'a pas de liste : il reprend MenuList
 // tel quel, donc ordre et numeros d'origine preserves.
 const char *const CategoryNames[CAT_COUNT] = {
-    [CAT_CHANNELS] = "Channels",
-    [CAT_SCAN]     = "Scan",
-    [CAT_KEYS]     = "Keys",
-    [CAT_POWER]    = "Power",
-    [CAT_DISPLAY]  = "Display",
-    [CAT_TIMERS]   = "Timers",
-    [CAT_AUDIO]    = "Audio",
-    [CAT_RADIO]    = "Radio",
-    [CAT_DTMF]     = "DTMF",
-    [CAT_SERVICE]  = "Service",
-    [CAT_ALL]      = "All",
+    [CAT_CHANNELS] = WRX_MENU_CATEGORY_CHANNELS,
+    [CAT_SCAN]     = WRX_MENU_CATEGORY_SCAN,
+    [CAT_KEYS]     = WRX_MENU_CATEGORY_KEYS,
+    [CAT_POWER]    = WRX_MENU_CATEGORY_POWER,
+    [CAT_DISPLAY]  = WRX_MENU_CATEGORY_DISPLAY,
+    [CAT_TIMERS]   = WRX_MENU_CATEGORY_TIMERS,
+    [CAT_AUDIO]    = WRX_MENU_CATEGORY_AUDIO,
+    [CAT_RADIO]    = WRX_MENU_CATEGORY_RADIO,
+    [CAT_DTMF]     = WRX_MENU_CATEGORY_DTMF,
+    [CAT_SERVICE]  = WRX_MENU_CATEGORY_SERVICE,
+    [CAT_ALL]      = WRX_MENU_CATEGORY_ALL,
 };
 
 // Les menu_id de sous-features optionnelles sont gardes exactement comme dans
@@ -591,12 +683,16 @@ const char *const CategoryNames[CAT_COUNT] = {
 // references (sinon build KO, ex. preset Custom). Les autres MENU_SET_* sont
 // sous ENABLE_FEAT_F4HWN, garanti par la dependance CMake (App/CMakeLists.txt).
 static const uint8_t CatChannels[] = {
-    MENU_STEP, MENU_TXP, MENU_SET_PWR, MENU_R_DCS, MENU_R_CTCS, MENU_T_DCS,
-    MENU_T_CTCS, MENU_SFT_D, MENU_OFFSET, MENU_W_N,
+    MENU_STEP, MENU_R_DCS, MENU_R_CTCS, MENU_W_N,
+#ifdef ENABLE_RX_ONLY
+    MENU_RX_EXT, MENU_RX_BANK, MENU_RX_BANK_SET,
+#else
+    MENU_TXP, MENU_SET_PWR, MENU_T_DCS, MENU_T_CTCS, MENU_SFT_D, MENU_OFFSET,
+#endif
 #ifdef ENABLE_FEAT_F4HWN_NARROWER
     MENU_SET_NFM,
 #endif
-    MENU_BCL, MENU_COMPAND, MENU_AM, MENU_TX_LOCK, MENU_PTT_ID, MENU_LIST_CH,
+    MENU_COMPAND, MENU_AM, MENU_LIST_CH,
     MENU_MEM_CH, MENU_DEL_CH, MENU_MEM_NAME,
 };
 static const uint8_t CatScan[]    = {
@@ -610,7 +706,9 @@ static const uint8_t CatKeys[]    = {
 #ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
     MENU_SET_KEY,
 #endif
+#ifndef ENABLE_RX_ONLY
     MENU_SET_PTT, MENU_1_CALL,
+#endif
 };
 static const uint8_t CatPower[]   = {
     MENU_SAVE, MENU_BAT_TXT,
@@ -700,6 +798,8 @@ void UI_MENU_BuildCategoryScreen(void)
     {
         if (c == CAT_SERVICE && !gF_LOCK)
             continue;
+        if (UI_MENU_CategoryItemCount(c) == 0)
+            continue;
         gCatOrder[gMenuListCount++] = c;
     }
 }
@@ -778,6 +878,74 @@ char    edit_original[17]; // a copy of the text before editing so that we can e
 char    edit[17];
 int     edit_index;
 bool    edit_is_uppercase = false;
+
+static const char *UI_MENU_GetRxHelp(const int menuId)
+{
+    switch (menuId)
+    {
+        case MENU_SQL:         return WRX_MENU_HELP_SQL;
+        case MENU_W_N:         return WRX_MENU_HELP_W_N;
+        case MENU_LIST_CH:     return WRX_MENU_HELP_CHANNEL_LIST;
+        case MENU_R_CTCS:      return WRX_MENU_HELP_CTCS;
+#ifdef ENABLE_RX_ONLY
+        case MENU_RX_EXT:      return WRX_MENU_HELP_RX_EXT;
+        case MENU_RX_BANK:     return WRX_MENU_HELP_RX_BANK;
+        case MENU_RX_BANK_SET: return WRX_MENU_HELP_RX_BANK_SET;
+#endif
+        default:               return NULL;
+    }
+}
+
+#define UI_MENU_HELP_WIDTH 15u
+
+static uint8_t gMenuHelpOffset;
+
+static void UI_MENU_DrawRxHelp(const char *help)
+{
+    char visible[UI_MENU_HELP_WIDTH + 1u] = {0};
+    const size_t length = strlen(help);
+
+    // The menu number occupies the left edge of this row.  Clear the rest
+    // before drawing so an old, longer help line cannot remain on screen.
+    memset(gFrameBuffer[6] + 18, 0, LCD_WIDTH - 18);
+
+    if (length > UI_MENU_HELP_WIDTH)
+    {
+        const size_t cycle = length + 1u; // one blank separator
+        for (size_t i = 0; i < UI_MENU_HELP_WIDTH; i++)
+        {
+            const size_t position = (gMenuHelpOffset + i) % cycle;
+            visible[i] = (position < length) ? help[position] : ' ';
+        }
+    }
+    else
+    {
+        strncpy(visible, help, UI_MENU_HELP_WIDTH);
+    }
+
+    // End == 0 disables centering and keeps the 15-character window inside
+    // the 128-pixel display (18 + 15 * 7 <= 127).
+    UI_PrintStringSmallNormal(visible, 18, 0, 6);
+}
+
+void UI_MENU_TimeSlice500ms(void)
+{
+    const char *help = UI_MENU_GetRxHelp(UI_MENU_GetCurrentMenuId());
+    const size_t length = (help == NULL) ? 0u : strlen(help);
+
+    if (gScreenToDisplay != DISPLAY_MENU || length <= UI_MENU_HELP_WIDTH)
+    {
+        if (gMenuHelpOffset != 0)
+        {
+            gMenuHelpOffset = 0;
+            gUpdateDisplay = true;
+        }
+        return;
+    }
+
+    gMenuHelpOffset = (gMenuHelpOffset + 1u) % (length + 1u);
+    gUpdateDisplay = true;
+}
 
 static void UI_MENU_DrawTopRightRoundedBadge(const char *text, const uint8_t line, const bool center_in_area, const uint8_t area_x1, const uint8_t area_x2)
 {
@@ -912,17 +1080,17 @@ void UI_DisplayMenu(void)
                 if (prev_index < 0) {
                     prev_index = menu_count - 1;
                 }
-                UI_PrintStringSmallNormal(MenuList[gMenuIndices[prev_index]].name, 0, 0, 1);
+                UI_PrintStringSmallNormalClipped(MenuList[gMenuIndices[prev_index]].name, 0, 47, 1);
 
                 // current menu item - keep big n fat
-                UI_PrintString(MenuList[gMenuIndices[menu_index]].name, 0, 0, 2, 8);
+                UI_PrintStringClipped(MenuList[gMenuIndices[menu_index]].name, 0, 47, 2, 8);
 
                 // trailing menu item - small text
                 int next_index = menu_index + 1;
                 if (next_index >= menu_count) {
                     next_index = 0;
                 }
-                UI_PrintStringSmallNormal(MenuList[gMenuIndices[next_index]].name, 0, 0, 4);
+                UI_PrintStringSmallNormalClipped(MenuList[gMenuIndices[next_index]].name, 0, 47, 4);
 
 
                 // draw the menu index number/count
@@ -935,7 +1103,7 @@ void UI_DisplayMenu(void)
             {   
                 // current menu item
 //              strcat(String, ":");
-                UI_PrintString(MenuList[gMenuIndices[menu_index]].name, 0, 0, 0, 8);
+                UI_PrintStringClipped(MenuList[gMenuIndices[menu_index]].name, 0, 47, 0, 8);
 //              UI_PrintStringSmallNormal(String, 0, 0, 0);
             }
 
@@ -969,7 +1137,21 @@ void UI_DisplayMenu(void)
     switch (m)
     {
         case MENU_SQL:
+#ifdef ENABLE_RX_ONLY
+            if (gSubMenuSelection == 10)
+ #ifdef ENABLE_JAPANESE
+            {
+                const char auto_name[] = {0xEB, 0xEC, 0}; // 自動
+                strcpy(String, auto_name);
+            }
+ #else
+                strcpy(String, "AUTO");
+ #endif
+            else
+                sprintf(String, "%d", gSubMenuSelection);
+#else
             sprintf(String, "%d", gSubMenuSelection);
+#endif
             break;
 
         case MENU_MIC:
@@ -1023,8 +1205,10 @@ void UI_DisplayMenu(void)
         {
             if (gSubMenuSelection == 0)
                 strcpy(String, gSubMenu_OFF_ON[0]);
-            else
+            else if (gSubMenuSelection <= (int32_t)ARRAY_SIZE(CTCSS_Options))
                 sprintf(String, "%u.%uHz", CTCSS_Options[gSubMenuSelection - 1] / 10, CTCSS_Options[gSubMenuSelection - 1] % 10);
+            else
+                sprintf(String, "R%u.%uHz", CTCSS_Options[gSubMenuSelection - ARRAY_SIZE(CTCSS_Options) - 1] / 10, CTCSS_Options[gSubMenuSelection - ARRAY_SIZE(CTCSS_Options) - 1] % 10);
             break;
         }
 
@@ -1052,6 +1236,12 @@ void UI_DisplayMenu(void)
         case MENU_W_N:
             strcpy(String, gSubMenu_W_N[gSubMenuSelection]);
             break;
+
+#ifdef ENABLE_RX_ONLY
+        case MENU_RX_EXT:
+            strcpy(String, gSubMenu_OFF_ON[gSubMenuSelection]);
+            break;
+#endif
 
 #ifndef ENABLE_FEAT_F4HWN
         case MENU_SCR:
@@ -1442,7 +1632,14 @@ void UI_DisplayMenu(void)
             if (page == p++) {
                 char val[16];
 
+ #ifdef ENABLE_JAPANESE
+                {
+                    const char battery_name[] = {0x8F, 0xF7, 0}; // 電池
+                    strcpy(top_right_badge, battery_name);
+                }
+ #else
                 strcpy(top_right_badge, "BATTERY");
+ #endif
 
                 sprintf(val, "%u.%02uV %u%%",
                     gBatteryVoltageAverage / 100, gBatteryVoltageAverage % 100,
@@ -1602,17 +1799,6 @@ void UI_DisplayMenu(void)
             #endif
             break;
 
-        case MENU_TX_LOCK:
-            if(TX_freq_check(gEeprom.VfoInfo[gEeprom.TX_VFO].pTX->Frequency) == 0)
-            {
-                strcpy(String, "Inside\nF Lock\nPlan");
-            }
-            else
-            {
-                strcpy(String, gSubMenu_OFF_ON[gSubMenuSelection]);
-            }
-            break;
-
         case MENU_SET_LCK:
             strcpy(String, gSubMenu_SET_LCK[gSubMenuSelection]);
             break;
@@ -1769,6 +1955,8 @@ void UI_DisplayMenu(void)
     if (is_ctcs || is_dcs) {
         if (gSubMenuSelection == 0) {
             strcpy(top_right_badge, is_ctcs ? "00/00" : "000/00");
+        } else if (is_ctcs && gSubMenuSelection > ARRAY_SIZE(CTCSS_Options)) {
+            sprintf(top_right_badge, "R/%02u", (unsigned)(gSubMenuSelection - ARRAY_SIZE(CTCSS_Options)));
         } else {
             const uint8_t approved_index = is_ctcs ? 
                 DCS_GetCtcssApprovedIndex(gSubMenuSelection - 1) : 
@@ -1793,6 +1981,10 @@ void UI_DisplayMenu(void)
     if (top_right_badge[0] != '\0') {
         UI_MENU_DrawTopRightRoundedBadge(top_right_badge, 1, true, menu_item_x1, menu_item_x2);
     }
+
+    const char *rxHelp = UI_MENU_GetRxHelp(m);
+    if (rxHelp != NULL)
+        UI_MENU_DrawRxHelp(rxHelp);
 
     if ((m == MENU_RESET    ||
          m == MENU_MEM_CH   ||

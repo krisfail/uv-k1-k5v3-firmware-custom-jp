@@ -41,6 +41,9 @@
 #endif
 
 #include "functions.h"
+#ifdef ENABLE_JAPANESE
+#include "japanese_font.h"
+#endif
 #include "misc.h"
 #include "settings.h"
 #include "version.h"
@@ -119,6 +122,48 @@ typedef struct {
         uint16_t Offset;
     } Data;
 } REPLY_051D_t;
+
+#ifdef ENABLE_JAPANESE
+/* External Japanese font/name access uses a 32-bit flash address.  The
+ * existing 16-bit EEPROM commands remain unchanged for CHIRP compatibility. */
+typedef struct __attribute__((packed)) {
+    Header_t Header;
+    uint32_t Address;
+    uint8_t  Size;
+    uint8_t  Padding[3];
+    uint32_t Timestamp;
+} CMD_0531_t;
+
+typedef struct __attribute__((packed)) {
+    Header_t Header;
+    struct __attribute__((packed)) {
+        uint32_t Address;
+        uint8_t  Size;
+        uint8_t  Padding[3];
+        uint8_t  Data[128];
+    } Data;
+} REPLY_0532_t;
+
+typedef struct __attribute__((packed)) {
+    Header_t Header;
+    uint32_t Address;
+    uint8_t  Size;
+    uint8_t  AllowPassword;
+    uint16_t Padding;
+    uint32_t Timestamp;
+    uint8_t  Data[0];
+} CMD_0533_t;
+
+typedef struct __attribute__((packed)) {
+    Header_t Header;
+    struct __attribute__((packed)) {
+        uint32_t Address;
+        uint8_t  Size;
+        uint8_t  Status;
+        uint16_t Padding;
+    } Data;
+} REPLY_0534_t;
+#endif
 
 #ifdef ENABLE_EXTRA_UART_CMD
 typedef struct {
@@ -297,6 +342,70 @@ static void SendVersion(uint32_t Port)
 
     SendReply(Port, &Reply, sizeof(Reply));
 }
+
+#ifdef ENABLE_JAPANESE
+static bool JPFONT_SessionIsValid(uint32_t Port, uint32_t timestamp)
+{
+#if defined(ENABLE_UART)
+    if (Port == UART_PORT_UART)
+        return timestamp == UART_Timestamp;
+#endif
+#ifdef ENABLE_USB
+    if (Port == UART_PORT_VCP)
+        return timestamp == VCP_Timestamp;
+#endif
+    return false;
+}
+
+static void CMD_0531(uint32_t Port, const uint8_t *pBuffer)
+{
+    const CMD_0531_t *pCmd = (const CMD_0531_t *)pBuffer;
+    REPLY_0532_t Reply;
+
+    if (pCmd->Header.Size != 12u || pCmd->Size == 0u ||
+        pCmd->Size > sizeof(Reply.Data.Data) ||
+        !JPFONT_SessionIsValid(Port, pCmd->Timestamp) ||
+        !JPFONT_IsExternalRange(pCmd->Address, pCmd->Size))
+        return;
+
+    memset(&Reply, 0, sizeof(Reply));
+    Reply.Header.ID = 0x0532;
+    Reply.Header.Size = 8u + pCmd->Size;
+    Reply.Data.Address = pCmd->Address;
+    Reply.Data.Size = pCmd->Size;
+    if (!JPFONT_ReadExternal(pCmd->Address, Reply.Data.Data, pCmd->Size))
+        return;
+
+    SendReply(Port, &Reply, 12u + pCmd->Size);
+}
+
+static void CMD_0533(uint32_t Port, const uint8_t *pBuffer)
+{
+    const CMD_0533_t *pCmd = (const CMD_0533_t *)pBuffer;
+    REPLY_0534_t Reply;
+    bool bIsLocked;
+    uint8_t status = 0;
+
+    if (pCmd->Header.Size < 12u ||
+        pCmd->Header.Size < (uint16_t)(12u + pCmd->Size) ||
+        pCmd->Size == 0u || pCmd->Size > 128u ||
+        !JPFONT_SessionIsValid(Port, pCmd->Timestamp))
+        return;
+
+    bIsLocked = bHasCustomAesKey ? gIsLocked : false;
+    if (bIsLocked || !JPFONT_IsExternalRange(pCmd->Address, pCmd->Size) ||
+        !JPFONT_WriteExternal(pCmd->Address, pCmd->Data, pCmd->Size))
+        status = 1u;
+
+    memset(&Reply, 0, sizeof(Reply));
+    Reply.Header.ID = 0x0534;
+    Reply.Header.Size = sizeof(Reply.Data);
+    Reply.Data.Address = pCmd->Address;
+    Reply.Data.Size = pCmd->Size;
+    Reply.Data.Status = status;
+    SendReply(Port, &Reply, sizeof(Reply));
+}
+#endif
 
 #ifndef ENABLE_FEAT_F4HWN
 static bool IsBadChallenge(const uint32_t *pKey, const uint32_t *pIn, const uint32_t *pResponse)
@@ -817,6 +926,16 @@ void UART_HandleCommand(uint32_t Port)
         case 0x051D:
             CMD_051D(Port, pUART_Command->Buffer);
             break;
+
+#ifdef ENABLE_JAPANESE
+        case 0x0531:
+            CMD_0531(Port, pUART_Command->Buffer);
+            break;
+
+        case 0x0533:
+            CMD_0533(Port, pUART_Command->Buffer);
+            break;
+#endif
 
         case 0x051F:    // Not implementing non-authentic command
             break;

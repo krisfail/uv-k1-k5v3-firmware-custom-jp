@@ -22,6 +22,10 @@
     #include "app/action.h"
 #endif
 #include "app/chFrScanner.h"
+#ifdef ENABLE_RX_ONLY
+    #include "app/rx_band_presets.h"
+    #include "app/rx_feature_state.h"
+#endif
 #include "app/dtmf.h"
 
 #ifdef ENABLE_FEAT_F4HWN_BEAM
@@ -146,11 +150,11 @@ static void UI_MAIN_DrawBeamLine(void)
 const char *const VfoStateStr[] = {
        [VFO_STATE_NORMAL]="",
        [VFO_STATE_BUSY]="BUSY",
-       [VFO_STATE_BAT_LOW]="BAT LOW",
+       [VFO_STATE_BAT_LOW]="\x8F\xF7 LOW", // 電池 LOW
        [VFO_STATE_TX_DISABLE]="TX DISABLE",
        [VFO_STATE_TIMEOUT]="TIMEOUT",
        [VFO_STATE_ALARM]="ALARM",
-       [VFO_STATE_VOLTAGE_HIGH]="VOLT HIGH"
+       [VFO_STATE_VOLTAGE_HIGH]="\x8F\x92 HIGH" // 電圧 HIGH
 };
 
 #if defined(ENABLE_FEAT_F4HWN_SCAN_FASTER) && defined(ENABLE_FEAT_F4HWN_SCAN_RSSI)
@@ -862,20 +866,27 @@ void UI_DisplayAudioScope(void)
     static uint16_t g_scope_floor      = SCOPE_VOLUME_MIN;     // persistent floor: snaps down fast, rises slowly
     static uint8_t  g_scope_ready      = 0;                    // number of valid samples since TX entry
 
-    // REG_64 (VoiceAmplitudeOut) is only meaningful in TX (mic input).
-    // FM RX audio is frequency-encoded — no register gives the instantaneous waveform.
-
-// ------------------------------ Sample audio amplitude ------------------------------
-
+    /* REG_64 is treated here as an amplitude envelope.  This intentionally
+     * draws activity history, not an FFT: the BK4829 does not expose a usable
+     * audio sample stream to the application. */
     static bool s_was_tx = false;
+    static bool s_was_rx = false;
+    const bool rxScope =
+#ifdef ENABLE_RX_ONLY
+        RX_FEATURE_STATE_IsEnabled() && FUNCTION_IsRx() && gScanStateDir == SCAN_OFF;
+#else
+        false;
+#endif
+    const bool txScope = gCurrentFunction == FUNCTION_TRANSMIT;
 
-    if (gCurrentFunction != FUNCTION_TRANSMIT) {
+    if (!txScope && !rxScope) {
         s_was_tx = false;
+        s_was_rx = false;
         return;
     }
 
     // This prevents a sudden spike on the bar caused by release the PTT button
-    if (!GPIO_IsPttPressed()
+    if (txScope && !GPIO_IsPttPressed()
 #ifdef ENABLE_VOX
     && !gEeprom.VOX_SWITCH
 #endif
@@ -885,25 +896,43 @@ void UI_DisplayAudioScope(void)
     )
     return;
 
-    if (!s_was_tx) {
+    if (rxScope) {
+        s_was_tx = false;
+        if (!s_was_rx) {
+            for (uint8_t i = 0; i < SCOPE_SAMPLES; i++)
+                g_scope_buf[i] = SCOPE_VOLUME_MIN;
+            g_scope_write = 0u;
+            g_scope_floor = SCOPE_VOLUME_MIN;
+            g_scope_ready = 0u;
+            s_was_rx = true;
+        }
+        g_scope_buf[g_scope_write] = BK4819_GetVoiceAmplitudeOut();
+        if (g_scope_buf[g_scope_write] == 0)
+            g_scope_buf[g_scope_write] = SCOPE_VOLUME_MIN;
+    }
+    else {
+        s_was_rx = false;
+    }
+
+    if (txScope && !s_was_tx) {
         // TX entry: full reset so every new transmission starts from a clean state
         for (uint8_t i = 0; i < SCOPE_SAMPLES; i++) g_scope_buf[i] = SCOPE_VOLUME_MIN;
         g_scope_write      = 0u;
         g_scope_floor      = SCOPE_VOLUME_MIN;
+        g_scope_ready      = 0u;
         s_was_tx           = true;
     }
 
-    // The first 7 bars after turning on the radio
-    // will not display any values: they cause high bars.
-    if (g_scope_ready >= 7)
-        g_scope_buf[g_scope_write] = BK4819_GetVoiceAmplitudeOut();
-    else
-        g_scope_ready++;
-        
-    // If the reading is 0, it is definitely an incorrect value
-    // caused by the microphone being muted - set it to 200.
-    if (g_scope_buf[g_scope_write] == 0) 
-        g_scope_buf[g_scope_write] =  SCOPE_VOLUME_MIN;
+    if (txScope) {
+        // Discard the first few unstable TX readings.
+        if (g_scope_ready >= 7)
+            g_scope_buf[g_scope_write] = BK4819_GetVoiceAmplitudeOut();
+        else
+            g_scope_ready++;
+
+        if (g_scope_buf[g_scope_write] == 0)
+            g_scope_buf[g_scope_write] = SCOPE_VOLUME_MIN;
+    }
 
     g_scope_write = (g_scope_write + 1u) % SCOPE_SAMPLES;
 
@@ -1376,6 +1405,15 @@ void UI_DisplayMain(void)
         UI_PrintActionPickerLabel(previous, 1, false);
         UI_PrintActionPickerLabel(selection, 2, true);
         UI_PrintActionPickerLabel(next, 4, false);
+        ST7565_BlitFullScreen();
+        return;
+    }
+#endif
+
+#ifdef ENABLE_RX_ONLY
+    if (RX_BAND_PRESETS_IsOpen())
+    {
+        RX_BAND_PRESETS_Draw();
         ST7565_BlitFullScreen();
         return;
     }
@@ -1873,63 +1911,97 @@ void UI_DisplayMain(void)
                     case MDF_NAME:      // show the channel name
                     case MDF_NAME_FREQ: // show the channel name and frequency
 
-                        SETTINGS_FetchChannelName(String, gEeprom.ScreenChannel[vfo_num]);
-                        if (String[0] == 0)
-                        {   // no channel name, show the channel number instead
-                            sprintf(String, "CH-%04u", gEeprom.ScreenChannel[vfo_num] + 1);
-                        }
+                        #ifdef ENABLE_JAPANESE
+                        const bool hasExternalName = UI_PrintJapaneseChannelName(
+                            gEeprom.ScreenChannel[vfo_num], 33, 127, line);
+                        #else
+                        const bool hasExternalName = false;
+                        #endif
 
-                        if (gEeprom.CHANNEL_DISPLAY_MODE == MDF_NAME) {
-                            String[10] = 0;
-                            UI_PrintString(String, 33, 0, line, 8);
-                        }
-                        else {
-#ifdef ENABLE_FEAT_F4HWN
-                            if (isMainOnly())
-                            {
+                        if (!hasExternalName) {
+                            SETTINGS_FetchChannelName(String, gEeprom.ScreenChannel[vfo_num]);
+                            if (String[0] == 0)
+                            {   // no channel name, show the channel number instead
+                                sprintf(String, "CH-%04u", gEeprom.ScreenChannel[vfo_num] + 1);
+                            }
+
+                            if (gEeprom.CHANNEL_DISPLAY_MODE == MDF_NAME) {
                                 String[10] = 0;
                                 UI_PrintString(String, 33, 0, line, 8);
                             }
-                            else
-                            {
-                                if(activeTxVFO == vfo_num) {
-                                    UI_PrintStringSmallBold(String, 32 + 4, 0, line);
+                            else {
+#ifdef ENABLE_FEAT_F4HWN
+                                if (isMainOnly())
+                                {
+                                    String[10] = 0;
+                                    UI_PrintString(String, 33, 0, line, 8);
                                 }
                                 else
                                 {
-                                    UI_PrintStringSmallNormal(String, 32 + 4, 0, line);     
+                                    if(activeTxVFO == vfo_num) {
+                                        UI_PrintStringSmallBold(String, 32 + 4, 0, line);
+                                    }
+                                    else
+                                    {
+                                        UI_PrintStringSmallNormal(String, 32 + 4, 0, line);
+                                    }
                                 }
-                            }
 #else
-                            UI_PrintStringSmallBold(String, 32 + 4, 0, line);
+                                UI_PrintStringSmallBold(String, 32 + 4, 0, line);
 #endif
 
+#ifdef ENABLE_FEAT_F4HWN
+                                if (isMainOnly())
+                                {
+                                    UI_FormatFrequency(frequency, String);
+                                    if(frequency < _1GHz_in_KHz) {
+                                        // show the remaining 2 small frequency digits
+                                        UI_PrintStringSmallNormal(String + 7, 113, 0, line + 4);
+                                        String[7] = 0;
+                                        // show the main large frequency digits
+                                        UI_DisplayFrequency(String, 32, line + 3, false);
+                                    }
+                                    else
+                                    {
+                                        // show the frequency in the main font
+                                        UI_PrintString(String, 32, 0, line + 3, 8);
+                                    }
+                                }
+                                else
+                                {
+                                    sprintf(String, "%03u.%05u", frequency / 100000, frequency % 100000);
+                                    UI_PrintStringSmallNormal(String, 32 + 4, 0, line + 1);
+                                }
+#else                           // show the channel frequency below the channel number/name
+                                sprintf(String, "%03u.%05u", frequency / 100000, frequency % 100000);
+                                UI_PrintStringSmallNormal(String, 32 + 4, 0, line + 1);
+#endif
+                            }
+                        }
+                        else if (gEeprom.CHANNEL_DISPLAY_MODE == MDF_NAME_FREQ)
+                        {
+                            // The external glyph is 16 pixels high. Leave one
+                            // page between it and the small frequency line.
+                            sprintf(String, "%03u.%05u", frequency / 100000, frequency % 100000);
 #ifdef ENABLE_FEAT_F4HWN
                             if (isMainOnly())
                             {
                                 UI_FormatFrequency(frequency, String);
                                 if(frequency < _1GHz_in_KHz) {
-                                    // show the remaining 2 small frequency digits
                                     UI_PrintStringSmallNormal(String + 7, 113, 0, line + 4);
                                     String[7] = 0;
-                                    // show the main large frequency digits
                                     UI_DisplayFrequency(String, 32, line + 3, false);
                                 }
                                 else
                                 {
-                                    // show the frequency in the main font
                                     UI_PrintString(String, 32, 0, line + 3, 8);
                                 }
                             }
                             else
-                            {
-                                sprintf(String, "%03u.%05u", frequency / 100000, frequency % 100000);
-                                UI_PrintStringSmallNormal(String, 32 + 4, 0, line + 1);
-                            }
-#else                           // show the channel frequency below the channel number/name
-                            sprintf(String, "%03u.%05u", frequency / 100000, frequency % 100000);
-                            UI_PrintStringSmallNormal(String, 32 + 4, 0, line + 1);
 #endif
+                            {
+                                UI_PrintStringSmallNormal(String, 32 + 4, 0, line + 2);
+                            }
                         }
 
                         break;
@@ -2034,7 +2106,7 @@ void UI_DisplayMain(void)
                 const FREQ_Config_t *pConfig = (mode == VFO_MODE_TX) ? vfoInfo->pTX : vfoInfo->pRX;
                 const unsigned int code_type = pConfig->CodeType;
 #ifdef ENABLE_FEAT_F4HWN
-                const char *code_list[] = {"", "CT", "DC", "DC"};
+                const char *code_list[] = {"", "CT", "DC", "DC", "RT"};
 #else
                 const char *code_list[] = {"", "CT", "DCS", "DCR"};
 #endif
@@ -2059,6 +2131,10 @@ void UI_DisplayMain(void)
         {
             case 1:
             sprintf(String, "%u.%u", CTCSS_Options[pConfig->Code] / 10, CTCSS_Options[pConfig->Code] % 10);
+            break;
+
+            case 4:
+            sprintf(String, "R%u.%u", CTCSS_Options[pConfig->Code] / 10, CTCSS_Options[pConfig->Code] % 10);
             break;
 
             case 2:
@@ -2113,6 +2189,7 @@ void UI_DisplayMain(void)
         UI_PrintStringSmallNormal(s, LCD_WIDTH + 24, 0, line + 1);
 #endif
 
+#ifndef ENABLE_RX_ONLY
         if (state == VFO_STATE_NORMAL || state == VFO_STATE_ALARM)
         {   // show the TX power
             uint8_t currentPower = vfoInfo->OUTPUT_POWER % 8;
@@ -2152,6 +2229,7 @@ void UI_DisplayMain(void)
                 memcpy(p_line0 + 256 + arrowPos, BITMAP_PowerUser, sizeof(BITMAP_PowerUser));
             }
         }
+#endif
 
         if (vfoInfo->freq_config_RX.Frequency != vfoInfo->freq_config_TX.Frequency)
         {   // show the TX offset symbol
@@ -2218,33 +2296,63 @@ void UI_DisplayMain(void)
         const uint8_t displayBandwidth = vfoInfo->CHANNEL_BANDWIDTH;
 
         #ifdef ENABLE_FEAT_F4HWN_NARROWER
+#ifndef ENABLE_RX_ONLY
             bool narrower = 0;
 
             if(displayBandwidth == BANDWIDTH_NARROW && gSetting_set_nfm == 1)
             {
                 narrower = 1;
             }
+#endif
+
+            #ifdef ENABLE_RX_ONLY
+                const uint8_t bandwidthIndex = RADIO_BandwidthToMenuIndex(displayBandwidth);
+            #else
+                const uint8_t bandwidthIndex = displayBandwidth + narrower;
+            #endif
 
             if (gSetting_set_gui)
             {
-                const char *bandWidthNames[] = {"W", "N", "N+"};
-                UI_PrintStringSmallNormal(bandWidthNames[displayBandwidth + narrower], LCD_WIDTH + 80, 0, line + 1);
+                #ifdef ENABLE_RX_ONLY
+                    const char *bandWidthNames[] = {"W+", "W", "N", "N-"};
+                #else
+                    const char *bandWidthNames[] = {"W", "N", "N+"};
+                #endif
+                UI_PrintStringSmallNormal(bandWidthNames[bandwidthIndex], LCD_WIDTH + 80, 0, line + 1);
             }
             else
             {
-                const char *bandWidthNames[] = {"WIDE", "NAR", "NAR+"};
-                GUI_DisplaySmallest(bandWidthNames[displayBandwidth + narrower], 91, line == 0 ? 17 : 49, false, true);
+                #ifdef ENABLE_RX_ONLY
+                    const char *bandWidthNames[] = {"W+", "W", "N", "N-"};
+                #else
+                    const char *bandWidthNames[] = {"WIDE", "NAR", "NAR+"};
+                #endif
+                GUI_DisplaySmallest(bandWidthNames[bandwidthIndex], 91, line == 0 ? 17 : 49, false, true);
             }
         #else
+            #ifdef ENABLE_RX_ONLY
+                const uint8_t bandwidthIndex = RADIO_BandwidthToMenuIndex(displayBandwidth);
+            #else
+                const uint8_t bandwidthIndex = displayBandwidth;
+            #endif
+
             if (gSetting_set_gui)
             {
-                const char *bandWidthNames[] = {"W", "N"};
-                UI_PrintStringSmallNormal(bandWidthNames[displayBandwidth], LCD_WIDTH + 80, 0, line + 1);
+                #ifdef ENABLE_RX_ONLY
+                const char *bandWidthNames[] = {"W+", "W", "N", "N-"};
+                #else
+                    const char *bandWidthNames[] = {"W", "N"};
+                #endif
+                UI_PrintStringSmallNormal(bandWidthNames[bandwidthIndex], LCD_WIDTH + 80, 0, line + 1);
             }
             else
             {
-                const char *bandWidthNames[] = {"WIDE", "NAR"};
-                GUI_DisplaySmallest(bandWidthNames[displayBandwidth], 91, line == 0 ? 17 : 49, false, true);
+                #ifdef ENABLE_RX_ONLY
+                const char *bandWidthNames[] = {"W+", "W", "N", "N-"};
+                #else
+                    const char *bandWidthNames[] = {"WIDE", "NAR"};
+                #endif
+                GUI_DisplaySmallest(bandWidthNames[bandwidthIndex], 91, line == 0 ? 17 : 49, false, true);
             }
         #endif
 #else
@@ -2343,7 +2451,13 @@ void UI_DisplayMain(void)
         else
 #endif
 #ifdef ENABLE_FEAT_F4HWN_AUDIO_SCOPE
-        if (gSetting_mic_bar && gCurrentFunction == FUNCTION_TRANSMIT) {
+        if ((rx &&
+#ifdef ENABLE_RX_ONLY
+             RX_FEATURE_STATE_IsEnabled() && gScanStateDir == SCAN_OFF
+#else
+             false
+#endif
+            ) || (gSetting_mic_bar && gCurrentFunction == FUNCTION_TRANSMIT)) {
             // Reserve the line so no other element overwrites it.
             // Actual drawing is handled exclusively by the app.c timeslice.
             center_line = CENTER_LINE_AUDIO_SCOPE;

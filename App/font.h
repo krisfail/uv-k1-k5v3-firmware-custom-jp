@@ -19,11 +19,32 @@
 
 #include <stdint.h>
 
+#define FONT_CODE_MAX 0xFF
+
+/* Large glyphs are stored as two complete 8-row OLED pages.  The zero bits
+ * in a glyph are part of that glyph's bitmap; they are not a separate
+ * padding field.  The visible bounds therefore remain glyph-specific. */
+#define FONT_BIG_CELL_ROWS 16u
+#define FONT_BIG_PAGE_ROWS 8u
+
+/* Startup-only Japanese glyphs deliberately use the full 16-row cell.  This
+ * table is independent from the regular 7-column font so its shape is not
+ * constrained by the normal menu font's baseline. */
+#define FONT_JP_EXTRA_LARGE_WIDTH 10u
+#define FONT_JP_EXTRA_LARGE_PAGES 2u
+#define FONT_JP_EXTRA_LARGE_BYTES (FONT_JP_EXTRA_LARGE_WIDTH * FONT_JP_EXTRA_LARGE_PAGES)
+#define FONT_JP_EXTRA_LARGE_GLYPHS 4u
 
 extern const uint8_t gFontBig[95 - 1][16 - 2];
 extern const uint8_t gFontBigDigits[11][26 - 6];
 extern const uint8_t gFont3x5[96][3];
 extern const uint8_t gFontSmall[95 - 1][6];
+#ifdef ENABLE_JAPANESE
+extern const uint8_t gFontBigJapanese[FONT_CODE_MAX - 0x7F + 1][14];
+extern const uint8_t gFontSmallJapanese[FONT_CODE_MAX - 0x7F + 1][6];
+extern const uint8_t gFontJapaneseExtraLargeCodes[FONT_JP_EXTRA_LARGE_GLYPHS];
+extern const uint8_t gFontJapaneseExtraLarge[FONT_JP_EXTRA_LARGE_GLYPHS][FONT_JP_EXTRA_LARGE_BYTES];
+#endif
 #ifdef ENABLE_SMALL_BOLD
     extern const uint8_t gFontSmallBold[95 - 1][6];
 #endif

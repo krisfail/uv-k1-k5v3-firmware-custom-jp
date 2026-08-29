@@ -9,11 +9,13 @@ compile_commands.json
 .vscode
 .claude
 .agents
-/docs
 k5_eeprom.raw
 
 /build
 __pycache__/
+.pages-source/
+_site/
 
 .DS_Store
-AGENTS.md
+
+/tmp

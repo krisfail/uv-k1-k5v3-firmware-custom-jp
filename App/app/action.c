@@ -20,6 +20,10 @@
 #include "app/action.h"
 #include "app/app.h"
 #include "app/chFrScanner.h"
+#ifdef ENABLE_RX_ONLY
+    #include "app/rx_feature_state.h"
+    #include "app/rx_scan_skip.h"
+#endif
 #include "app/common.h"
 #include "app/dtmf.h"
 #ifdef ENABLE_FLASHLIGHT
@@ -341,9 +345,39 @@ inline static bool ACTION_IsBlockedInFM(uint8_t action)
 #endif
 
 #ifdef ENABLE_FEAT_F4HWN_ACTION_PICKER
+static bool ACTION_IsReceiveOnlyBlocked(uint8_t action)
+{
+#ifdef ENABLE_RX_ONLY
+    switch (action) {
+        case ACTION_OPT_POWER:
+        case ACTION_OPT_PTT:
+#ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
+        case ACTION_OPT_POWER_HIGH:
+#endif
+#ifdef ENABLE_TX1750
+        case ACTION_OPT_1750:
+#endif
+#ifdef ENABLE_ALARM
+        case ACTION_OPT_ALARM:
+#endif
+            return true;
+        default:
+            break;
+    }
+#else
+    (void)action;
+#endif
+    return false;
+}
+
 static void ACTION_Execute(uint8_t action)
 {
     if (action >= ACTION_OPT_LEN || action_opt_table[action] == NULL) {
+        gBeepToPlay = BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
+        return;
+    }
+
+    if (ACTION_IsReceiveOnlyBlocked(action)) {
         gBeepToPlay = BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
         return;
     }
@@ -448,6 +482,17 @@ void ACTION_Handle(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 #endif
         return;
     }
+
+#ifdef ENABLE_RX_ONLY
+    if (gScanStateDir != SCAN_OFF && Key == KEY_SIDE1 && bKeyPressed && !bKeyHeld)
+    {
+        const RX_SCAN_SKIP_Result_t result = RX_SCAN_SKIP_Add(gRxVfo->freq_config_RX.Frequency);
+        gBeepToPlay = result == RX_SCAN_SKIP_ADDED ? BEEP_1KHZ_60MS_OPTIONAL :
+                      BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
+        gUpdateDisplay = true;
+        return;
+    }
+#endif
 
     enum ACTION_OPT_t func = ACTION_OPT_NONE;
     switch(Key) {
@@ -640,6 +685,13 @@ void ACTION_Update(void)
 
 void ACTION_RxMode(void)
 {
+#ifdef ENABLE_RX_ONLY
+    gEeprom.DUAL_WATCH = DUAL_WATCH_OFF;
+    gEeprom.CROSS_BAND_RX_TX = CROSS_BAND_OFF;
+    gFlagReconfigureVfos = true;
+    gUpdateStatus = true;
+    return;
+#endif
     static bool cycle = 0;
 
     if (cycle) {
@@ -654,6 +706,13 @@ void ACTION_RxMode(void)
 
 void ACTION_MainOnly(void)
 {
+#ifdef ENABLE_RX_ONLY
+    gEeprom.DUAL_WATCH = DUAL_WATCH_OFF;
+    gEeprom.CROSS_BAND_RX_TX = CROSS_BAND_OFF;
+    gFlagReconfigureVfos = true;
+    gUpdateStatus = true;
+    return;
+#endif
     static bool cycle = 0;
     static uint8_t dw = 0;
     static uint8_t cb = 0;
@@ -687,6 +746,9 @@ void ACTION_RxA(void)
 
 void ACTION_Ptt(void)
 {
+#ifdef ENABLE_RX_ONLY
+    return;
+#endif
     gSetting_set_ptt_session = !gSetting_set_ptt_session;
 
     ACTION_Update();
@@ -694,6 +756,17 @@ void ACTION_Ptt(void)
 
 void ACTION_Wn(void)
 {
+#ifdef ENABLE_RX_ONLY
+    VFO_Info_t *const pVfo = FUNCTION_IsRx() ? gRxVfo : gTxVfo;
+    pVfo->CHANNEL_BANDWIDTH = RADIO_NextBandwidth(pVfo->CHANNEL_BANDWIDTH);
+    pVfo->WIDE_PLUS = pVfo->CHANNEL_BANDWIDTH == BANDWIDTH_WIDE_PLUS;
+
+    BK4819_SetFilterBandwidth(
+        RADIO_BandwidthToFilter(pVfo->CHANNEL_BANDWIDTH),
+        RADIO_BandwidthUsesWidePlusFilter(pVfo->CHANNEL_BANDWIDTH));
+    gRequestSaveChannel = 1;
+    return;
+#else
     const bool isRx = FUNCTION_IsRx();
     VFO_Info_t *pVfo = isRx ? gRxVfo : gTxVfo;
 
@@ -719,6 +792,7 @@ void ACTION_Wn(void)
     #else
         BK4819_SetFilterBandwidth(bw, false);
     #endif
+#endif
 }
 
 void ACTION_BackLight(void)

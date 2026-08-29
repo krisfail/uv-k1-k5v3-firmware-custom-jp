@@ -4,6 +4,11 @@
 
 #include "app/app.h"
 #include "app/chFrScanner.h"
+#ifdef ENABLE_RX_ONLY
+    #include "app/rx_band_presets.h"
+    #include "app/rx_feature_state.h"
+    #include "app/rx_scan_skip.h"
+#endif
 #include "audio.h"
 #ifdef ENABLE_FEAT_F4HWN_SCAN_FASTER
 #include "driver/systick.h"
@@ -543,6 +548,9 @@ static void ScanFastApplyChannelShape(ModulationMode_t modulation)
 
     gRxVfo->Modulation         = modulation;
     gRxVfo->CHANNEL_BANDWIDTH  = BANDWIDTH_WIDE;
+#ifdef ENABLE_RX_ONLY
+    gRxVfo->WIDE_PLUS          = false;
+#endif
 
     if (modulationChanged)
         RADIO_SetModulation(modulation);
@@ -857,6 +865,9 @@ void CHFRSCANNER_ContinueScanning(void)
 #endif
 
     if (gCurrentFunction == FUNCTION_INCOMING &&
+#ifdef ENABLE_RX_ONLY
+        !RX_SCAN_SKIP_Contains(gRxVfo->freq_config_RX.Frequency) &&
+#endif
         (IS_FREQ_CHANNEL(gNextMrChannel) || gCurrentCodeType == CODE_TYPE_OFF))
     {
         APP_StartListening(gMonitor ? FUNCTION_MONITOR : FUNCTION_RECEIVE);
@@ -948,6 +959,9 @@ void CHFRSCANNER_Found(void)
 
 void CHFRSCANNER_Stop(void)
 {
+#ifdef ENABLE_RX_ONLY
+    const bool presetRange = RX_BAND_PRESETS_IsApplied();
+#endif
     if(initialCROSS_BAND_RX_TX != CROSS_BAND_OFF) {
         gEeprom.CROSS_BAND_RX_TX = initialCROSS_BAND_RX_TX;
         initialCROSS_BAND_RX_TX = CROSS_BAND_OFF;
@@ -974,7 +988,11 @@ void CHFRSCANNER_Stop(void)
         gRxVfo->freq_config_RX.Frequency = chFr;
         RADIO_ApplyOffset(gRxVfo);
         RADIO_ConfigureSquelchAndOutputPower(gRxVfo);
-        if(channelChanged) {
+        if(channelChanged
+#ifdef ENABLE_RX_ONLY
+           && !presetRange
+#endif
+        ) {
             SETTINGS_SaveChannel(gRxVfo->CHANNEL_SAVE, gEeprom.RX_VFO, gRxVfo, 1);
         }
     }
@@ -990,6 +1008,11 @@ void CHFRSCANNER_Stop(void)
 
 static void NextFreqChannel(void)
 {
+#ifdef ENABLE_RX_ONLY
+    const uint32_t initialFrequency = gRxVfo->freq_config_RX.Frequency;
+    for (uint8_t attempt = 0; attempt <= RX_SCAN_SKIP_MAX; ++attempt)
+    {
+#endif
 #ifdef ENABLE_SCAN_RANGES
     if(gScanRangeStart) {
 #ifdef ENABLE_FEAT_F4HWN_SCAN_FASTER
@@ -1032,6 +1055,20 @@ static void NextFreqChannel(void)
 #endif
         gRxVfo->freq_config_RX.Frequency = APP_SetFrequencyByStep(gRxVfo, gScanStateDir);
     }
+
+#ifdef ENABLE_RX_ONLY
+        if (RX_SCAN_SKIP_Contains(gRxVfo->freq_config_RX.Frequency))
+        {
+            if (gRxVfo->freq_config_RX.Frequency == initialFrequency || attempt == RX_SCAN_SKIP_MAX)
+            {
+                gRxVfo->freq_config_RX.Frequency = initialFrequency;
+                break;
+            }
+            continue;
+        }
+        break;
+    }
+#endif
 
     RADIO_ApplyOffset(gRxVfo);
     RADIO_ConfigureSquelchAndOutputPower(gRxVfo);
@@ -1109,18 +1146,23 @@ static void NextMemChannel(void)
             */
             // this bit doesn't yet work if the other VFO is a frequency
             case SCAN_NEXT_CHAN_DUAL_WATCH:
-                // dual watch is enabled - include the other VFO in the scan
-//              if (gEeprom.DUAL_WATCH != DUAL_WATCH_OFF)
-//              {
-//                  chan = (gEeprom.RX_VFO + 1) & 1u;
-//                  chan = gEeprom.ScreenChannel[chan];
-//                  if (IS_MR_CHANNEL(chan))
-//                  {
-//                      currentScanList = SCAN_NEXT_CHAN_DUAL_WATCH;
-//                      gNextMrChannel   = chan;
-//                      break;
-//                  }
-//              }
+                /* RXExt + TDR=DWR includes the other memory VFO as a watch
+                 * target.  Frequency-mode VFOs remain unchanged so stopping
+                 * a scan can restore the original range without ambiguity. */
+                if (RX_FEATURE_STATE_IsEnabled() &&
+                    gEeprom.DUAL_WATCH != DUAL_WATCH_OFF)
+                {
+                    const uint8_t watchVfo = (gEeprom.RX_VFO + 1u) & 1u;
+                    const uint16_t watchChannel = gEeprom.ScreenChannel[watchVfo];
+                    if (IS_MR_CHANNEL(watchChannel) &&
+                        RADIO_CheckValidChannel(watchChannel, false, 0))
+                    {
+                        currentScanList = SCAN_NEXT_CHAN_DUAL_WATCH;
+                        gNextMrChannel   = watchChannel;
+                        break;
+                    }
+                }
+                [[fallthrough]];
 
             default:
             case SCAN_NEXT_CHAN_MR:
@@ -1140,6 +1182,22 @@ static void NextMemChannel(void)
         if (chan == 0xFFFF)
         {   // no valid channel found -> wrapping back to the first channel
             chan = MR_CHANNEL_FIRST;
+#ifdef ENABLE_RX_ONLY
+            if (!RX_FEATURE_STATE_ChannelMatchesBank(chan))
+            {
+                uint16_t candidate = MR_CHANNEL_FIRST;
+                while (candidate <= MR_CHANNEL_LAST &&
+                       !RADIO_CheckValidChannel(candidate, true, gEeprom.SCAN_LIST_DEFAULT))
+                    ++candidate;
+                if (candidate <= MR_CHANNEL_LAST)
+                    chan = candidate;
+                else
+                {
+                    RX_FEATURE_STATE_SetSelectedBank(RX_FEATURE_BANK_ALL);
+                    chan = MR_CHANNEL_FIRST;
+                }
+            }
+#endif
 #ifdef ENABLE_FEAT_F4HWN_SCAN_FASTER
             // Wraparound: re-warm the precheck noise floor on the new pass
             // so it tracks current RF conditions instead of an EMA that

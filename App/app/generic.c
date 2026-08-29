@@ -17,6 +17,7 @@
 #include <string.h>
 
 #include "app/app.h"
+#include "app/action.h"
 #include "app/chFrScanner.h"
 #include "app/common.h"
 
@@ -102,6 +103,9 @@ void GENERIC_Key_PTT(bool bKeyPressed)
 
     if (!bKeyPressed || SerialConfigInProgress())
     {   // PTT released
+#ifdef ENABLE_RX_ONLY
+        return;
+#else
         if (gCurrentFunction == FUNCTION_TRANSMIT) {    
             APP_HandleEndTransmission();
 
@@ -115,6 +119,7 @@ void GENERIC_Key_PTT(bool bKeyPressed)
         }
 
         return;
+#endif
     }
 
     // PTT pressed
@@ -141,6 +146,13 @@ void GENERIC_Key_PTT(bool bKeyPressed)
         gRequestDisplayScreen = DISPLAY_FM;
         goto cancel_tx;
     }
+#endif
+
+#ifdef ENABLE_RX_ONLY
+    // PTT is deliberately a monitor toggle in the receive-only image.
+    // Keep this before every TX entry point, including the FM display path.
+    ACTION_Monitor();
+    goto done;
 #endif
 
 #ifdef ENABLE_FMRADIO
