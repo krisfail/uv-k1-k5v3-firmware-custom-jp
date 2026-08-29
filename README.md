@@ -34,7 +34,7 @@ The receive-only UI omits TX power labels such as `LOW` and `HIGH`. Normal PTT o
 
 Detailed operation notes are in [README.ja.md](README.ja.md). The quick reference is in [CHEATSHEET.ja.md](CHEATSHEET.ja.md). Technical implementation details are in [docs/FEATURES_TECHNICAL.ja.md](docs/FEATURES_TECHNICAL.ja.md); current feature adoption and exclusions are consolidated in [docs/FEATURE_AUDIT.ja.md](docs/FEATURE_AUDIT.ja.md), with the hardware checklist in [docs/HARDWARE_TEST_PLAN.ja.md](docs/HARDWARE_TEST_PLAN.ja.md). CHIRP-specific memory-map and upload guidance is in [tools/chirp/README.ja.md](tools/chirp/README.ja.md); legal attribution remains in `tools/chirp/NOTICE.md` and `tools/chirp/LICENSE.txt`.
 
-This README is a user-facing overview. Development-specific source layout, change boundaries, atlas generation, validation, and release handling are collected in [DEVELOPMENT.md](DEVELOPMENT.md); AI-agent rules are kept in [AGENTS.md](AGENTS.md).
+This README is a user-facing overview. Development-specific source layout, change boundaries, atlas generation, validation, and release handling are collected in [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ## Building `JpRxOnly`
 

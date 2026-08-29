@@ -283,6 +283,7 @@ const char* const gSubMenu_SFT_D[] =
 const char* const gSubMenu_W_N[] =
 {
 #ifdef ENABLE_RX_ONLY
+    "W+",
     "W",
     "N",
     "N-"

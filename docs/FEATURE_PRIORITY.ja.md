@@ -2,9 +2,9 @@
 
 K1／K5 V3はK5よりフラッシュに余裕がありますが，LCDの表示幅と既存の1 byteフォント形式は共通の制約です．機能は，受信専用としての安全性を維持しつつ，表示の分かりやすさを優先して追加します．
 
-この文書は開発者向けの計画・容量判断資料です．利用者向けの機能説明は[README.ja.md](../README.ja.md)，AIエージェント向けの規則は[AGENTS.md](../AGENTS.md)を参照してください．
+この文書は開発者向けの計画・容量判断資料です．利用者向けの機能説明は[README.ja.md](../README.ja.md)を参照してください．
 
-> 採用・保留・除外の現行判断は[FEATURE_AUDIT.ja.md](FEATURE_AUDIT.ja.md)にまとめています．この文書には，追加順と表示・容量判断の経過を補足資料として残します．実機試験には[HARDWARE_TEST_PLAN.ja.md](HARDWARE_TEST_PLAN.ja.md)を使います．
+> 採用・保留・除外の現行判断は[FEATURE_AUDIT.ja.md](FEATURE_AUDIT.ja.md)にまとめています．この文書では，表示品質，容量，受信機としての有用性に基づく優先順位を示します．実機試験には[HARDWARE_TEST_PLAN.ja.md](HARDWARE_TEST_PLAN.ja.md)を使います．
 
 ## 優先度
 

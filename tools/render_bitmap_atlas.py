@@ -53,6 +53,7 @@ class Array:
     occurrence: int
     element_width: int | None
     glyphs: list[dict] | None
+    quality: dict | None = None
 
     @property
     def label(self) -> str:
@@ -260,6 +261,18 @@ def load_font_manifest(path: Path, root: Path) -> dict:
             candidate.relative_to(root)
         except ValueError as error:
             raise ValueError(f"font source escapes repository: {source['path']}") from error
+    arrays = manifest.get("arrays", {})
+    if not isinstance(arrays, dict):
+        raise ValueError("font manifest arrays must be an object")
+    for name, spec in arrays.items():
+        if not isinstance(name, str) or not isinstance(spec, dict):
+            raise ValueError("font manifest array specifications must be objects")
+        quality = spec.get("quality", {})
+        if not isinstance(quality, dict):
+            raise ValueError(f"font manifest quality must be an object: {name}")
+        expected_empty = quality.get("expected_empty", [])
+        if not isinstance(expected_empty, list):
+            raise ValueError(f"font manifest expected_empty must be a list: {name}")
     return manifest
 
 
@@ -290,6 +303,7 @@ def apply_font_manifest(arrays: list[Array], manifest: dict) -> list[Array]:
         spec = array_specs.get(array.name, {})
         if spec.get("include", True) is False:
             continue
+        array.quality = spec.get("quality")
         if array.glyphs is not None:
             array_labels = dict(labels)
             array_labels.update({
@@ -715,6 +729,8 @@ def main() -> None:
     for array in arrays:
         layout = array.glyph_layout
         record = {"name": array.label, "category": array.category, "source": array.source, "dimensions": array.dimensions, "element_width": array.element_width, "size": len(array.values), "bytes_hex": array.values.hex(" "), "layout": f"glyph-{layout[1]}page" if layout else "column-strip", "element_count": len(array.glyphs) if array.glyphs is not None else len(array.editable_chunks)}
+        if array.quality:
+            record["quality"] = array.quality
         if layout:
             record["glyph_width"] = layout[0]
             record["glyph_pages"] = layout[1]

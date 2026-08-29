@@ -208,7 +208,7 @@ extern const t_menu_item MenuList[];
 extern const char* const            gSubMenu_TXP[8];
 extern const char* const            gSubMenu_SFT_D[3];
 #ifdef ENABLE_RX_ONLY
-extern const char* const            gSubMenu_W_N[3];
+extern const char* const            gSubMenu_W_N[4];
 extern const char* const            gSubMenu_RX_BANK[9];
 extern const char* const            gSubMenu_RX_BANK_SET[9];
 #else

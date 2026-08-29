@@ -2,24 +2,25 @@
 
 このリポジトリは，PY32F071搭載のUV-K1／UV-K5 V3向け`wrx-jp`派生版です．K1とK5 V3は同じファームウェア／CHIRPプロファイルとして扱います．旧UV-K5（DP32G030）とは対象チップ，ドライバ，メモリーマップ，ビルド系統が異なるため，コードや手順を混ぜないでください．
 
-この文書は人間の開発者向けです．利用者向けの説明は[README.ja.md](README.ja.md)，[README.md](README.md)，[CHEATSHEET.ja.md](CHEATSHEET.ja.md)に，AIエージェント固有の作業規則は[AGENTS.md](AGENTS.md)に置きます．実装の根拠・保存形式・未検証範囲は`docs/`の技術資料で管理します．
+この文書は人間の開発者向けです．利用者向けの説明は[README.ja.md](README.ja.md)，[README.md](README.md)，[CHEATSHEET.ja.md](CHEATSHEET.ja.md)に置きます．実装の根拠・保存形式・未検証範囲は`docs/`の技術資料で管理します．
 
 ## 開発を始める前に
 
 - 利用者向けの概要と書き込み手順は[README.md](README.md)または[README.ja.md](README.ja.md)を読む．
-- 追加受信機能，外部フラッシュ，フォント，未検証範囲は[docs/FEATURES_TECHNICAL.ja.md](docs/FEATURES_TECHNICAL.ja.md)を正とする．
+- 追加受信機能，外部フラッシュ，フォント，未検証範囲は[docs/FEATURES_TECHNICAL.ja.md](docs/FEATURES_TECHNICAL.ja.md)を正とする．上流v5.9.0からの受信向け取り込み範囲は[docs/UPSTREAM_INTEGRATION.ja.md](docs/UPSTREAM_INTEGRATION.ja.md)に分けて記録する．
 - フォントやビットマップを追加する前に，[docs/FONT_BITMAP_ANNOTATIONS.ja.md](docs/FONT_BITMAP_ANNOTATIONS.ja.md)とatlas inventoryを確認する．
 - CHIRPの機種プロファイルとcalibration境界は[tools/chirp/README.ja.md](tools/chirp/README.ja.md)を読む．
 
 ## ビルドとホストテスト
 
-現行の機能採否と受信専用境界は[docs/FEATURE_AUDIT.ja.md](docs/FEATURE_AUDIT.ja.md)を正とします．追加順の経過は[docs/FEATURE_PRIORITY.ja.md](docs/FEATURE_PRIORITY.ja.md)に残しています．実機確認は[docs/HARDWARE_TEST_PLAN.ja.md](docs/HARDWARE_TEST_PLAN.ja.md)を使います．
+現行の機能採否と受信専用境界は[docs/FEATURE_AUDIT.ja.md](docs/FEATURE_AUDIT.ja.md)を正とします．追加順の経過は[docs/FEATURE_PRIORITY.ja.md](docs/FEATURE_PRIORITY.ja.md)，上流からの変更を加えた部分のレビュー結果は[docs/CODE_REVIEW_UPSTREAM_DELTA.ja.md](docs/CODE_REVIEW_UPSTREAM_DELTA.ja.md)に残しています．実機確認は[docs/HARDWARE_TEST_PLAN.ja.md](docs/HARDWARE_TEST_PLAN.ja.md)を使います．
 
 ARM GNU Toolchain，CMake，Ninjaを用意し，リポジトリルートで実行します．
 
 ```powershell
 cmake --preset JpRxOnly
 cmake --build --preset JpRxOnly -j2
+cmake --build --preset JpRxOnly --target font-quality
 python -m unittest discover -s tests -p "test_*.py" -v
 ```
 

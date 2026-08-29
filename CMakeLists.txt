@@ -155,6 +155,7 @@ find_package(Python3 COMPONENTS Interpreter QUIET)
 set(FONT_ATLAS_DIR "${CMAKE_SOURCE_DIR}/docs/assets/font-atlas")
 set(FONT_ATLAS_MANIFEST "${CMAKE_SOURCE_DIR}/tools/font_inventory.json")
 set(FONT_ATLAS_MARKDOWN "${FONT_ATLAS_DIR}/font_inventory.generated.ja.md")
+set(FONT_QUALITY_SCRIPT "${CMAKE_SOURCE_DIR}/tools/font_quality.py")
 set(FONT_ATLAS_SOURCES
     "${CMAKE_SOURCE_DIR}/App/font.c"
     "${CMAKE_SOURCE_DIR}/App/japanese_font.c"
@@ -189,7 +190,23 @@ endif()
 
 add_custom_target(atlas DEPENDS font-atlas)
 add_custom_target(inventory DEPENDS font-atlas)
-add_custom_target(docs DEPENDS font-atlas)
+if(Python3_Interpreter_FOUND)
+    add_custom_target(font-quality
+        COMMAND ${Python3_EXECUTABLE} "${FONT_QUALITY_SCRIPT}"
+            --inventory "${FONT_ATLAS_DIR}/bitmap_atlas_inventory.json"
+            --manifest "${FONT_ATLAS_MANIFEST}"
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+        DEPENDS font-atlas "${FONT_QUALITY_SCRIPT}"
+        COMMENT "Checking the canonical font inventory for structural breakage"
+        VERBATIM
+    )
+else()
+    add_custom_target(font-quality
+        COMMAND ${CMAKE_COMMAND} -E echo "Python 3 is required for the font-quality target"
+        COMMAND ${CMAKE_COMMAND} -E false
+    )
+endif()
+add_custom_target(docs DEPENDS font-quality)
 
 # -----------------------------------
 #  Post build processing

@@ -40,6 +40,7 @@ textarea { box-sizing: border-box; width: 100%; min-height: 92px; resize: vertic
 .diff-swatch { display: inline-block; width: 14px; height: 14px; border: 1px solid #7e8b98; background: #f9fbfc; box-shadow: inset 0 0 0 2px #1565c0; }
 .diff-swatch.added { background: #18212b; border-color: #c62828; box-shadow: inset 0 0 0 2px #c62828; }
 .diff-summary { display: block; margin-top: 6px; color: #173b5c; font-size: .88rem; }
+.quality-summary { display: block; margin-top: 6px; font-size: .88rem; }
 .layout-guide { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; margin: 10px 0; padding: 9px 10px; border: 1px solid #b8c7d6; border-radius: 5px; background: #f7fbff; }
 .layout-guide strong { color: #173b5c; }
 .layout-guide .guide-note { color: #52616f; font-size: .88rem; }
@@ -114,6 +115,7 @@ textarea { box-sizing: border-box; width: 100%; min-height: 92px; resize: vertic
         <span class="legend"><span class="diff-swatch added"></span>元は消灯・現在は点灯</span>
         <span class="legend"><span class="diff-swatch"></span>元は点灯・現在は消灯</span>
         <span id="diffSummary" class="diff-summary" aria-live="polite">元データとの差分: 変更なし</span>
+        <span id="qualitySummary" class="quality-summary" aria-live="polite">品質診断: 台帳を読み込んでください．</span>
       </div>
       <div id="layoutGuide" class="layout-guide" aria-live="polite">
         <strong>表示位置</strong>
@@ -247,8 +249,19 @@ function pendingChanges() {
 
 const BIG_CELL_ROWS = 16;
 function parseBytes(value) {
-  const parts = Array.isArray(value) ? value : String(value || "").match(/0x[0-9a-f]+|[0-9a-f]+/gi) || [];
-  const bytes = parts.map((part) => Array.isArray(value) ? Number(part) : Number.parseInt(part, 16));
+  if (Array.isArray(value)) {
+    const bytes = value.map((part) => Number(part));
+    if (bytes.some((byte) => !Number.isInteger(byte) || byte < 0 || byte > 0xff)) {
+      throw new Error("バイト列に0x00〜0xFF以外の値があります");
+    }
+    return bytes;
+  }
+  const text = String(value || "").trim();
+  const parts = text ? text.split(/[\s,]+/u) : [];
+  if (parts.some((part) => !/^(?:0x)?[0-9a-f]{1,2}$/i.test(part))) {
+    throw new Error("バイト列は空白またはカンマ区切りの16進バイトで指定してください");
+  }
+  const bytes = parts.map((part) => Number.parseInt(part.replace(/^0x/i, ""), 16));
   if (bytes.some((byte) => !Number.isInteger(byte) || byte < 0 || byte > 0xff)) {
     throw new Error("バイト列に0x00〜0xFF以外の値があります");
   }
@@ -294,6 +307,63 @@ function targetEntries(array) {
       length,
     };
   });
+}
+
+function expectedEmptyCodes(array) {
+  const specifications = array?.quality?.expected_empty;
+  if (!Array.isArray(specifications)) return new Set();
+  const codes = new Set();
+  for (const specification of specifications) {
+    const match = String(specification).trim().match(/^(0x[0-9a-f]+|[0-9]+)(?:\s*-\s*(0x[0-9a-f]+|[0-9]+))?$/i);
+    if (!match) continue;
+    const first = Number.parseInt(match[1], 0);
+    const last = Number.parseInt(match[2] || match[1], 0);
+    if (!Number.isInteger(first) || !Number.isInteger(last) || first > last) continue;
+    for (let code = first; code <= last; code += 1) codes.add(code);
+  }
+  return codes;
+}
+
+function renderQualitySummary() {
+  const output = $("qualitySummary");
+  if (!state.currentArray || !state.currentTargets.length) {
+    output.textContent = "品質診断: 台帳を読み込んでください．";
+    output.style.color = "";
+    return;
+  }
+  const expectedEmpty = expectedEmptyCodes(state.currentArray);
+  const targets = state.currentTargets.filter((target) => target.target_kind === "glyph");
+  const presentCodes = new Set(targets.map((target) => Number(target.code)));
+  const problems = [];
+  let intentionalEmpty = 0;
+  for (const target of targets) {
+    const code = Number(target.code);
+    let occupied;
+    try {
+      occupied = workingBytes(target).some((byte) => byte !== 0);
+    } catch (_) {
+      problems.push(`${target.code}: バイト列が不正`);
+      continue;
+    }
+    if (expectedEmpty.has(code)) {
+      if (occupied) problems.push(`${target.code}: 空きスロットに点灯ビット`);
+      else intentionalEmpty += 1;
+    } else if (!occupied) {
+      problems.push(`${target.code}: 字形が空`);
+    }
+  }
+  for (const code of expectedEmpty) {
+    if (!presentCodes.has(code)) problems.push(`0x${code.toString(16).padStart(2, "0")}: 空き指定が未登録`);
+  }
+  if (problems.length) {
+    output.textContent = `品質診断: 要確認（${problems.slice(0, 3).join("，")}${problems.length > 3 ? " …" : ""}）`;
+    output.style.color = "#b3261e";
+    return;
+  }
+  const current = state.currentGlyph && state.currentGlyph.target_kind === "glyph" ? Number(state.currentGlyph.code) : null;
+  const currentNote = current !== null && expectedEmpty.has(current) ? "．選択中: 意図した空きスロット" : "";
+  output.textContent = `品質診断: 問題なし（意図した空き ${intentionalEmpty}件）${currentNote}`;
+  output.style.color = "#256029";
 }
 
 function displayZone(row, rows) {
@@ -348,6 +418,7 @@ function loadInventory(data) {
   state.edits.clear();
   state.currentGlyph = null;
   state.currentTargets = [];
+  state.previewTextDirty = false;
   $("arraySelect").replaceChildren(...candidates.map((array, index) => new Option(`${array.name} (${array.category})`, String(index))));
   const preferredArray = candidates.findIndex((array) => targetEntries(array).some((target) => displayLabel(target) === "専"));
   $("arraySelect").value = String(preferredArray >= 0 ? preferredArray : 0);
@@ -648,15 +719,6 @@ function renderOutputs() {
     ? `// ${state.currentArray.name} +0x${state.currentGlyph.offset.toString(16).padStart(4, "0")} ${label}`
     : `//${code} ${label}`;
   $("cOutput").value = `{${bytes}}, ${comment}`;
-  $("jsonOutput").value = JSON.stringify({
-    array: state.currentArray.name,
-    target_kind: state.currentGlyph.target_kind,
-    code: state.currentGlyph.target_kind === "glyph" ? code : null,
-    offset: state.currentGlyph.target_kind === "bitmap" ? state.currentGlyph.offset : null,
-    label: state.currentLabel || null,
-    element_width: state.currentArray.element_width,
-    bytes_hex: plainHexBytes(state.bytes),
-  }, null, 2);
   $("annotationInput").value = canonicalizeLabel(state.currentLabel);
   $("jsonOutput").value = JSON.stringify({
     format: "wrx-jp-font-patch-v1",
@@ -667,6 +729,7 @@ function renderOutputs() {
   $("undo").disabled = state.history.length === 0;
   $("redo").disabled = state.future.length === 0;
   renderDiffSummary();
+  renderQualitySummary();
   renderStringPreview();
 }
 
@@ -794,7 +857,9 @@ function applyPatchData(data) {
     throw new Error("対応するWRX-JP JSONパッチではありません");
   }
   stageCurrentTarget();
+  const updateKeys = new Set();
   const updates = data.changes.map((change) => {
+    if (!change || typeof change !== "object") throw new Error("変更項目がオブジェクトではありません");
     const array = state.fontArrays.find((candidate) => candidate.name === change.array);
     if (!array) throw new Error(`配列が見つかりません: ${change.array}`);
     const target = patchTarget(array, change);
@@ -803,8 +868,11 @@ function applyPatchData(data) {
     if (bytes.length !== parseBytes(target.bytes_hex).length) {
       throw new Error(`バイト数が一致しません: ${change.array}`);
     }
+    const key = targetKey(array, target);
+    if (updateKeys.has(key)) throw new Error(`同じ編集対象が重複しています: ${change.array}`);
+    updateKeys.add(key);
     return {
-      key: targetKey(array, target),
+      key,
       value: {
         array: array.name,
         target_kind: target.target_kind,
@@ -880,7 +948,7 @@ $("grid").addEventListener("pointercancel", (event) => {
   if (state.activePointerId === event.pointerId) commitPointerEdit(true);
 });
 $("grid").addEventListener("lostpointercapture", () => {
-  if (state.activePointerId !== null) commitPointerEdit();
+  if (state.activePointerId !== null) commitPointerEdit(true);
 });
 $("grid").addEventListener("click", editFromKeyboard);
 $("grid").addEventListener("contextmenu", (event) => event.preventDefault());

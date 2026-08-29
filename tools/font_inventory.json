@@ -12,8 +12,14 @@
     { "path": "App/bitmaps.c" }
   ],
   "arrays": {
-    "gFontBigJapanese": { "role": "japanese-large-font" },
-    "gFontSmallJapanese": { "role": "japanese-small-font" },
+    "gFontBigJapanese": {
+      "role": "japanese-large-font",
+      "quality": { "expected_empty": ["0x9A-0xA0"] }
+    },
+    "gFontSmallJapanese": {
+      "role": "japanese-small-font",
+      "quality": { "expected_empty": ["0x98-0xA0"] }
+    },
     "gFontJapaneseExtraLarge": { "role": "startup-extra-large-font" }
   },
   "codepoint_labels": {

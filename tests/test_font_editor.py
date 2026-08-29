@@ -17,7 +17,9 @@ class FontEditorTests(unittest.TestCase):
                        "diff-added", "diff-removed", "renderDiffSummary", "bitCount", "previewText",
                        "stringPreview", "renderStringPreview", "previewSample", "previewJapanese", "JIS_X0201_SAMPLE", "未登録", "annotationInput",
                        "pendingChanges", "stageCurrentTarget", "state.edits", "wrx-jp-font-patch-v1", "copyPatch", "patchFile", "loadPatch", "applyPatchData",
-                       "LABEL_ALIASES", '"｡", "。"', '"｢", "「"', '"｣", "」"'):
+                       "LABEL_ALIASES", '"｡", "。"', '"｢", "「"', '"｣", "」"',
+                       "qualitySummary", "renderQualitySummary", "expected_empty", "意図した空きスロット", "品質診断: 要確認",
+                       "バイト列が不正", "同じ編集対象が重複しています"):
             self.assertIn(marker, html)
         self.assertIn("bitmap_atlas_inventory.json", html)
         self.assertNotIn("C:" + "/Users", html)
@@ -79,7 +81,7 @@ class FontEditorTests(unittest.TestCase):
             "function targetKey",
             "function workingLabel",
             "function handleAnnotationInput",
-            'label: state.currentLabel || null',
+            'label: label || null',
             'changes,',
             'anchor.download = "wrx-jp-font-patch.json"',
             '全変更のJSONパッチをクリップボードへコピーしました．',

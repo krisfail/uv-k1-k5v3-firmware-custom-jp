@@ -100,6 +100,14 @@ class FontAtlasTests(unittest.TestCase):
         self.assertEqual(glyphs[0xDF - 0x80]["label"], "ﾟ")
         self.assertEqual(glyphs[0xE0 - 0x80]["label"], "ー")
 
+    def test_manifest_carries_expected_empty_slots_into_inventory_metadata(self) -> None:
+        manifest = self.atlas.load_font_manifest(ROOT / "tools" / "font_inventory.json", ROOT)
+        arrays = self.atlas.apply_font_manifest(self.parse_arrays(), manifest)
+        big = next(array for array in arrays if array.name == "gFontBigJapanese")
+        small = next(array for array in arrays if array.name == "gFontSmallJapanese")
+        self.assertEqual(big.quality, {"expected_empty": ["0x9A-0xA0"]})
+        self.assertEqual(small.quality, {"expected_empty": ["0x98-0xA0"]})
+
     def test_generated_inventory_exposes_bitmap_edit_chunks(self) -> None:
         inventory = json.loads(
             (ROOT / "docs" / "assets" / "font-atlas" / "bitmap_atlas_inventory.json").read_text(encoding="utf-8")

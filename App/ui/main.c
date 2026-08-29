@@ -2272,7 +2272,7 @@ void UI_DisplayMain(void)
 #endif
 
             #ifdef ENABLE_RX_ONLY
-                const uint8_t bandwidthIndex = displayBandwidth <= BANDWIDTH_NARROWER ? displayBandwidth : BANDWIDTH_WIDE;
+                const uint8_t bandwidthIndex = RADIO_BandwidthToMenuIndex(displayBandwidth);
             #else
                 const uint8_t bandwidthIndex = displayBandwidth + narrower;
             #endif
@@ -2280,7 +2280,7 @@ void UI_DisplayMain(void)
             if (gSetting_set_gui)
             {
                 #ifdef ENABLE_RX_ONLY
-                    const char *bandWidthNames[] = {"W", "N", "N-"};
+                    const char *bandWidthNames[] = {"W+", "W", "N", "N-"};
                 #else
                     const char *bandWidthNames[] = {"W", "N", "N+"};
                 #endif
@@ -2289,7 +2289,7 @@ void UI_DisplayMain(void)
             else
             {
                 #ifdef ENABLE_RX_ONLY
-                    const char *bandWidthNames[] = {"W", "N", "N-"};
+                    const char *bandWidthNames[] = {"W+", "W", "N", "N-"};
                 #else
                     const char *bandWidthNames[] = {"WIDE", "NAR", "NAR+"};
                 #endif
@@ -2297,7 +2297,7 @@ void UI_DisplayMain(void)
             }
         #else
             #ifdef ENABLE_RX_ONLY
-                const uint8_t bandwidthIndex = displayBandwidth <= BANDWIDTH_NARROWER ? displayBandwidth : BANDWIDTH_WIDE;
+                const uint8_t bandwidthIndex = RADIO_BandwidthToMenuIndex(displayBandwidth);
             #else
                 const uint8_t bandwidthIndex = displayBandwidth;
             #endif
@@ -2305,7 +2305,7 @@ void UI_DisplayMain(void)
             if (gSetting_set_gui)
             {
                 #ifdef ENABLE_RX_ONLY
-                const char *bandWidthNames[] = {"W", "N", "N-"};
+                const char *bandWidthNames[] = {"W+", "W", "N", "N-"};
                 #else
                     const char *bandWidthNames[] = {"W", "N"};
                 #endif
@@ -2314,7 +2314,7 @@ void UI_DisplayMain(void)
             else
             {
                 #ifdef ENABLE_RX_ONLY
-                const char *bandWidthNames[] = {"W", "N", "N-"};
+                const char *bandWidthNames[] = {"W+", "W", "N", "N-"};
                 #else
                     const char *bandWidthNames[] = {"WIDE", "NAR"};
                 #endif

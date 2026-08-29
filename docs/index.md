@@ -2,7 +2,7 @@
 
 日本語・受信専用ファームウェアの利用案内，開発資料，フォント資料をまとめています．
 
-文書の役割を分けています．利用者はREADMEとCHEATSHEET，開発者はDEVELOPMENT，AIエージェントはリポジトリ直下のAGENTS.mdを参照してください．このサイトの文書は実装の説明と検証記録に限定します．
+文書の役割を分けています．利用者はREADMEとCHEATSHEET，開発者はDEVELOPMENTと各技術資料を参照してください．このサイトの文書は実装の説明と検証記録に限定します．
 
 ## 利用者向け
 
@@ -17,6 +17,8 @@
 - [CHIRPドライバの説明](../tools/chirp/README.ja.md)
 - [新機能の技術詳細](FEATURES_TECHNICAL.ja.md)
 - [機能監査](FEATURE_AUDIT.ja.md)
+- [上流からの受信向け取り込み](UPSTREAM_INTEGRATION.ja.md)
+- [上流からの変更部分のコードレビュー](CODE_REVIEW_UPSTREAM_DELTA.ja.md)
 - [実機テスト計画](HARDWARE_TEST_PLAN.ja.md)
 
 `FEATURES_TECHNICAL.ja.md`は現行機能の挙動，`FEATURE_AUDIT.ja.md`は採用・保留・除外の判断，`HARDWARE_TEST_PLAN.ja.md`は実機で確認する項目を扱います．ビルド手順やソースの見取り図はDEVELOPMENT.mdを正本とします．
@@ -25,6 +27,7 @@
 
 - [フォント割り当て台帳](FONT_BITMAP_ANNOTATIONS.ja.md)
 - [フォント一覧](FONT_INVENTORY.ja.md)
+- [フォント品質診断](FONT_QUALITY.ja.md)
 - [フォントの出所と変換](FONT_SOURCES.ja.md)
 - [rainy版との日本語大字形比較](FONT_RAINY_COMPARISON.ja.md)
 - [rainy版との全コードポイント比較（K1 Markdown）](assets/font-comparison/rainy-k1/font_diff.md)

@@ -2,7 +2,7 @@
 
 `tools/render_bitmap_atlas.py` は，ファームウェアのビルドには参加せず，Cソース内の`uint8_t` bitmap／font配列を読み取ってOLED向けのatlasを生成するオフライン補助ツールです．bit 0を画面上端として描画します．
 
-この文書は開発者向けの説明です．利用者向けの表示・操作案内は[README.ja.md](../README.ja.md)，AIエージェント向けの規則は[AGENTS.md](../AGENTS.md)を参照してください．
+この文書は開発者向けの説明です．利用者向けの表示・操作案内は[README.ja.md](../README.ja.md)を参照してください．
 
 ## 実行
 
@@ -10,6 +10,7 @@
 
 ```powershell
 cmake --build --preset JpRxOnly --target font-atlas
+cmake --build --preset JpRxOnly --target font-quality
 ```
 
 一時ディレクトリへ出力する場合は，manifestを明示します．
@@ -26,6 +27,8 @@ python -X utf8 tools/render_bitmap_atlas.py `
 - `bitmap_atlas.svg`: ブラウザで開ける軽量atlas．空白セルは共有パターン，点灯セルは`path`として出力する
 - `bitmap_atlas_inventory.json`: 配列名，条件分岐を含む出現順，サイズ，元バイト列，編集可能な要素の範囲
 - `--markdown-out`を指定した場合の`font_inventory.generated.ja.md`: コード，注釈，空き／使用中を確認する生成一覧
+
+生成後は，[フォント品質診断](FONT_QUALITY.ja.md)で空字形，バイト長，`occupied`メタデータ，コードポイント注釈の整合性を確認します．予約された空きスロットはmanifestに明記され，誤って空になった字形とは区別されます．
 
 現行ソースから生成した確認用成果物は，[font-atlas](assets/font-atlas/)に保存しています．SVGとJSONは表示確認・差分確認用であり，ファームウェアのビルドには含まれません．
 
