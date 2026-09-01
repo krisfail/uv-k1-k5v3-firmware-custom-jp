@@ -4,34 +4,26 @@ set -euo pipefail
 # ---------------------------------------------
 # Usage:
 #   ./compile-with-docker.sh [Preset] [CMake options...]
-# Examples:
-#   ./compile-with-docker.sh Bandscope -DENABLE_SPECTRUM=ON
-#   ./compile-with-docker.sh Broadcast -DENABLE_FEAT_F4HWN_GAME=ON -DENABLE_NOAA=ON
-#   ./compile-with-docker.sh Fusion -DDEV=ON
-#   ./compile-with-docker.sh All
-# Default preset: "Fusion"
+# Example:
+#   ./compile-with-docker.sh JpRxOnly -DCMAKE_BUILD_TYPE=Debug
+#   ./compile-with-docker.sh JpRxOnlyFontTest
+# Default preset: "JpRxOnly".
 # ---------------------------------------------
 
 IMAGE=uvk1-uvk5v3
-PRESET=${1:-Fusion}
-shift || true  # remove preset from arguments if present
-
-# Any remaining args will be treated as CMake cache variables
+PRESET=JpRxOnly
+case "${1:-}" in
+  JpRxOnly|JpRxOnlyFontTest)
+    PRESET="$1"
+    shift
+    ;;
+esac
 EXTRA_ARGS=("$@")
-
-# ---------------------------------------------
-# Validate preset name
-# ---------------------------------------------
-if [[ ! "$PRESET" =~ ^(Bandscope|Broadcast|Basic|RescueOps|Game|Fusion|All)$ ]]; then
-  echo "❌ Unknown preset: '$PRESET'"
-  echo "Valid presets are: Bandscope, Broadcast, Basic, RescueOps, Game, Fusion, All"
-  exit 1
-fi
 
 # ---------------------------------------------
 # Build the Docker image (only needed once)
 # ---------------------------------------------
-if [[ "$(docker images -q $IMAGE)" == "" ]]; then
+if [[ -z "$(docker images -q "$IMAGE")" ]]; then
   echo "Building Docker image..."
   docker build -t "$IMAGE" .
 fi
@@ -42,7 +34,7 @@ fi
 rm -rf build
 export MSYS_NO_PATHCONV=1
 # ---------------------------------------------
-# Function to build one preset
+# Function to build one supported preset
 # ---------------------------------------------
 build_preset() {
   local preset="$1"
@@ -50,25 +42,15 @@ build_preset() {
   echo "=== 🚀 Building preset: ${preset} ==="
   echo "---------------------------------------------"
   docker run --rm \
-    -u $(id -u):$(id -g) \
-    -it -v "$PWD":/src -w /src "$IMAGE" \
-    bash -c 'which arm-none-eabi-gcc && arm-none-eabi-gcc --version &&
-             cmake --preset "$1" "${@:2}" &&
-             cmake --build --preset "$1" -j' \
-    bash "${preset}" ${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"}
+    -u "$(id -u):$(id -g)" \
+    -v "$PWD":/src -w /src "$IMAGE" \
+    bash -c 'set -euo pipefail
+             which arm-none-eabi-gcc
+             arm-none-eabi-gcc --version
+             cmake --preset "$1" "${@:2}"
+             cmake --build --preset "$1" -j2' \
+    bash "$preset" "${EXTRA_ARGS[@]}"
   echo "✅ Done: ${preset}"
 }
 
-# ---------------------------------------------
-# Handle 'All' preset
-# ---------------------------------------------
-if [[ "$PRESET" == "All" ]]; then
-  PRESETS=(Bandscope Broadcast Basic RescueOps Game Fusion)
-  for p in "${PRESETS[@]}"; do
-    build_preset "$p"
-  done
-  echo ""
-  echo "🎉 All presets built successfully!"
-else
-  build_preset "$PRESET"
-fi
+build_preset "$PRESET"

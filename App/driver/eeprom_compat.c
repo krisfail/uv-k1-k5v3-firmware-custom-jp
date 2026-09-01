@@ -23,6 +23,7 @@
  */
 
 #include "driver/eeprom.h"
+#include "driver/flash_layout.h"
 #include "driver/py25q16.h"
 #include <string.h>
 
@@ -72,7 +73,9 @@ static const AddrMapping_t ADDR_MAPPINGS[] = {
                                                 // Settings F4HWN * 8 Bytes (0x00C000)      0x00A158 -> 0x00A160
                                                 // Settings Version * 16 Bytes              0x00A160 -> 0x00A170
 
-    _MK_MAPPING(0x010000, 0x00B000, 0x00B200),  // Calibration 512 Bytes!!!
+    _MK_MAPPING(K1_CALIBRATION_FLASH_BASE,
+                K1_CALIBRATION_LOGICAL_BASE,
+                K1_CALIBRATION_LOGICAL_END),  // Calibration 512 Bytes
 
     _MK_MAPPING(0x011000, 0x00C000, 0x00D000),  // Boot Logo sector (4 KB):
                                                 // [0x00..0x07] 8-byte header (reserved)

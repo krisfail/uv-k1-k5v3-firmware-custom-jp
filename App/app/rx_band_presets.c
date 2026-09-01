@@ -16,6 +16,7 @@
 #include "radio.h"
 #include "settings.h"
 #include "ui/helper.h"
+#include "ui/jp_text.h"
 
 const RX_BandPreset_t gRxBandPresets[RX_BAND_PRESET_COUNT] = {
     {"AIR VHF",   11800000u, 13700000u,  2500u, MODULATION_AM, BANDWIDTH_NARROW},
@@ -74,20 +75,20 @@ static void Reject(const char *message)
 static const char *OpenError(void)
 {
     if (!RX_FEATURE_STATE_IsEnabled())
-        return "RXExt OFF";
+        return WRX_UI_TEXT_RX_EXT_OFF;
     if (!IS_FREQ_CHANNEL(gTxVfo->CHANNEL_SAVE))
-        return "VFO ONLY";
+        return WRX_UI_TEXT_VFO_ONLY;
     if (gScanStateDir != SCAN_OFF || gScanRangeStart != 0)
-        return "SCAN ACTIVE";
+        return WRX_UI_TEXT_SCAN_ACTIVE;
     if (gTxVfo->FrequencyReverse)
-        return "REV ON";
+        return WRX_UI_TEXT_REV_ON;
     if (gEeprom.DUAL_WATCH != DUAL_WATCH_OFF)
-        return "DUAL RX ON";
+        return WRX_UI_TEXT_DUAL_RX_ON;
     if (gEeprom.CROSS_BAND_RX_TX != CROSS_BAND_OFF)
-        return "CROSS ON";
+        return WRX_UI_TEXT_CROSS_ON;
 #ifdef ENABLE_FMRADIO
     if (gFmRadioMode)
-        return "FM MODE";
+        return WRX_UI_TEXT_FM_MODE;
 #endif
     return NULL;
 }
@@ -106,9 +107,9 @@ static void Apply(const bool startScan)
         gEeprom.CROSS_BAND_RX_TX != CROSS_BAND_OFF || !IsValid(preset))
     {
         Close();
-        Reject(!RX_FEATURE_STATE_IsEnabled() ? "RXExt OFF" :
-            gEeprom.DUAL_WATCH != DUAL_WATCH_OFF ? "DUAL RX ON" :
-            gEeprom.CROSS_BAND_RX_TX != CROSS_BAND_OFF ? "CROSS ON" : "PRESET ERROR");
+        Reject(!RX_FEATURE_STATE_IsEnabled() ? WRX_UI_TEXT_RX_EXT_OFF :
+            gEeprom.DUAL_WATCH != DUAL_WATCH_OFF ? WRX_UI_TEXT_DUAL_RX_ON :
+            gEeprom.CROSS_BAND_RX_TX != CROSS_BAND_OFF ? WRX_UI_TEXT_CROSS_ON : WRX_UI_TEXT_PRESET_ERROR);
         return;
     }
 
@@ -213,18 +214,19 @@ void RX_BAND_PRESETS_Draw(void)
     char detail[22];
 
     UI_DisplayClear();
-    UI_PrintStringSmallBold("RX BAND PRESET", 0, 0, 0);
+    UI_PrintStringSmallBold(WRX_UI_TEXT_RX_PRESET, 0, 0, 0);
     sprintf(range, "%3u.%05u-%3u.%05u", preset->lower / 100000u, preset->lower % 100000u,
             preset->upper / 100000u, preset->upper % 100000u);
     UI_PrintStringSmallBold(preset->name, 0, 0, 1);
     UI_PrintStringSmallNormal(range, 0, 0, 2);
-    sprintf(detail, "%s %s STEP %u.%u", preset->modulation == MODULATION_AM ? "AM" :
+    sprintf(detail, "%s %s %s %u.%u", preset->modulation == MODULATION_AM ? "AM" :
             (preset->modulation == MODULATION_USB ? "USB" : "FM"),
             preset->bandwidth == BANDWIDTH_NARROW ? "NARROW" : "WIDE",
+            WRX_UI_TEXT_STEP,
             preset->step / 100u, (preset->step / 10u) % 10u);
     UI_PrintStringSmallNormal(detail, 0, 0, 3);
     sprintf(detail, "%u/16 UP/DOWN SELECT", sSelection + 1u);
     UI_PrintStringSmallNormal(detail, 0, 0, 5);
-    UI_PrintStringSmallNormal("M APPLY  * SCAN", 0, 0, 6);
-    UI_PrintStringSmallNormal("EXIT CANCEL", 0, 0, 7);
+    UI_PrintStringSmallNormal(WRX_UI_TEXT_PRESET_APPLY, 0, 0, 6);
+    UI_PrintStringSmallNormal(WRX_UI_TEXT_PRESET_CANCEL, 0, 0, 7);
 }

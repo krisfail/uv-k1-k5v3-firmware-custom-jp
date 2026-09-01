@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import gzip
+import hashlib
 import json
 import struct
 from pathlib import Path
@@ -28,14 +29,23 @@ FONT_BASE = 0x020000
 NAME_BASE = 0x040000
 NAME_RECORD_SIZE = 32
 NAME_PAYLOAD_MAX = NAME_RECORD_SIZE - 1
-SOURCE_SHA256 = "005345196615E692C54EF67286B44DD0EAA3A899D066CD407A4B3A810822C20"
+SOURCE_SHA256 = "005345196615E692C54EF67286B44DD0EAA3A899D066CD407A4B3A810822C20C"
 SOURCE_URL = "https://unifoundry.com/japanese/izmg16-2004-1.bdf.gz"
+EXPECTED_FONT_BOUNDING_BOX = (16, 16, 0, -2)
 
 
 def open_bdf(path: Path):
     if path.suffix == ".gz":
         return gzip.open(path, "rt", encoding="ascii")
     return path.open("r", encoding="ascii")
+
+
+def verify_source(path: Path) -> None:
+    actual = hashlib.sha256(path.read_bytes()).hexdigest().upper()
+    if actual != SOURCE_SHA256:
+        raise ValueError(
+            "unexpected source SHA-256: {} (expected {})".format(
+                actual, SOURCE_SHA256))
 
 
 def jis_codepoint(character: str) -> int:
@@ -66,7 +76,18 @@ def target_characters() -> list[str]:
 def parse_bdf(path: Path, wanted_codes: set[int]) -> dict[int, list[int]]:
     """Read 16x16 glyph rows keyed by JIS row-cell encoding."""
 
-    lines = open_bdf(path).read().splitlines()
+    with open_bdf(path) as source:
+        lines = source.read().splitlines()
+    bounding_box_line = next(
+        (line for line in lines if line.startswith("FONTBOUNDINGBOX ")), None)
+    if bounding_box_line is None:
+        raise ValueError("BDF is missing FONTBOUNDINGBOX")
+    bounding_box = tuple(int(value) for value in bounding_box_line.split()[1:])
+    if bounding_box != EXPECTED_FONT_BOUNDING_BOX:
+        raise ValueError(
+            "unexpected BDF FONTBOUNDINGBOX: {} (expected {})".format(
+                bounding_box, EXPECTED_FONT_BOUNDING_BOX))
+
     glyphs: dict[int, list[int]] = {}
     index = 0
     while index < len(lines):
@@ -91,10 +112,12 @@ def parse_bdf(path: Path, wanted_codes: set[int]) -> dict[int, list[int]]:
         bitmap_index = next((i for i, line in enumerate(block) if line == "BITMAP"), None)
         if bbx_line is None or bitmap_index is None:
             raise ValueError(f"missing BBX/BITMAP for JIS code 0x{code:04X}")
-        bbx = [int(value) for value in bbx_line.split()[1:]]
+        bbx = tuple(int(value) for value in bbx_line.split()[1:])
         rows = block[bitmap_index + 1 : bitmap_index + 17]
-        if bbx[:2] != [16, 16] or len(rows) != 16 or any(len(row) != 4 for row in rows):
-            raise ValueError(f"JIS code 0x{code:04X} is not a 16x16 glyph")
+        if (bbx != EXPECTED_FONT_BOUNDING_BOX or len(rows) != 16 or
+                any(len(row) != 4 for row in rows)):
+            raise ValueError(
+                f"JIS code 0x{code:04X} does not use the expected 16x16 baseline")
         glyphs[code] = [int(row, 16) for row in rows]
         index = end + 1
     return glyphs
@@ -128,6 +151,7 @@ def write_layout_header(path: Path, glyph_count: int) -> None:
 
 
 def generate(args: argparse.Namespace) -> None:
+    verify_source(args.bdf)
     characters = target_characters()
     code_by_character = {character: jis_codepoint(character) for character in characters}
     wanted_codes = set(code_by_character.values())

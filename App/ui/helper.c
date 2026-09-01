@@ -24,6 +24,7 @@
 #endif
 #include "ui/helper.h"
 #include "ui/inputbox.h"
+#include "ui/jp_text.h"
 #include "misc.h"
 #include "settings.h"
 
@@ -102,7 +103,7 @@ void UI_GenerateChannelStringEx(char *pString, const bool bShowPrefix, const uin
         // BUG here? Prefixed NULLs are allowed
         sprintf(pString, "CH-%04u", ChannelNumber + 1);
     } else if (ChannelNumber == MR_CHANNEL_LAST + 1) {
-        strcpy(pString, "None");
+        strcpy(pString, WRX_UI_TEXT_NONE);
     } else if (ChannelNumber == 0xFFFF) {
         strcpy(pString, "NULL");
     } else {
@@ -210,6 +211,154 @@ void UI_PrintStringClipped(const char *pString, uint8_t Start, uint8_t End, uint
 }
 
 #ifdef ENABLE_JAPANESE
+static void UI_CopyExternalGlyph(uint8_t line, uint8_t x, uint8_t end,
+                                 const uint8_t *glyph);
+
+static const uint16_t gJapaneseHalfwidthToFullwidth[0x3F] = {
+    0x3002, 0x300C, 0x300D, 0x3001, 0x30FB, 0x30F2, 0x30A1, 0x30A3,
+    0x30A5, 0x30A7, 0x30A9, 0x30E3, 0x30E5, 0x30E7, 0x30C3, 0x30FC,
+    0x30A2, 0x30A4, 0x30A6, 0x30A8, 0x30AA, 0x30AB, 0x30AD, 0x30AF,
+    0x30B1, 0x30B3, 0x30B5, 0x30B7, 0x30B9, 0x30BB, 0x30BD, 0x30BF,
+    0x30C1, 0x30C4, 0x30C6, 0x30C8, 0x30CA, 0x30CB, 0x30CC, 0x30CD,
+    0x30CE, 0x30CF, 0x30D2, 0x30D5, 0x30D8, 0x30DB, 0x30DE, 0x30DF,
+    0x30E0, 0x30E1, 0x30E2, 0x30E4, 0x30E6, 0x30E8, 0x30E9, 0x30EA,
+    0x30EB, 0x30EC, 0x30ED, 0x30EF, 0x30F3, 0x3099, 0x309A,
+};
+
+static uint16_t UI_InternalJapaneseCodepoint(const uint8_t code)
+{
+    switch (code)
+    {
+        case 0x80: return 0x53D7; // 受
+        case 0x81: return 0x4FE1; // 信
+        case 0x82: return 0x5909; // 変
+        case 0x83: return 0x8ABF; // 調
+        case 0x86: return 0x4FDD; // 保
+        case 0x87: return 0x5B58; // 存
+        case 0x88: return 0x524A; // 削
+        case 0x89: return 0x9664; // 除
+        case 0x8A: return 0x540D; // 名
+        case 0x8B: return 0x9577; // 長
+        case 0x8C: return 0x77ED; // 短
+        case 0x8D: return 0x62BC; // 押
+        case 0x8E: return 0x97F3; // 音
+        case 0x8F: return 0x96FB; // 電
+        case 0x90: return 0x6E90; // 源
+        case 0x92: return 0x5727; // 圧
+        case 0x93: return 0x8868; // 表
+        case 0x94: return 0x793A; // 示
+        case 0x95: return 0x753B; // 画
+        case 0x96: return 0x9762; // 面
+        case 0x97: return 0x7121; // 無
+        case 0x98: return 0x5C02; // 専
+        case 0x99: return 0x7528; // 用
+        case 0xE0: return 0x30FC; // ー
+        case 0xE1: return 0x62E1; // 拡
+        case 0xE2: return 0x5F35; // 張
+        case 0xE3: return 0x512A; // 優
+        case 0xE4: return 0x5148; // 先
+        case 0xE5: return 0x60C5; // 情
+        case 0xE6: return 0x5831; // 報
+        case 0xE7: return 0x53CD; // 反
+        case 0xE8: return 0x8EE2; // 転
+        case 0xE9: return 0x97F3; // 音
+        case 0xEA: return 0x58F0; // 声
+        case 0xEB: return 0x81EA; // 自
+        case 0xEC: return 0x52D5; // 動
+        case 0xED: return 0x72ED; // 狭
+        case 0xEE: return 0x5E2F; // 帯
+        case 0xEF: return 0x91CF; // 量
+        case 0xF0: return 0x9AD8; // 高
+        case 0xF1: return 0x901F; // 速
+        case 0xF2: return 0x5468; // 周
+        case 0xF3: return 0x6CE2; // 波
+        case 0xF4: return 0x6570; // 数
+        case 0xF5: return 0x8A2D; // 設
+        case 0xF6: return 0x5B9A; // 定
+        case 0xF7: return 0x6C60; // 池
+        case 0xF8: return 0x521D; // 初
+        case 0xF9: return 0x671F; // 期
+        case 0xFA: return 0x5316; // 化
+        case 0xFB: return 0x6821; // 校
+        case 0xFC: return 0x6B63; // 正
+        case 0xFF: return 0x57DF; // 域
+        default:
+            if (code >= 0xA1u && code <= 0xDFu)
+                return gJapaneseHalfwidthToFullwidth[code - 0xA1u];
+            return 0;
+    }
+}
+
+static uint16_t UI_ComposeJapaneseKana(const uint16_t base, const bool handakuten)
+{
+    static const uint16_t voiced[][2] = {
+        {0x30AB, 0x30AC}, {0x30AD, 0x30AE}, {0x30AF, 0x30B0},
+        {0x30B1, 0x30B2}, {0x30B3, 0x30B4}, {0x30B5, 0x30B6},
+        {0x30B7, 0x30B8}, {0x30B9, 0x30BA}, {0x30BB, 0x30BC},
+        {0x30BD, 0x30BE}, {0x30BF, 0x30C0}, {0x30C1, 0x30C2},
+        {0x30C4, 0x30C5}, {0x30C6, 0x30C7}, {0x30C8, 0x30C9},
+        {0x30CF, 0x30D0}, {0x30D2, 0x30D3}, {0x30D5, 0x30D6},
+        {0x30D8, 0x30D9}, {0x30DB, 0x30DC},
+    };
+    static const uint16_t semi[][2] = {
+        {0x30CF, 0x30D1}, {0x30D2, 0x30D4}, {0x30D5, 0x30D7},
+        {0x30D8, 0x30DA}, {0x30DB, 0x30DD},
+    };
+    const uint16_t (*table)[2] = handakuten ? semi : voiced;
+    const size_t count = handakuten ? ARRAY_SIZE(semi) : ARRAY_SIZE(voiced);
+    for (size_t i = 0; i < count; i++)
+        if (table[i][0] == base)
+            return table[i][1];
+    return 0;
+}
+
+static bool UI_DrawExternalJapaneseCodepoints(const uint16_t *codepoints,
+                                              const size_t count,
+                                              const uint16_t pixel_width,
+                                              const uint8_t start,
+                                              const uint8_t end,
+                                              const uint8_t line,
+                                              const bool center_full_width);
+
+bool UI_PrintStringJapaneseExternal(const char *pString, uint8_t Start, uint8_t End, uint8_t Line)
+{
+    uint16_t codepoints[16];
+    size_t count = 0;
+    uint16_t pixel_width = 0;
+
+    if (pString == NULL)
+        return false;
+
+    for (size_t index = 0; pString[index] != 0; index++)
+    {
+        const uint8_t code = (uint8_t)pString[index];
+        if (code == '\n' || count >= ARRAY_SIZE(codepoints))
+            return false;
+        if (code == 0xDEu || code == 0xDFu)
+        {
+            if (count == 0u)
+                return false;
+            const uint16_t composed = UI_ComposeJapaneseKana(
+                codepoints[count - 1u], code == 0xDFu);
+            if (composed == 0u)
+                return false;
+            codepoints[count - 1u] = composed;
+            continue;
+        }
+
+        const uint16_t codepoint = code >= 0x20u && code <= 0x7Eu
+            ? code : UI_InternalJapaneseCodepoint(code);
+        if (codepoint == 0u)
+            return false;
+        codepoints[count++] = codepoint;
+        pixel_width = (uint16_t)(pixel_width +
+                     (codepoint < 0x80u ? 8u : 16u));
+    }
+
+    return UI_DrawExternalJapaneseCodepoints(codepoints, count, pixel_width,
+                                              Start, End, Line, false);
+}
+
 void UI_PrintStringJapaneseExtraLarge(const char *pString, uint8_t Start, uint8_t End, uint8_t Line, uint8_t Width)
 {
     const size_t Length = strlen(pString);
@@ -272,7 +421,7 @@ static bool UI_DecodeExternalUtf8(const uint8_t *input, size_t remaining,
         return true;
     }
 
-    // Stage A accepts BMP names only. Four-byte UTF-8 is deliberately out.
+    // Channel names support BMP UTF-8 only; reject four-byte sequences.
     return false;
 }
 
@@ -307,6 +456,56 @@ static void UI_CopyExternalGlyph(uint8_t line, uint8_t x, uint8_t end,
     }
 }
 
+static bool UI_DrawExternalJapaneseCodepoints(const uint16_t *codepoints,
+                                              const size_t count,
+                                              const uint16_t pixel_width,
+                                              const uint8_t start,
+                                              const uint8_t end,
+                                              const uint8_t line,
+                                              const bool center_full_width)
+{
+    const uint8_t right = end == 0u ? LCD_WIDTH - 1u : end;
+    if (codepoints == NULL || line + 1u >= (sizeof(gFrameBuffer) / sizeof(gFrameBuffer[0])) ||
+        start >= LCD_WIDTH || start > right ||
+        pixel_width > (uint16_t)(right + 1u - start))
+        return false;
+
+    /* Validate all external glyphs before changing the framebuffer. */
+    for (size_t index = 0; index < count; index++)
+    {
+        if (codepoints[index] >= 0x80u &&
+            !JPFONT_HasGlyph(codepoints[index]))
+            return false;
+    }
+
+    uint8_t x = start;
+    if (center_full_width || end != 0u)
+        x = (uint8_t)(start + ((right + 1u - start - pixel_width) / 2u));
+
+    for (size_t index = 0; index < count; index++)
+    {
+        const uint16_t codepoint = codepoints[index];
+        if (codepoint < 0x80u)
+        {
+            if (codepoint > ' ')
+                UI_CopyLargeGlyphClipped(line, x,
+                                         gFontBig[codepoint - ' ' - 1u],
+                                         7u, right);
+            x = (uint8_t)(x + 8u);
+        }
+        else
+        {
+            uint8_t glyph[JAPANESE_FONT_GLYPH_BYTES];
+            if (!JPFONT_ReadGlyph(codepoint, glyph))
+                return false;
+            UI_CopyExternalGlyph(line, x, right, glyph);
+            x = (uint8_t)(x + 16u);
+        }
+    }
+
+    return true;
+}
+
 bool UI_PrintJapaneseChannelName(uint16_t channel, uint8_t Start, uint8_t End, uint8_t Line)
 {
     char name[JAPANESE_NAME_RECORD_SIZE];
@@ -333,33 +532,9 @@ bool UI_PrintJapaneseChannelName(uint16_t channel, uint8_t Start, uint8_t End, u
                      (codepoint < 0x80u ? 8u : 16u));
     }
 
-    const uint8_t right = End == 0u ? LCD_WIDTH - 1u : End;
-    if (Start >= LCD_WIDTH || Start > right || pixel_width > right + 1u - Start)
-        return false;
-
-    uint8_t x = Start;
-    for (size_t index = 0; index < codepoint_count; index++)
-    {
-        const uint16_t codepoint = codepoints[index];
-        if (codepoint < 0x80u)
-        {
-            if (codepoint > ' ')
-                UI_CopyLargeGlyphClipped(Line, x,
-                                         gFontBig[codepoint - ' ' - 1u],
-                                         7u, right);
-            x = (uint8_t)(x + 8u);
-        }
-        else
-        {
-            uint8_t glyph[JAPANESE_FONT_GLYPH_BYTES];
-            if (!JPFONT_ReadGlyph(codepoint, glyph))
-                return false;
-            UI_CopyExternalGlyph(Line, x, right, glyph);
-            x = (uint8_t)(x + 16u);
-        }
-    }
-
-    return true;
+    return UI_DrawExternalJapaneseCodepoints(codepoints, codepoint_count,
+                                              pixel_width, Start, End, Line,
+                                              true);
 }
 #endif
 
@@ -632,7 +807,7 @@ static void sort(int16_t *a, int16_t *b)
         {   // tell user how to unlock the keyboard
             
             //memcpy(gFrameBuffer[shift] + 2, gFontKeyLock, sizeof(gFontKeyLock));
-            UI_PrintStringSmallBold("UNLOCK KEYBOARD", 12, 0, shift);
+            UI_PrintStringSmallBold(WRX_UI_TEXT_UNLOCK_KEYBOARD, 12, 0, shift);
             //memcpy(gFrameBuffer[shift] + 120, gFontKeyLock, sizeof(gFontKeyLock));
 
             /*
@@ -703,7 +878,7 @@ void UI_DisplayPopup(const char *string)
     // }
     // DrawRectangle(9,9, 118,38, true);
     UI_PrintString(string, 9, 118, 2, 8);
-    UI_PrintStringSmallNormal("Press EXIT", 9, 118, 6);
+    UI_PrintStringSmallNormal(WRX_UI_TEXT_PRESS_EXIT, 9, 118, 6);
 }
 
 void UI_DisplayUnavailable(const char *string)

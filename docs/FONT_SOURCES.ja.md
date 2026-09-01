@@ -9,7 +9,7 @@
 - 配布元: [Unifoundry Japanese Font Encodings](https://unifoundry.com/japanese/)
 - ファイル: `izmg16-2004-1.bdf.gz`
 - 取得元URL: `https://unifoundry.com/japanese/izmg16-2004-1.bdf.gz`
-- SHA-256: `005345196615E692C54EF67286B44DD0EAA3A899D066CD407A4B3A810822C20`
+- SHA-256: `005345196615E692C54EF67286B44DD0EAA3A899D066CD407A4B3A810822C20C`
 - ライセンス上の扱い: 配布元の説明に従い，該当字形はパブリックドメイン
 
 ここでいうJIS X 0213は，入力フォントの字形を選ぶための規格です．ファームウェア内の1 byteコード体系そのものをJIS X 0213として扱う意味ではありません．ファームウェア側では，`0xA1`–`0xDF`だけをJIS X 0201半角カタカナとして扱い，その他の拡張範囲は[フォント割り当て台帳](FONT_BITMAP_ANNOTATIONS.ja.md)の定義に従います．
@@ -20,11 +20,9 @@
 
 現行の日本語大字形と`rainy-knight/uv-k5-jp`の公開`font.c`は，[rainy版との日本語大字形比較](FONT_RAINY_COMPARISON.ja.md)でソースレベルに比較できます．現行配列は参照側とバイト単位で同一とは記録していません．比較結果は出所やライセンスの推定ではなく，字形データの差分確認を目的とします．
 
-## クリーンルーム変換
+## 内部フォールバック用の変換ツール
 
-## 補助的なフォント比較ツール
-
-`tools/import_public_domain_bitmap_font.py`は，候補フォントを比較するための補助ツールです．現行の正本を生成する必須経路ではありません．BDFを入力した場合は，次の手順でC初期化子候補を生成します．
+`tools/import_public_domain_bitmap_font.py`は，起動画面と内部フォールバック用の字形を更新する補助ツールです．外部Izumi 16の正本を生成する経路ではありません．BDFを入力した場合は，次の手順でC初期化子候補を生成します．
 
 1. BDFの16×16ビットマップを読み取る．
 2. ISO-2022-JPのJIS row-cell値で対象字形を選択する．

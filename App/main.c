@@ -48,6 +48,9 @@
 
 #include "app/app.h"
 #include "app/dtmf.h"
+#ifdef ENABLE_FONT_GLYPH_TEST
+    #include "app/font_glyph_test.h"
+#endif
 
 #include "driver/backlight.h"
 #include "driver/bk4819.h"
@@ -99,6 +102,11 @@ void Main(void)
 {
     SYSTICK_Init();
     BOARD_Init();
+
+#ifdef ENABLE_FONT_GLYPH_TEST
+    /* The test image must not initialize or operate the radio. */
+    FONT_GLYPH_TEST_Run();
+#endif
 
     boot_counter_10ms = 250;   // 2.5 sec
 

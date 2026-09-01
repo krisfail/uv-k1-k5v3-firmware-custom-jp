@@ -11,6 +11,7 @@
                 "ENABLE_LTO": false,
                 "ENABLE_RX_ONLY": true,
                 "ENABLE_JAPANESE": true,
+                "ENABLE_FONT_GLYPH_TEST": false,
                 "ENABLE_RX_AGC_GUARD": true,
                 "ENABLE_FMRADIO": true,
                 "ENABLE_UART": true,
@@ -88,9 +89,19 @@
                 "AUTHOR_STRING_1": "EGZUMER",
                 "AUTHOR_STRING_2": "Kris",
                 "VERSION_STRING_1": "v0.22",
-                "VERSION_STRING_2": "v5.9.0J1",
+                "VERSION_STRING_2": "v5.9.0J2",
                 "EDITION_STRING": "JP-RX-Only",
                 "TARGET": "wrx-jp"
+            }
+        },
+        {
+            "name": "JpRxOnlyFontTest",
+            "inherits": "JpRxOnly",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": {
+                "ENABLE_FONT_GLYPH_TEST": true,
+                "TARGET": "wrx-jp-font-test",
+                "EDITION_STRING": "JP-RX-Only-FONT-TEST"
             }
         }
     ],
@@ -98,6 +109,10 @@
         {
             "name": "JpRxOnly",
             "configurePreset": "JpRxOnly"
+        },
+        {
+            "name": "JpRxOnlyFontTest",
+            "configurePreset": "JpRxOnlyFontTest"
         }
     ]
 }

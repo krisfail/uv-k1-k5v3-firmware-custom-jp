@@ -124,8 +124,8 @@ typedef struct {
 } REPLY_051D_t;
 
 #ifdef ENABLE_JAPANESE
-/* External Japanese font/name access uses a 32-bit flash address.  The
- * existing 16-bit EEPROM commands remain unchanged for CHIRP compatibility. */
+/* Japanese resources use 32-bit external-flash addresses.  Keep the existing
+ * 16-bit EEPROM commands unchanged for CHIRP compatibility. */
 typedef struct __attribute__((packed)) {
     Header_t Header;
     uint32_t Address;

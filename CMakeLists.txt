@@ -11,6 +11,9 @@ endif()
 
 set(CMAKE_PROJECT_NAME wrx-jp)
 
+option(ENABLE_FONT_GLYPH_TEST
+    "Build the test-only external Japanese glyph LCD browser" OFF)
+
 # Enable compile command to ease indexing with e.g. clangd
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 

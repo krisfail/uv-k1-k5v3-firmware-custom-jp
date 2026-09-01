@@ -41,11 +41,35 @@
 #endif
 
 #include "helper.h"
+#include "jp_text.h"
 #include "inputbox.h"
 #include "menu.h"
 #include "menu_text.h"
 #include "ui.h"
 #include "welcome.h"
+
+#ifdef ENABLE_JAPANESE
+static void UI_MENU_PrintString(const char *text, uint8_t start, uint8_t end,
+                                uint8_t line, uint8_t width)
+{
+    if (!UI_PrintStringJapaneseExternal(text, start, end, line))
+        UI_PrintString(text, start, end, line, width);
+}
+
+#ifdef ENABLE_CUSTOM_MENU_LAYOUT
+static void UI_MENU_PrintStringClipped(const char *text, uint8_t start,
+                                       uint8_t end, uint8_t line, uint8_t width)
+{
+    if (!UI_PrintStringJapaneseExternal(text, start, end, line))
+        UI_PrintStringClipped(text, start, end, line, width);
+}
+#endif
+#else
+#define UI_MENU_PrintString UI_PrintString
+#ifdef ENABLE_CUSTOM_MENU_LAYOUT
+#define UI_MENU_PrintStringClipped UI_PrintStringClipped
+#endif
+#endif
 
 
 const t_menu_item MenuList[] =
@@ -301,7 +325,11 @@ const char* const gSubMenu_RX_BANK[] =
 
 const char* const gSubMenu_RX_BANK_SET[] =
 {
+#ifdef ENABLE_JAPANESE
+    "\x97", "B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8"
+#else
     "NONE", "B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8"
+#endif
 };
 #endif
 
@@ -316,7 +344,7 @@ const char* gSubMenu_NA = "N/A";
 const char* const gSubMenu_RXMode[] =
 {
 #ifdef ENABLE_RX_ONLY
-    "MAIN\nONLY",
+    "\x80\x81",
     "DUAL RX",
     "SINGLE",
 #else
@@ -338,10 +366,17 @@ const char* const gSubMenu_RXMode[] =
 
 const char* const gSubMenu_MDF[] =
 {
+#ifdef ENABLE_JAPANESE
+    "\xF2\xF3\xF4",
+    "CH",
+    "\x8A",
+    "\x8A\n+\n\xF2\xF3\xF4"
+#else
     "FREQ",
     "CHANNEL\nNUMBER",
     "NAME",
     "NAME\n+\nFREQ"
+#endif
 };
 
 #ifdef ENABLE_ALARM
@@ -409,7 +444,11 @@ const char* const gSubMenu_ROGER[] =
 const char* const gSubMenu_RESET[] =
 {
     "VFO",
+#ifdef ENABLE_JAPANESE
+    "\xF8\xF9\xFA"
+#else
     "ALL"
+#endif
 };
 
 const char* const gSubMenu_F_LOCK[] =
@@ -443,9 +482,15 @@ const char* const gSubMenu_RX_TX[] =
 
 const char* const gSubMenu_BAT_TXT[] =
 {
+#ifdef ENABLE_JAPANESE
+    "\x97",
+    "\x8F\x92",
+    "%"
+#else
     "NONE",
     "VOLTAGE",
     "PERCENT"
+#endif
 };
 
 const char* const gSubMenu_BATTYP[] =
@@ -508,10 +553,17 @@ const char* const gSubMenu_SCRAMBLER[] =
 
     const char* const gSubMenu_SET_LCK[] =
     {
+#ifdef ENABLE_JAPANESE
+        "\xB7\xE0",
+        "\xB7\xE0\nACT",
+        "\xB7\xE0\nPTT",
+        "\xB7\xE0\nACT\nPTT"
+#else
         "KEYS",
         "KEYS\nACTIONS",
         "KEYS\nPTT",
         "KEYS\nACTIONS\nPTT"
+#endif
     };
 
     const char* const gSubMenu_SET_MET[] =
@@ -549,8 +601,13 @@ const char* const gSubMenu_SCRAMBLER[] =
     #ifdef ENABLE_FEAT_F4HWN_NARROWER
         const char* const gSubMenu_SET_NFM[] =
         {
+#ifdef ENABLE_JAPANESE
+            "\xED\xEE",
+            "\xED\xEE+"
+#else
             "NARROW",
             "NARROWER"
+#endif
         };
     #endif
 
@@ -568,15 +625,15 @@ const char* const gSubMenu_SCRAMBLER[] =
 
 const t_sidefunction gSubMenu_SIDEFUNCTIONS[] =
 {
-    {"NONE",            ACTION_OPT_NONE},
+    {WRX_ACTION_NONE,            ACTION_OPT_NONE},
 #ifdef ENABLE_FLASHLIGHT
-    {"FLASH\nLIGHT",    ACTION_OPT_FLASHLIGHT},
+    {WRX_ACTION_FLASHLIGHT,    ACTION_OPT_FLASHLIGHT},
 #endif
 #ifndef ENABLE_RX_ONLY
     {"POWER",           ACTION_OPT_POWER},
 #endif
-    {"MONITOR",         ACTION_OPT_MONITOR},
-    {"SCAN",            ACTION_OPT_SCAN},
+    {WRX_ACTION_MONITOR,         ACTION_OPT_MONITOR},
+    {WRX_ACTION_SCAN,            ACTION_OPT_SCAN},
 #ifdef ENABLE_VOX
     {"VOX",             ACTION_OPT_VOX},
 #endif
@@ -584,26 +641,26 @@ const t_sidefunction gSubMenu_SIDEFUNCTIONS[] =
     {"ALARM",           ACTION_OPT_ALARM},
 #endif
 #ifdef ENABLE_FMRADIO
-    {"FM RADIO",        ACTION_OPT_FM},
+    {WRX_ACTION_FM,        ACTION_OPT_FM},
 #endif
 #ifdef ENABLE_TX1750
     {"1750Hz",          ACTION_OPT_1750},
 #endif
-    {"LOCK\nKEYPAD",    ACTION_OPT_KEYLOCK},
-    {"VFO A\nVFO B",    ACTION_OPT_A_B},
-    {"VFO\nMEM",        ACTION_OPT_VFO_MR},
-    {"MODE",            ACTION_OPT_SWITCH_DEMODUL},
+    {WRX_ACTION_LOCK_KEYPAD,    ACTION_OPT_KEYLOCK},
+    {WRX_ACTION_VFO_A_B,    ACTION_OPT_A_B},
+    {WRX_ACTION_VFO_MEM,        ACTION_OPT_VFO_MR},
+    {WRX_ACTION_MODE,            ACTION_OPT_SWITCH_DEMODUL},
 #ifdef ENABLE_BLMIN_TMP_OFF
     {"BLMIN\nTMP OFF",  ACTION_OPT_BLMIN_TMP_OFF},      //BackLight Minimum Temporary OFF
 #endif
 #ifdef ENABLE_FEAT_F4HWN
-    {"RX MODE",         ACTION_OPT_RXMODE},
-    {"MAIN ONLY",       ACTION_OPT_MAINONLY},
+    {WRX_ACTION_RX_MODE,         ACTION_OPT_RXMODE},
+    {WRX_ACTION_MAIN_ONLY,       ACTION_OPT_MAINONLY},
 #ifndef ENABLE_RX_ONLY
     {"PTT",             ACTION_OPT_PTT},
 #endif
-    {"WIDE\nNARROW",    ACTION_OPT_WN},
-    {"MUTE",            ACTION_OPT_MUTE},
+    {WRX_ACTION_WIDE_NARROW,    ACTION_OPT_WN},
+    {WRX_ACTION_MUTE,            ACTION_OPT_MUTE},
     #ifdef ENABLE_FEAT_F4HWN_AUDIO
         {"RxA",            ACTION_OPT_RXA},
     #endif
@@ -826,7 +883,7 @@ static void UI_MENU_DrawCategories(void)
 
     if (count > 1)
         UI_PrintStringSmallNormal(CategoryNames[gCatOrder[prev]], 0, 0, 1);
-    UI_PrintString(CategoryNames[gCatOrder[cur]], 0, 0, 2, 8);
+    UI_MENU_PrintString(CategoryNames[gCatOrder[cur]], 0, 0, 2, 8);
     if (count > 1)
         UI_PrintStringSmallNormal(CategoryNames[gCatOrder[next]], 0, 0, 4);
 
@@ -834,8 +891,8 @@ static void UI_MENU_DrawCategories(void)
     UI_PrintStringSmallNormal(str, 6, 0, 6);
 
     sprintf(str, "%02u", UI_MENU_CategoryItemCount(gCatOrder[cur]));
-    UI_PrintString(str, x1, x2, 1, 8);
-    UI_PrintStringSmallNormal("items", x1, x2, 5);
+    UI_MENU_PrintString(str, x1, x2, 1, 8);
+    UI_PrintStringSmallNormal(WRX_UI_TEXT_ITEMS, x1, x2, 5);
 
     ST7565_BlitFullScreen();
 }
@@ -1044,7 +1101,8 @@ void UI_DisplayMenu(void)
     for (i = 0; i < 3; i++)
         if (gMenuCursor > 0 || i > 0)
             if ((gMenuListCount - 1) != gMenuCursor || i != 2)
-                UI_PrintString(MenuList[gMenuIndices[gMenuCursor + i - 1]].name, 0, 0, i * 2, 8);
+                UI_MENU_PrintString(MenuList[gMenuIndices[gMenuCursor + i - 1]].name,
+                                    0, 0, i * 2, 8);
 
     // invert the current menu list item pixels
     for (i = 0; i < (8 * menu_list_width); i++)
@@ -1083,7 +1141,8 @@ void UI_DisplayMenu(void)
                 UI_PrintStringSmallNormalClipped(MenuList[gMenuIndices[prev_index]].name, 0, 47, 1);
 
                 // current menu item - keep big n fat
-                UI_PrintStringClipped(MenuList[gMenuIndices[menu_index]].name, 0, 47, 2, 8);
+                UI_MENU_PrintStringClipped(
+                    MenuList[gMenuIndices[menu_index]].name, 0, 47, 2, 8);
 
                 // trailing menu item - small text
                 int next_index = menu_index + 1;
@@ -1103,7 +1162,8 @@ void UI_DisplayMenu(void)
             {   
                 // current menu item
 //              strcat(String, ":");
-                UI_PrintStringClipped(MenuList[gMenuIndices[menu_index]].name, 0, 47, 0, 8);
+                UI_MENU_PrintStringClipped(
+                    MenuList[gMenuIndices[menu_index]].name, 0, 47, 0, 8);
 //              UI_PrintStringSmallNormal(String, 0, 0, 0);
             }
 
@@ -1227,8 +1287,8 @@ void UI_DisplayMenu(void)
                 sprintf(String, "%.3s.%.3s  ",ascii, ascii + 3);
             }
 
-            UI_PrintString(String, menu_item_x1, menu_item_x2, 1, 8);
-            UI_PrintString("MHz",  menu_item_x1, menu_item_x2, 3, 8);
+            UI_MENU_PrintString(String, menu_item_x1, menu_item_x2, 1, 8);
+            UI_MENU_PrintString("MHz",  menu_item_x1, menu_item_x2, 3, 8);
 
             already_printed = true;
             break;
@@ -1368,7 +1428,7 @@ void UI_DisplayMenu(void)
         {
             if(gSubMenuSelection == MR_CHANNELS_MAX)
             {
-                UI_PrintString("None", menu_item_x1, menu_item_x2, 2, 8);
+                UI_MENU_PrintString(WRX_UI_TEXT_NONE, menu_item_x1, menu_item_x2, 2, 8);
                 already_printed = true;
                 break;
             }
@@ -1377,17 +1437,23 @@ void UI_DisplayMenu(void)
                 const bool valid = RADIO_CheckValidChannel(gSubMenuSelection, false, 0);
 
                 UI_GenerateChannelStringEx(String, valid, gSubMenuSelection);
-                UI_PrintString(String, menu_item_x1, menu_item_x2, 0, 8);
+                UI_MENU_PrintString(String, menu_item_x1, menu_item_x2, 0, 8);
 
                 if (valid && !gAskForConfirmation)
                 {   // show the frequency so that the user knows the channels frequency
                     const uint32_t frequency = SETTINGS_FetchChannelFrequency(gSubMenuSelection);
                     sprintf(String, "%u.%05u", frequency / 100000, frequency % 100000);
-                    UI_PrintString(String, menu_item_x1, menu_item_x2, 5, 8);
+                    UI_MENU_PrintString(String, menu_item_x1, menu_item_x2, 5, 8);
                 }
 
-                SETTINGS_FetchChannelName(String, gSubMenuSelection);
-                UI_PrintString(String[0] ? String : "--", menu_item_x1, menu_item_x2, 2, 8);
+#ifdef ENABLE_JAPANESE
+                if (!UI_PrintJapaneseChannelName(gSubMenuSelection,
+                                                 menu_item_x1, menu_item_x2, 2))
+#endif
+                {
+                    SETTINGS_FetchChannelName(String, gSubMenuSelection);
+                    UI_MENU_PrintString(String[0] ? String : "--", menu_item_x1, menu_item_x2, 2, 8);
+                }
                 already_printed = true;
                 break;
             }
@@ -1398,7 +1464,7 @@ void UI_DisplayMenu(void)
             const bool valid = RADIO_CheckValidChannel(gSubMenuSelection, false, 0);
 
             UI_GenerateChannelStringEx(String, valid, gSubMenuSelection);
-            UI_PrintString(String, menu_item_x1, menu_item_x2, 0, 8);
+            UI_MENU_PrintString(String, menu_item_x1, menu_item_x2, 0, 8);
 
             if (valid)
             {
@@ -1409,14 +1475,20 @@ void UI_DisplayMenu(void)
                     edit_index = -1;
                 if (edit_index < 0)
                 {   // show the channel name
-                    SETTINGS_FetchChannelName(String, gSubMenuSelection);
-                    char *pPrintStr = String[0] ? String : "--";
-                    UI_PrintString(pPrintStr, menu_item_x1, menu_item_x2, 2, 8);
+#ifdef ENABLE_JAPANESE
+                    if (!UI_PrintJapaneseChannelName(gSubMenuSelection,
+                                                     menu_item_x1, menu_item_x2, 2))
+#endif
+                    {
+                        SETTINGS_FetchChannelName(String, gSubMenuSelection);
+                        char *pPrintStr = String[0] ? String : "--";
+                        UI_MENU_PrintString(pPrintStr, menu_item_x1, menu_item_x2, 2, 8);
+                    }
                 }
                 else
                 {   // show the channel name being edited
                     //UI_PrintString(edit, menu_item_x1, 0, 2, 8);
-                    UI_PrintString(edit, menu_item_x1, menu_item_x2, 2, 8);
+                    UI_MENU_PrintString(edit, menu_item_x1, menu_item_x2, 2, 8);
                     if (edit_index < 10) {
                         // UI_PrintString("^", menu_item_x1 - 1 + (8 * edit_index),0, 4, 8); // show the cursor
                         uint8_t x = menu_item_x1 - 1;
@@ -1444,7 +1516,7 @@ void UI_DisplayMenu(void)
                 if (!gAskForConfirmation)
                 {   // show the frequency so that the user knows the channels frequency
                     sprintf(String, "%u.%05u", frequency / 100000, frequency % 100000);
-                    UI_PrintString(String, menu_item_x1, menu_item_x2, 5, 8);
+                    UI_MENU_PrintString(String, menu_item_x1, menu_item_x2, 5, 8);
                 }
             }
 
@@ -1479,11 +1551,13 @@ void UI_DisplayMenu(void)
         case MENU_SC_REV:
             if(gSubMenuSelection == 0)
             {
-                strcpy(String, "STOP");
+                strcpy(String, WRX_UI_TEXT_SCAN_STOP);
             }
             else if(gSubMenuSelection < 81)
             {
-                sprintf(String, "CARRIER\n%02ds:%03dms", ((gSubMenuSelection * 250) / 1000), ((gSubMenuSelection * 250) % 1000));
+                sprintf(String, "%s\n%02ds:%03dms", WRX_UI_TEXT_SCAN_CARRIER,
+                        ((gSubMenuSelection * 250) / 1000),
+                        ((gSubMenuSelection * 250) % 1000));
                 //#if !defined(ENABLE_SPECTRUM) || !defined(ENABLE_FMRADIO)
                 //ST7565_Gauge(5, 1, 80, gSubMenuSelection);
                 gaugeLine = 5;
@@ -1493,7 +1567,9 @@ void UI_DisplayMenu(void)
             }
             else
             {
-                sprintf(String, "TIMEOUT\n%02dm:%02ds", (((gSubMenuSelection - 80) * 5) / 60), (((gSubMenuSelection - 80) * 5) % 60));
+                sprintf(String, "%s\n%02dm:%02ds", WRX_UI_TEXT_SCAN_TIMEOUT,
+                        (((gSubMenuSelection - 80) * 5) / 60),
+                        (((gSubMenuSelection - 80) * 5) % 60));
                 //#if !defined(ENABLE_SPECTRUM) || !defined(ENABLE_FMRADIO)
                 //ST7565_Gauge(5, 80, 104, gSubMenuSelection);
                 gaugeLine = 5;
@@ -1917,7 +1993,7 @@ void UI_DisplayMenu(void)
                 if (small)
                     UI_PrintStringSmallNormal(String + i, menu_item_x1, menu_item_x2, y);
                 else
-                    UI_PrintString(String + i, menu_item_x1, menu_item_x2, y, 8);
+                    UI_MENU_PrintString(String + i, menu_item_x1, menu_item_x2, y, 8);
 
                 // look for start of next line
                 while (i < len && String[i] >= 32)
@@ -1938,14 +2014,14 @@ void UI_DisplayMenu(void)
     }
 
     if ((m == MENU_R_CTCS || m == MENU_R_DCS) && gCssBackgroundScan)
-        UI_PrintString("SCAN", menu_item_x1, menu_item_x2, 4, 8);
+        UI_MENU_PrintString("SCAN", menu_item_x1, menu_item_x2, 4, 8);
 
 #ifdef ENABLE_DTMF_CALLING
     if (m == MENU_D_LIST && gIsDtmfContactValid) {
         Contact[11] = 0;
         memcpy(&gDTMF_ID, Contact + 8, 4);
         sprintf(String, "ID:%4s", gDTMF_ID);
-        UI_PrintString(String, menu_item_x1, menu_item_x2, 4, 8);
+        UI_MENU_PrintString(String, menu_item_x1, menu_item_x2, 4, 8);
     }
 #endif
 
@@ -1991,8 +2067,9 @@ void UI_DisplayMenu(void)
          m == MENU_MEM_NAME ||
          m == MENU_DEL_CH) && gAskForConfirmation)
     {   // display confirmation
-        char *pPrintStr = (gAskForConfirmation == 1) ? "SURE?" : "WAIT!";
-        UI_PrintString(pPrintStr, menu_item_x1, menu_item_x2, 5, 8);
+        const char *pPrintStr = (gAskForConfirmation == 1) ?
+            WRX_UI_TEXT_OK_QUESTION : WRX_UI_TEXT_WAIT;
+        UI_MENU_PrintString(pPrintStr, menu_item_x1, menu_item_x2, 5, 8);
     }
 
     ST7565_BlitFullScreen();

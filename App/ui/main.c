@@ -47,6 +47,7 @@
 #include "settings.h"
 #include "ui/helper.h"
 #include "ui/inputbox.h"
+#include "ui/jp_text.h"
 #include "ui/main.h"
 #include "ui/ui.h"
 #include "audio.h"
@@ -151,7 +152,7 @@ const char *const VfoStateStr[] = {
        [VFO_STATE_NORMAL]="",
        [VFO_STATE_BUSY]="BUSY",
        [VFO_STATE_BAT_LOW]="\x8F\xF7 LOW", // 電池 LOW
-       [VFO_STATE_TX_DISABLE]="TX DISABLE",
+       [VFO_STATE_TX_DISABLE]=WRX_UI_TEXT_VFO_TX_DISABLED,
        [VFO_STATE_TIMEOUT]="TIMEOUT",
        [VFO_STATE_ALARM]="ALARM",
        [VFO_STATE_VOLTAGE_HIGH]="\x8F\x92 HIGH" // 電圧 HIGH
@@ -288,8 +289,8 @@ static void UI_MAIN_DrawScanListName(void)
     char text[16];
 
     // Manual formatting instead of snprintf: much smaller on a divide-less M0 core
-    strcpy(text, "SCAN LIST ");
-    char *p = text + 10;                     // sizeof("SCAN LIST ") - 1
+    strcpy(text, WRX_UI_TEXT_SCAN_LIST);
+    char *p = text + sizeof(WRX_UI_TEXT_SCAN_LIST) - 1u;
 
     if (scan_list > MR_CHANNELS_LIST) {
         *p++ = 'A'; *p++ = 'L'; *p++ = 'L';
@@ -1386,7 +1387,7 @@ void UI_DisplayMain(void)
     UI_DisplayClear();
 
     if(gLowBattery && !gLowBatteryConfirmed) {
-        UI_DisplayPopup("LOW BATTERY");
+        UI_DisplayPopup(WRX_UI_TEXT_LOW_BATTERY);
         ST7565_BlitFullScreen();
         return;
     }
@@ -1491,7 +1492,7 @@ void UI_DisplayMain(void)
                         shift = 3;
                     }
 
-                    UI_PrintString("ScnRng", 7, 0, line + shift, 8);
+                    UI_PrintString(WRX_UI_TEXT_SCAN_RANGE, 7, 0, line + shift, 8);
                     UI_FormatFrequency(gScanRangeStart, String);
                     UI_PrintStringSmallNormal(String, 56, 0, line + shift);
                     UI_FormatFrequency(gScanRangeStop, String);
@@ -1510,7 +1511,7 @@ void UI_DisplayMain(void)
                     gScanRangeStart = 0;
                 }
 #else
-                UI_PrintString("ScnRng", 7, 0, line, 8);
+                UI_PrintString(WRX_UI_TEXT_SCAN_RANGE, 7, 0, line, 8);
                 UI_FormatFrequency(gScanRangeStart, String);
                 UI_PrintStringSmallNormal(String, 56, 0, line);
                 UI_FormatFrequency(gScanRangeStop, String);

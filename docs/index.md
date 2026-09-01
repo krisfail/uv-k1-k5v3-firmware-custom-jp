@@ -14,14 +14,13 @@
 
 - [開発者向けガイド](../DEVELOPMENT.md)
 - [メニュー文言の編集](MENU_TEXT_CATALOG.ja.md)
-- [CHIRPドライバの説明](../tools/chirp/README.ja.md)
+- [CHIRP互換アダプタの説明](../tools/chirp/README.ja.md)
 - [新機能の技術詳細](FEATURES_TECHNICAL.ja.md)
 - [機能監査](FEATURE_AUDIT.ja.md)
 - [上流からの受信向け取り込み](UPSTREAM_INTEGRATION.ja.md)
-- [上流からの変更部分のコードレビュー](CODE_REVIEW_UPSTREAM_DELTA.ja.md)
 - [実機テスト計画](HARDWARE_TEST_PLAN.ja.md)
 
-`FEATURES_TECHNICAL.ja.md`は現行機能の挙動，`FEATURE_AUDIT.ja.md`は採用・保留・除外の判断，`HARDWARE_TEST_PLAN.ja.md`は実機で確認する項目を扱います．ビルド手順やソースの見取り図はDEVELOPMENT.mdを正本とします．
+`FEATURES_TECHNICAL.ja.md`は現行機能の挙動，`FEATURE_AUDIT.ja.md`は採用・保留・除外と優先順位の判断，`HARDWARE_TEST_PLAN.ja.md`は実機で確認する項目を扱います．ビルド手順やソースの見取り図はDEVELOPMENT.mdを正本とします．
 
 ## フォント・ビットマップ
 

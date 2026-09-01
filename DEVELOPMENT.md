@@ -1,6 +1,6 @@
 # 開発者向けガイド（UV-K1 / UV-K5 V3）
 
-このリポジトリは，PY32F071搭載のUV-K1／UV-K5 V3向け`wrx-jp`派生版です．K1とK5 V3は同じファームウェア／CHIRPプロファイルとして扱います．旧UV-K5（DP32G030）とは対象チップ，ドライバ，メモリーマップ，ビルド系統が異なるため，コードや手順を混ぜないでください．
+このリポジトリは，PY32F071搭載のUV-K1／UV-K5 V3向け`wrx-jp`派生版です．K1とK5 V3は同じファームウェア／host profileとして扱います．CHIRPは移行用互換アダプタであり，正規のhost toolではありません．旧UV-K5（DP32G030）とは対象チップ，ドライバ，メモリーマップ，ビルド系統が異なるため，コードや手順を混ぜないでください．
 
 この文書は人間の開発者向けです．利用者向けの説明は[README.ja.md](README.ja.md)，[README.md](README.md)，[CHEATSHEET.ja.md](CHEATSHEET.ja.md)に置きます．実装の根拠・保存形式・未検証範囲は`docs/`の技術資料で管理します．
 
@@ -9,11 +9,11 @@
 - 利用者向けの概要と書き込み手順は[README.md](README.md)または[README.ja.md](README.ja.md)を読む．
 - 追加受信機能，外部フラッシュ，フォント，未検証範囲は[docs/FEATURES_TECHNICAL.ja.md](docs/FEATURES_TECHNICAL.ja.md)を正とする．上流v5.9.0からの受信向け取り込み範囲は[docs/UPSTREAM_INTEGRATION.ja.md](docs/UPSTREAM_INTEGRATION.ja.md)に分けて記録する．
 - フォントやビットマップを追加する前に，[docs/FONT_BITMAP_ANNOTATIONS.ja.md](docs/FONT_BITMAP_ANNOTATIONS.ja.md)とatlas inventoryを確認する．
-- CHIRPの機種プロファイルとcalibration境界は[tools/chirp/README.ja.md](tools/chirp/README.ja.md)を読む．
+- 移行用CHIRP互換アダプタの機種プロファイルとcalibration境界は[tools/chirp/README.ja.md](tools/chirp/README.ja.md)を読む．
 
 ## ビルドとホストテスト
 
-現行の機能採否と受信専用境界は[docs/FEATURE_AUDIT.ja.md](docs/FEATURE_AUDIT.ja.md)を正とします．追加順の経過は[docs/FEATURE_PRIORITY.ja.md](docs/FEATURE_PRIORITY.ja.md)，上流からの変更を加えた部分のレビュー結果は[docs/CODE_REVIEW_UPSTREAM_DELTA.ja.md](docs/CODE_REVIEW_UPSTREAM_DELTA.ja.md)に残しています．実機確認は[docs/HARDWARE_TEST_PLAN.ja.md](docs/HARDWARE_TEST_PLAN.ja.md)を使います．
+現行の機能採否，優先順位，受信専用境界は[docs/FEATURE_AUDIT.ja.md](docs/FEATURE_AUDIT.ja.md)を正とします．上流からの受信向け取り込み範囲は[docs/UPSTREAM_INTEGRATION.ja.md](docs/UPSTREAM_INTEGRATION.ja.md)，実機確認の項目は[docs/HARDWARE_TEST_PLAN.ja.md](docs/HARDWARE_TEST_PLAN.ja.md)に記録します．
 
 ARM GNU Toolchain，CMake，Ninjaを用意し，リポジトリルートで実行します．
 
@@ -21,6 +21,7 @@ ARM GNU Toolchain，CMake，Ninjaを用意し，リポジトリルートで実�
 cmake --preset JpRxOnly
 cmake --build --preset JpRxOnly -j2
 cmake --build --preset JpRxOnly --target font-quality
+python tools/build_chirp_module.py --check
 python -m unittest discover -s tests -p "test_*.py" -v
 ```
 
@@ -30,13 +31,34 @@ python -m unittest discover -s tests -p "test_*.py" -v
 
 ## 外部日本語フォント
 
-段階AのK1／K5 V3チャンネル名は、外部Flash上の固定フォントデータと1024件のUTF-8名前テーブルを使います。フォントデータの入力、SHA-256、生成形式は[外部日本語フォントREADME](docs/fonts/README.ja.md)と生成manifestに記録します。
+段階AのK1／K5 V3チャンネル名は，外部Flash上の固定フォントデータと1024件のUTF-8名前テーブルを使います。ここでの1024件はチャンネル／名前slot数であり，fontの収録glyph数や評価文字数ではありません。フォントデータの入力，SHA-256，生成形式は[外部日本語フォントREADME](docs/fonts/README.ja.md)と生成manifestに記録します。正規host toolには1024件チャンネル一覧のTSV読出し・編集・書込みもあり，UART処理はworker threadで実行します。保存形式とUART境界は[機能の技術詳細](docs/FEATURES_TECHNICAL.ja.md)，host toolの操作は[専用host toolの説明](tools/host/README.ja.md)を参照します。
 
-確認済みBDFから派生物を再生成する場合は、リポジトリルートで次を実行します。
+確認済みBDFから派生物を再生成する場合は，リポジトリルートで次を実行します。
 
-    python -X utf8 tools/generate_japanese_font.py tmp/japanese-font/izmg16-2004-1.bdf
+    python -X utf8 tools/generate_japanese_font.py tmp/japanese-font/izmg16-2004-1.bdf.gz
 
-生成物の外部配置はフォントデータ0x020000、名前テーブル0x040000です。CHIRPは外部Flash書き込み後にブロック単位のreadbackを行います。ホストテストとビルドは、実機の外部Flash容量、LCD表示、書き込み、再起動後の動作を保証しません。
+生成物の外部配置はフォントデータ`0x020000`，名前テーブル`0x040000`です。正規の専用Windows GUIは`tools/host/wrx_jp_host.py`で，明示的な「日本語リソース書込み」操作により128 byte以下のブロック単位でreadbackを行います。チャンネル一覧は通常論理領域`0x0000–0x886F`と名前テーブルだけを差分書込みし，calibration論理窓`0xB000–0xB1FF`に対応するsector`0x010000–0x010FFF`は，GUIとfirmwareの日本語書込みallowlistから除外します。現行CHIRPアダプタの外部Flash転送は移行用の暫定実装であり，最終仕様ではありません。ホストテストとビルドは，実機の外部Flash容量，LCD表示，書き込み，または再起動後の動作を保証しません。
+
+CHIRPを互換経路として使う場合のファイルは，フォントとmanifestを内蔵した`tools/chirp/wrx_jp_standalone.py`です。これは互換・移行用に凍結する生成物であり，専用host toolの代替となる正規経路ではありません。ドライバソースやフォント生成物を変更した場合は，次を実行して配布用モジュールを更新します。
+
+    python tools/build_chirp_module.py
+
+生成物が最新かどうかは`python tools/build_chirp_module.py --check`で確認できます。CHIRPの外部モジュール読み込みはこの単一ファイルを対象にし、フォントファイルの相対パスに依存させません。
+
+### 主フォント
+
+正規の日本語フォント生成器は、Izumi 16の16×16 BDFから固定bitmapを生成する`tools/generate_japanese_font.py`です。Izumi 16の字形品質は主フォントとして問題ないと判断し、16×16 native geometry、1字32 byte、外部Flash map、host転送形式を維持します。BIZ／Noto、14×14縮小、アウトラインの実行時ラスタライズは採用しません。
+
+### 全字形の実機LCD確認
+
+外部Flashへ転送した現行Japanese fontの全字形をLCDで確認するため、テスト専用の`JpRxOnlyFontTest` presetを用意しています。起動後は通常のradio／application initializationへ進まず、外部FlashのUnicode indexを読み、1画面32字（8列×4行）を表示します。対象は現行の全3,489字で、Unicode index順に約110ページです。`UP`／`DOWN`で前後ページ、`0`で先頭、`9`で末尾へ移動します。PTTを含む送信処理は呼び出しません。
+
+    cmake --preset JpRxOnlyFontTest
+    cmake --build --preset JpRxOnlyFontTest -j 2
+
+出力は`build/JpRxOnlyFontTest/wrx-jp-font-test.bin`です。先に通常の日本語リソース書込み手順で`docs/fonts/japanese_font.bin`を外部Flashへ書き込んでください。このpresetと`ENABLE_FONT_GLYPH_TEST`は通常の`JpRxOnly`配布ビルドでは無効です。静的ビルド成功は、実機の外部Flash接続やLCD表示を保証しません。
+
+既存のIzumi 16による日本語表示は実機表示テストの通過を確認しています。ただし，全対象字形のLCD表示，外部Flash書込み，再起動後の動作は別途確認が必要です。ホストテスト，画像生成成功，静的チェックを実機表示の保証として扱いません。
 
 ## 受信専用ビルド境界
 
@@ -52,13 +74,8 @@ python -m unittest discover -s tests -p "test_*.py" -v
 | `App/ui/` | メイン画面，メニュー，起動画面，フォント表示 |
 | `App/font.c` / `App/japanese_font.c` / `App/bitmaps.c` | 文字グリフと画面ビットマップ |
 | `tests/` | ホスト側の回帰テスト |
-| `tools/chirp/` | K1／K5 V3用RX-only CHIRPドライバと境界説明 |
-
-## ビルド基盤の共通境界
-
-旧UV-K5は`Makefile`を正規入口とし，K5向けCMakeは移行検証用の併行入口です．このリポジトリは`CMakePresets.json`の`JpRxOnly`を正規入口とします．両方で`JpRxOnly`，`font-atlas`，`atlas`，`inventory`，`docs`という操作契約と`tools/font_inventory.json`のmanifest形式を揃えています．
-
-一方，ファームウェアのC／ASM，ドライバ，startup，リンカースクリプトは共有しません．DP32G030とPY32F071では，BK4819／BK4829，EEPROM／外部フラッシュ，メモリーマップ，送信禁止境界が異なるためです．共通のホストツールをsubmodule化する場合は，両リポジトリから参照できる正式な共通リポジトリと固定コミットを先に用意し，親作業フォルダへの相対依存は作らないでください．
+| `tools/chirp/` | K1／K5 V3用RX-only CHIRP互換アダプタと境界説明 |
+| `tools/host/` | 専用Windows GUI，通信契約，RX-safe設定モデル |
 
 ## 変更時の境界
 
@@ -74,7 +91,7 @@ python -m unittest discover -s tests -p "test_*.py" -v
 
 正規の文字対応は[フォント割り当て台帳](docs/FONT_BITMAP_ANNOTATIONS.ja.md)に従います．`0x21`–`0x7E`はASCII，`0xA1`–`0xDF`はJIS X 0201半角カタカナです．`0x80`–`0xA0`と`0xE0`–`0xFF`はJIS文字ではなく，プロジェクト固有の拡張領域または予約領域です．`0x5C`と`0x7E`の扱いは，JIS X 0201へ再解釈せず，現行ASCIIフォントの実装を維持します．
 
-rainy由来の基準大字形には，`0x9A`–`0xA5`と`0xB0`の空白，`0xA6`／`0xDD`と`0xA7`／`0xB1`の重複，`0xA1`注釈以降の行ずれがあります．K1は大／小フォントが別配列なので，K5の配列をバイト列として移植せず，コードポイントごとに再構成してください．現行のsmall字形はカタカナの主表示には小さすぎるため，将来medium字形を導入する場合は，固定幅，文字列幅，中央寄せ，RAM，容量を同時に検証します．
+rainy由来の基準大字形には，`0x9A`–`0xA5`と`0xB0`の空白，`0xA6`／`0xDD`と`0xA7`／`0xB1`の重複，`0xA1`注釈以降の行ずれがあります．K1は大／小フォントが別配列なので，K5の配列をバイト列として移植せず，コードポイントごとに再構成してください．段階Bの固定UIは既存の内部1-byte字形と短いASCII技術表記を使い，別のmedium字形は追加しません．
 
 フォントの意味・用途・コードポイントは`tools/font_inventory.json`で管理し，C配列はビルド入力です．編集用の完全スナップショットJSONはC配列から生成し，基準バイト列との一致を検証してからCへ戻します．追跡済みatlasとinventoryを更新するには，次を実行します．この処理はファームウェアの通常ビルドには含めていません．
 

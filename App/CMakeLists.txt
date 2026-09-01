@@ -73,6 +73,14 @@ if(ENABLE_JAPANESE)
     )
 endif()
 
+# Keep the browser out of the normal JpRxOnly build.  It starts before radio
+# and application initialization and is only for checking the external font
+# resource on a real LCD.
+if(ENABLE_FONT_GLYPH_TEST)
+    target_compile_definitions(App INTERFACE ENABLE_FONT_GLYPH_TEST)
+    target_sources(App INTERFACE app/font_glyph_test.c)
+endif()
+
 
 macro(enable_feature feature)
     if(${feature})

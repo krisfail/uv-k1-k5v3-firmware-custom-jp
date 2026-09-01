@@ -3,7 +3,7 @@
   "source": {
     "name": "Izumi Gothic-Medium 16dot",
     "url": "https://unifoundry.com/japanese/izmg16-2004-1.bdf.gz",
-    "sha256": "005345196615E692C54EF67286B44DD0EAA3A899D066CD407A4B3A810822C20",
+    "sha256": "005345196615E692C54EF67286B44DD0EAA3A899D066CD407A4B3A810822C20C",
     "license": "Public Domain (as stated in the source BDF)"
   },
   "geometry": {

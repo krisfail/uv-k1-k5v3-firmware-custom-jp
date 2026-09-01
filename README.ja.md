@@ -1,14 +1,10 @@
 # UV-K1 / UV-K5 V3 日本語・受信専用ファームウェア
 
-[英語版README](README.md) | [操作・ビルドcheatsheet](CHEATSHEET.ja.md) | [開発者向けガイド](DEVELOPMENT.md) | [CHIRPドライバ](tools/chirp/README.ja.md) | [新機能の技術詳細](docs/FEATURES_TECHNICAL.ja.md) | [フォントコード表](docs/FONT_BITMAP_ANNOTATIONS.ja.md) | [機能監査](docs/FEATURE_AUDIT.ja.md) | [実機テスト計画](docs/HARDWARE_TEST_PLAN.ja.md) | [bitmap/font atlas](docs/BITMAP_ATLAS.ja.md) | [ドキュメントサイト](docs/index.md)
+[英語版README](README.md) | [操作・ビルドcheatsheet](CHEATSHEET.ja.md) | [開発者向けガイド](DEVELOPMENT.md) | [CHIRP互換アダプタ](tools/chirp/README.ja.md) | [新機能の技術詳細](docs/FEATURES_TECHNICAL.ja.md) | [フォントコード表](docs/FONT_BITMAP_ANNOTATIONS.ja.md) | [機能監査](docs/FEATURE_AUDIT.ja.md) | [実機テスト計画](docs/HARDWARE_TEST_PLAN.ja.md) | [bitmap/font atlas](docs/BITMAP_ATLAS.ja.md) | [ドキュメントサイト](docs/index.md)
 
 ## このリポジトリの位置づけ
 
 このリポジトリは，[krisfail/uv-k1-k5v3-firmware-custom-jp](https://github.com/krisfail/uv-k1-k5v3-firmware-custom-jp)として公開している独立したフォークです．主なupstreamは[armel/uv-k1-k5v3-firmware-custom](https://github.com/armel/uv-k1-k5v3-firmware-custom)で，F4HWN版，Egzumer版などの成果を基にしています．本リポジトリの日本語・受信専用版は，UV-K1とUV-K5 V3を日本国内向けの受信機用途へ調整した派生版であり，公式Quansheng版，公式F4HWN版，armel版そのものではありません．
-
-## AI支援（AI-Assisted）開発と現状有姿での提供
-
-コードの分析，実装，テスト補助，文書作成の一部にAI支援を使用しています．公開前に保守者が確認していますが，AI支援は保守者によるレビューや利用者の実機確認を代替しません．
 
 ファームウェアは**現状有姿（AS IS）**で提供し，動作や特定目的への適合を保証しません．書き込み失敗，無線機の破損，校正データ・EEPROM・設定の消失，復旧不能，法令・無線規制に反する使用について，保守者は責任を負いません．書き込み前に校正データと必要なメモリーをバックアップし，機種に対応したイメージと復旧手段を用意してください．
 
@@ -19,7 +15,7 @@
 ### 詳しい情報
 
 - 日常操作と最小限のビルド手順は[CHEATSHEET.ja.md](CHEATSHEET.ja.md)
-- CHIRPの機種選択・読み書き範囲・校正領域は[CHIRPドライバの説明](tools/chirp/README.ja.md)
+- 専用host toolとCHIRP互換アダプタの位置づけは[専用host toolの説明](tools/host/README.ja.md)，[CHIRP互換アダプタの説明](tools/chirp/README.ja.md)
 - 開発者向けのソース構成・検証・atlas生成は[DEVELOPMENT.md](DEVELOPMENT.md)
 - 実装の詳細は[技術詳細](docs/FEATURES_TECHNICAL.ja.md)，採否と除外機能は[機能監査](docs/FEATURE_AUDIT.ja.md)，実機確認項目は[実機テスト計画](docs/HARDWARE_TEST_PLAN.ja.md)
 
@@ -41,7 +37,7 @@
 - PTTをモニター操作へ割り当て
 - 表示名は`Kris v5.9.0J1`，エディション名は`JP-RX-Only`
 - `MAIN ONLY`，`DUAL RX`，`SINGLE`の受信モード
-- `W+` 25 kHz，`W` 20 kHz，`N` 12.5 kHz，`N-` 6.25 kHzの受信帯域
+- 受信帯域の選択
 - メモリーバンクによるスキャン対象の絞り込み
 - 航空，船舶，公共用途，アマチュア，351 MHzデジタル，FM放送などの受信プリセット
 - FM放送受信を国内向けの`76.0–95.0 MHz`に制限
@@ -52,12 +48,12 @@
 - メニューをカテゴリ別に表示（`ALL`で従来の全項目表示へ戻せる）
 - `F`を押しながらサイドキーを長押しして，そのキーへ割り当てる受信操作を一覧から選択
 - K1のフラッシュ容量を使い，受信音声プロファイルと音声レベル履歴を有効化
-- 大きい文字と小さい文字に対応した日本語表示．小字形は数値・補助表示を中心とし，カタカナを含む通常の日本語表示にはmedium字形の導入を検討中
+- 既存の内部1-byte字形による日本語メニュー，カテゴリ，警告，操作選択．技術用語と単位は短いASCII表記を残す
 - 起動画面の`受信専用`に使う大字形は，パブリックドメインのIzumi 16から独立変換しています．詳細は[フォントの出所と変換](docs/FONT_SOURCES.ja.md)を参照してください．
 
-メニューの`受信拡張`（従来表記`RXExt`）を`OFF`にすると，プリセット，受信モードの`SINGLE`，メモリーバンク絞り込み，`自動`スケルチ，AGCガード，一時スキップを停止します．通常受信の4段階帯域幅，受信専用・PTTモニター，日本語表示，FM放送の`76.0–95.0 MHz`制限は変わりません．周波数ステップは帯域幅と独立して選べます．既存の保存データは互換性のためONとして扱います．
+メニューの`受信拡張`（従来表記`RXExt`）を`OFF`にすると，プリセット，受信モードの`SINGLE`，メモリーバンク絞り込み，`自動`スケルチ，AGCガード，一時スキップを停止します．受信専用・PTTモニター，日本語表示，FM放送の`76.0–95.0 MHz`制限は変わりません．既存の保存データは互換性のためONとして扱います．
 
-追加の受信設定は，標準の設定・チャンネル名・校正領域とは別の外部フラッシュ領域を使用します．設定領域を変更する場合も，書き込み前の校正データのバックアップは省略しないでください．CHIRPの校正領域保護とメモリーマップの詳細は[CHIRPドライバの説明](tools/chirp/README.ja.md)にまとめています．
+追加の受信設定は，標準の設定・チャンネル名・校正領域とは別の外部フラッシュ領域を使用します．設定領域を変更する場合も，書き込み前の校正データのバックアップは省略しないでください．CHIRP互換アダプタの校正領域保護とメモリーマップの詳細は[説明文書](tools/chirp/README.ja.md)にまとめています．
 
 ## ビルド（Windows PowerShell）
 
@@ -94,9 +90,17 @@ cmake --build --preset JpRxOnly -j2
 cmake --build --preset JpRxOnly --target font-atlas
 ```
 
-## CHIRPドライバ
+## 専用host toolとCHIRP互換アダプタ
 
-受信メモリーの読み書きには，[wrx-jp CHIRPドライバ](tools/chirp/README.ja.md)を使用します．K1とK5 V3は同じドライバプロファイル，旧UV-K5は別プロファイルです．K1／K5 V3では，日本語チャンネル名のフォントデータと名前テーブルもアップロード時に扱います．ドライバを単独配置する場合は，[外部日本語フォント](docs/fonts/README.ja.md)の生成物をドライバと同じディレクトリへ置いてください．アップロード前に対象機種の全イメージを保存してください．ドライバも受信専用で，送信設定は扱いません．
+正規の操作環境は，[小規模Windows GUIの専用host tool](tools/host/README.ja.md)です．「メモリー読書き」「1024件チャンネル一覧」「設定読書き」「日本語リソース書込み」を明示的に分け，チャンネル一覧は編集可能なUTF-8 TSVとして扱います．フォントと1024件の名前テーブルは日本語リソース操作として扱います．通信中もGUIは固まらず，変更ブロックだけをreadback付きで書き込みます．操作の詳細は専用host toolと[CHIRP互換アダプタの説明](tools/chirp/README.ja.md)を参照してください．
+
+CHIRPは互換・移行用アダプタとして凍結しています．使用する場合は[CHIRP互換アダプタの説明](tools/chirp/README.ja.md)に従ってください．専用host toolを正規経路とし，CHIRPは最終仕様の正規経路にはしません．
+
+ドライバまたはフォント資産を変更した場合は，リポジトリルートで配布用モジュールを再生成します．
+
+```powershell
+python tools/build_chirp_module.py
+```
 
 ### 静的テスト
 
@@ -136,7 +140,7 @@ python -m unittest discover -s tests -p "test_*.py" -v
 ## 表示と利用できない操作
 
 - 受信専用画面では送信出力の`LOW`／`HIGH`表示を出しません．
-- 通常の`PTT`はモニター操作です．予期しないTX要求が最終的な安全ゲートへ到達した場合だけ，ビープ音と`TX DISABLE`を表示します．
+- 通常の`PTT`はモニター操作です．予期しないTX要求が最終的な安全ゲートへ到達した場合だけ，ビープ音と`受信専用`を表示します（内部状態名は`TX DISABLE`）．
 - 受信拡張の条件が合わない操作は，ビープ音だけでなく`RXExt OFF`，`VFO ONLY`，`SCAN ACTIVE`，`FM ONLY`など短い理由を表示します．
 - 起動画面の`MESSAGE`／`ALL`は，この版の受信専用メッセージを表示します．`LOGO+MSG`では画像と用途表示を続けて確認できます．
 

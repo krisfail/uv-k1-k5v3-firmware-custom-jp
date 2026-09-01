@@ -75,7 +75,6 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
             '"ENABLE_DTMF_CALLING": false',
         ):
             self.assertIn(flag, cmake)
-        self.assertIn('"VERSION_STRING_2": "v5.9.0J1"', cmake)
         self.assertIn('"EDITION_STRING": "JP-RX-Only"', cmake)
         for flag in (
             '"ENABLE_FEAT_F4HWN_SCAN_PROGRESS": true',
@@ -89,6 +88,18 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
             '"ENABLE_FEAT_F4HWN_CA": false',
         ):
             self.assertIn(flag, cmake)
+
+    def test_docker_build_wrapper_matches_current_presets(self):
+        script = source("compile-with-docker.sh")
+        workflow = source(".github/workflows/main.yml")
+        self.assertIn("PRESET=JpRxOnly", script)
+        self.assertIn("JpRxOnlyFontTest", script)
+        self.assertNotIn("Fusion", script)
+        self.assertNotIn("Bandscope", script)
+        self.assertNotIn("PRESET=${1:-Fusion}", script)
+        self.assertNotIn("-it", script)
+        self.assertIn("build/JpRxOnly/wrx-jp.bin", workflow)
+        self.assertIn("if-no-files-found: error", workflow)
 
     def test_upstream_non_tx_features_are_enabled_and_tx_actions_are_filtered(self):
         cmake = source("CMakePresets.json")
@@ -274,6 +285,7 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
         self.assertIn("#define JAPANESE_NAME_TABLE_BASE       0x040000u", header)
         self.assertIn("#define JAPANESE_NAME_RECORD_SIZE      32u", header)
         self.assertIn("JPFONT_IsExternalRange", font)
+        self.assertIn("JPFONT_HasGlyph", font)
         self.assertIn("PY25Q16_ReadBuffer", font)
         self.assertIn("PY25Q16_WriteBuffer", font)
         self.assertIn("case 0x0531:", uart)
@@ -283,6 +295,26 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
         self.assertIn("_write_external_verified", driver)
         self.assertIn("_japanese_names", driver)
         self.assertIn("JAPANESE_NAME_PAYLOAD_MAX = 31", driver)
+
+    def test_full_external_font_lcd_browser_is_test_preset_only(self):
+        presets = source("CMakePresets.json")
+        root = source("CMakeLists.txt")
+        app = source("App/CMakeLists.txt")
+        main = source("App/main.c")
+        browser = source("App/app/font_glyph_test.c")
+
+        self.assertIn('"name": "JpRxOnlyFontTest"', presets)
+        self.assertIn('"ENABLE_FONT_GLYPH_TEST": true', presets)
+        self.assertIn('"TARGET": "wrx-jp-font-test"', presets)
+        self.assertIn("ENABLE_FONT_GLYPH_TEST", root)
+        self.assertIn("ENABLE_FONT_GLYPH_TEST", app)
+        self.assertIn("app/font_glyph_test.c", app)
+        self.assertIn("FONT_GLYPH_TEST_Run();", main)
+        self.assertIn("FONT_TEST_GLYPHS_PER_PAGE", browser)
+        self.assertIn("JPFONT_ReadExternal", browser)
+        self.assertIn("ST7565_BlitFullScreen", browser)
+        self.assertIn("case KEY_UP:", browser)
+        self.assertIn("case KEY_DOWN:", browser)
 
     def test_presets_cover_k1_extended_receive_use_cases(self):
         presets = source("App/app/rx_band_presets.c")
@@ -357,8 +389,10 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
 
     def test_status_messages_keep_safety_text_and_localize_battery_labels(self):
         main = source("App/ui/main.c")
+        jp_text = source("App/ui/jp_text.h")
         self.assertIn('[VFO_STATE_BAT_LOW]="\\x8F\\xF7 LOW"', main)
-        self.assertIn('[VFO_STATE_TX_DISABLE]="TX DISABLE"', main)
+        self.assertIn('[VFO_STATE_TX_DISABLE]=WRX_UI_TEXT_VFO_TX_DISABLED', main)
+        self.assertIn('#define WRX_UI_TEXT_VFO_TX_DISABLED  "\\x80\\x81\\x98\\x99"', jp_text)
         self.assertIn('[VFO_STATE_VOLTAGE_HIGH]="\\x8F\\x92 HIGH"', main)
 
     def test_ptt_is_monitor_and_single_vfo_is_enforced(self):

@@ -27,6 +27,7 @@
 #include "ui/fmradio.h"
 #include "ui/helper.h"
 #include "ui/inputbox.h"
+#include "ui/jp_text.h"
 #include "ui/ui.h"
 
 void UI_DisplayFM(void)
@@ -54,15 +55,15 @@ void UI_DisplayFM(void)
     //UI_PrintStringSmallNormal(String, 127 - 4*7, 0, 6);
 
     if (gAskToSave) {
-        pPrintStr = "SAVE?";
+        pPrintStr = WRX_UI_TEXT_FM_SAVE;
     } else if (gAskToDelete) {
-        pPrintStr = "DEL?";
+        pPrintStr = WRX_UI_TEXT_FM_DELETE;
     } else if (gFM_ScanState == FM_SCAN_OFF) {
         if (gEeprom.FM_IsMrMode) {
             sprintf(String, "MR(CH%02u)", gEeprom.FM_SelectedChannel + 1);
             pPrintStr = String;
         } else {
-            pPrintStr = "VFO";
+            pPrintStr = WRX_UI_TEXT_FM_VFO;
             for (unsigned int i = 0; i < FM_CHANNELS_MAX; i++) {
                 if (gEeprom.FM_FrequencyPlaying == gFM_Channels[i]) {
                     sprintf(String, "VFO(CH%02u)", i + 1);
@@ -75,7 +76,7 @@ void UI_DisplayFM(void)
         sprintf(String, "A-SCAN(%u)", gFM_ChannelPosition);
         pPrintStr = String;
     } else {
-        pPrintStr = "M-SCAN";
+        pPrintStr = WRX_UI_TEXT_FM_MANUAL_SCAN;
     }
 
     UI_PrintString(pPrintStr, 0, 127, 3, 10); // memory, vfo, scan

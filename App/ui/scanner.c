@@ -22,6 +22,7 @@
 #include "external/printf/printf.h"
 #include "misc.h"
 #include "ui/helper.h"
+#include "ui/jp_text.h"
 #include "ui/scanner.h"
 
 void UI_DisplayScanner(void)
@@ -33,42 +34,49 @@ void UI_DisplayScanner(void)
 
     // 1st line
     if (gScannerSaveState == SCAN_SAVE_CHANNEL) {
-        pPrintStr = "Save?";
+        pPrintStr = WRX_UI_TEXT_FM_SAVE;
     } else if (gScannerSaveState == SCAN_SAVE_CHAN_SEL) {
-        strcpy(String, "Save:");
-        UI_GenerateChannelStringEx(String + 5, gShowChPrefix, gScanChannel);
+        strcpy(String, WRX_UI_TEXT_SAVE_PREFIX);
+        UI_GenerateChannelStringEx(String + strlen(WRX_UI_TEXT_SAVE_PREFIX),
+                                   gShowChPrefix, gScanChannel);
         pPrintStr = String;
     } else if ((gScanCssState < SCAN_CSS_STATE_FOUND) && ((gScanProgressIndicator & 1u) != 0)) {
         pPrintStr = "";
     } else if (gScanCssState == SCAN_CSS_STATE_OFF) {
-        pPrintStr = "Search Freq";
+        pPrintStr = WRX_UI_TEXT_SEARCH_FREQ;
     } else if (gScanCssState == SCAN_CSS_STATE_SCANNING) {
-        pPrintStr = "Search Tone";
+        pPrintStr = WRX_UI_TEXT_SEARCH_TONE;
     } else if (gScanCssState == SCAN_CSS_STATE_FOUND) {
-        pPrintStr = "Scan Complete";
+        pPrintStr = WRX_UI_TEXT_SCAN_COMPLETE;
     } else {
-        pPrintStr = "Scan Failed";
+        pPrintStr = WRX_UI_TEXT_SCAN_FAILED;
     }
 
     UI_PrintString(pPrintStr, 2, 0, 1, 8);
 
     // 2nd line
     if (gScanSingleFrequency || (gScanCssState != SCAN_CSS_STATE_OFF && gScanCssState != SCAN_CSS_STATE_FAILED)) {
-        sprintf(String, "Freq:%u.%05u", gScanFrequency / 100000, gScanFrequency % 100000);
+        sprintf(String, "%s%u.%05u", WRX_UI_TEXT_FREQ_PREFIX,
+                gScanFrequency / 100000, gScanFrequency % 100000);
         pPrintStr = String;
     } else {
-        pPrintStr = "Freq:---.-----";
+        sprintf(String, "%s---.-----", WRX_UI_TEXT_FREQ_PREFIX);
+        pPrintStr = String;
     }
 
     UI_PrintString(pPrintStr, 2, 0, 3, 8);
 
     // 3rd line
     if (gScanCssState < SCAN_CSS_STATE_FOUND) {
-        pPrintStr = "Tone:---";
+        sprintf(String, "%s---", WRX_UI_TEXT_TONE_PREFIX);
+        pPrintStr = String;
     } else if (!gScanUseCssResult) {
-        pPrintStr = "Tone:None";
+        sprintf(String, "%s%s", WRX_UI_TEXT_TONE_PREFIX,
+                WRX_UI_TEXT_NONE);
+        pPrintStr = String;
     } else if (gScanCssResultType == CODE_TYPE_CONTINUOUS_TONE) {
-        sprintf(String, "CTCSS:%u.%uHz", CTCSS_Options[gScanCssResultCode] / 10, CTCSS_Options[gScanCssResultCode] % 10);
+        sprintf(String, "CTCSS:%u.%uHz", CTCSS_Options[gScanCssResultCode] / 10,
+                CTCSS_Options[gScanCssResultCode] % 10);
         pPrintStr = String;
     } else {
         sprintf(String, "DCS:D%03oN", DCS_Options[gScanCssResultCode]);

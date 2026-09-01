@@ -1,7 +1,8 @@
-/* Fixed external Japanese bitmap font and channel-name storage. */
+/* Access to the fixed external Japanese font and channel-name table. */
 
 #include <string.h>
 
+#include "driver/flash_layout.h"
 #include "driver/py25q16.h"
 #include "japanese_font.h"
 #include "misc.h"
@@ -14,6 +15,8 @@ static bool JPFONT_RangeContains(uint32_t base, uint32_t size,
 
 bool JPFONT_IsExternalRange(uint32_t address, uint32_t size)
 {
+    /* Keep this as an allowlist.  The compile-time checks in flash_layout.h
+     * keep both resources away from the complete calibration sector. */
     return JPFONT_RangeContains(JAPANESE_FONT_FLASH_BASE,
                                 JAPANESE_FONT_TOTAL_BYTES, address, size) ||
            JPFONT_RangeContains(JAPANESE_NAME_TABLE_BASE,
@@ -73,6 +76,12 @@ static bool JPFONT_FindGlyph(uint16_t codepoint, uint16_t *glyph_index)
     }
 
     return false;
+}
+
+bool JPFONT_HasGlyph(uint16_t codepoint)
+{
+    uint16_t glyph_index;
+    return JPFONT_FindGlyph(codepoint, &glyph_index);
 }
 
 bool JPFONT_ReadGlyph(uint16_t codepoint, uint8_t *glyph)

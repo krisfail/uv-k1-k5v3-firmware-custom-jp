@@ -1,4 +1,4 @@
-/* Fixed external Japanese bitmap font and channel-name storage. */
+/* Access to the fixed external Japanese font and channel-name table. */
 #ifndef APP_JAPANESE_FONT_H
 #define APP_JAPANESE_FONT_H
 
@@ -11,6 +11,7 @@ bool JPFONT_ReadExternal(uint32_t address, void *buffer, uint32_t size);
 bool JPFONT_WriteExternal(uint32_t address, const void *buffer, uint32_t size);
 bool JPFONT_IsExternalRange(uint32_t address, uint32_t size);
 
+bool JPFONT_HasGlyph(uint16_t codepoint);
 bool JPFONT_ReadGlyph(uint16_t codepoint, uint8_t *glyph);
 uint8_t JPFONT_ReadChannelName(uint16_t channel, char *buffer, uint8_t capacity);
 

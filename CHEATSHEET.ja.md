@@ -2,7 +2,7 @@
 
 [日本語版README](README.ja.md) | [英語版README](README.md) | [開発者向けガイド](DEVELOPMENT.md) | [CHIRPドライバ](tools/chirp/README.ja.md)
 
-注意事項，forkの関係，AI支援開発，免責，バックアップの要件は[README.ja.md](README.ja.md)を確認してください．
+注意事項，forkの関係，免責，バックアップの要件は[README.ja.md](README.ja.md)を確認してください．
 
 このファイルは早見表です．対象機種，メモリーマップ，CHIRPの読み書き範囲などの説明を重複して管理しません．
 
@@ -27,8 +27,6 @@ cmake --build --preset JpRxOnly -j2
 ```
 
 出力: `build/JpRxOnly/wrx-jp.bin`
-
-リリース相当packed: `release/wrx-jp-v5.9.0J1.packed.bin`
 
 UVTools2で書き込むのはパック前の`build/JpRxOnly/wrx-jp.bin`です．`*.packed.bin`はpack対応ツール用です．
 
@@ -55,7 +53,7 @@ python -m unittest discover -s tests -p "test_*.py" -v
 ## 表示メッセージ
 
 - 受信専用画面では送信出力の`LOW`／`HIGH`を表示しません．
-- 通常の`PTT`はモニターです．予期しない送信要求があった場合だけ，`TX DISABLE`とビープ音で知らせます．
+- 通常の`PTT`はモニターです．予期しない送信要求があった場合だけ，`受信専用`とビープ音で知らせます（内部状態名は`TX DISABLE`）．
 - 条件に合わない受信操作は，`RXExt OFF`，`VFO ONLY`，`SCAN ACTIVE`，`FM ONLY`などの理由を表示します．
 
 ## CHIRP
@@ -66,7 +64,7 @@ python -m unittest discover -s tests -p "test_*.py" -v
 
 | 設定 | 値・動作 |
 | --- | --- |
-| `W/N` | `W` 20 kHz / `N` 12.5 kHz / `N-` 6.25 kHz |
+| `W/N` | 受信帯域の切替 |
 | 受信モード | `MAIN ONLY` / `DUAL RX` / `SINGLE` |
 | `Bank` | `ALL` / `B1`〜`B8` |
 | スケルチ | 数値または`AUTO` |
@@ -76,7 +74,7 @@ python -m unittest discover -s tests -p "test_*.py" -v
 
 RX-onlyメニューでは，`RXExt`は「受信拡張」，スケルチの`AUTO`は「自動」と表示されます．優先スキャン，情報，反転，音声，自動，狭帯，高速などの主要項目も日本語表示です．大文字の長音「ー」も専用グリフで表示します．
 
-`RXExt=OFF`では，プリセット，SINGLE，バンク絞り込み，AUTOスケルチ，AGCガード，一時スキップが停止します．通常受信の3段階帯域幅，受信専用動作，PTTモニター，日本語表示，FM放送帯域制限は維持されます．周波数ステップは帯域幅と独立して選択できます．
+`RXExt=OFF`では，プリセット，SINGLE，バンク絞り込み，AUTOスケルチ，AGCガード，一時スキップが停止します．受信専用動作，PTTモニター，日本語表示，FM放送帯域制限は維持されます．
 
 ## 書き込み前チェック
 
