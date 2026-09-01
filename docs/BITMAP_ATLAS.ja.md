@@ -2,8 +2,6 @@
 
 `tools/render_bitmap_atlas.py` は，ファームウェアのビルドには参加せず，Cソース内の`uint8_t` bitmap／font配列を読み取ってOLED向けのatlasを生成するオフライン補助ツールです．bit 0を画面上端として描画します．
 
-この文書は開発者向けの説明です．利用者向けの表示・操作案内は[README.ja.md](../README.ja.md)を参照してください．
-
 ## 実行
 
 リポジトリのルートで実行します．フォントの意味・用途・コードポイントは`tools/font_inventory.json`で管理し，C配列はビルド入力です．バイト列を編集するときは`tools/font_source_json.py`で完全スナップショットJSONを作り，基準バイト列を検証してからCへ戻します．追跡済みatlasを更新する場合は，明示的なターゲットを使います．
@@ -51,7 +49,7 @@ python -X utf8 tools/font_source_json.py apply --source App\japanese_font.c --in
 
 `gFontBig`は14 bytes/glyph（7列×2 OLEDページ）として認識し，連続した長いbyte列ではなくglyphごとのグリッドに配置します．`gFontBigDigits`と`gFontBigJapanese`も同じ2ページ形式として表示します．`gFontJapaneseExtraLarge`は20 bytes/glyph（10列×2 OLEDページ）の起動画面用字形として表示します．K1では`0x80`（受），`0x81`（信），`0x98`（専），`0x99`（用）の4スロットを持ちます．`gFontBig`のglyphラベルは`0x21`（`!`）からのコード値です．指定初期化子を含む日本語配列は，ソース上の出現順で表示します．
 
-`0xA1`–`0xDF`の文字名は，現行atlasの注釈ではなく[フォント割り当て台帳](FONT_BITMAP_ANNOTATIONS.ja.md)の正規表を参照してください．rainy由来の基準配列にはコードポイントと行のずれ，空白化，重複があるため，atlasは現行バイト列の監査結果を示しますが，正しい字形割り当てを保証しません．K1の`gFontBigJapanese`と`gFontSmallJapanese`は別配列なので，配列位置の一致だけで同じ文字と判断してはいけません．
+`0xA1`–`0xDF`の文字名は，現行atlasの注釈ではなく[フォント割り当て台帳](FONT_BITMAP_ANNOTATIONS.ja.md)の正規表を参照してください．atlasは現行バイト列の監査結果を示し，文字割り当ては台帳を正本とします．K1の`gFontBigJapanese`と`gFontSmallJapanese`は別配列なので，配列位置の一致だけで同じ文字と判断してはいけません．
 
 ## 大字形の格納形式と表示範囲
 

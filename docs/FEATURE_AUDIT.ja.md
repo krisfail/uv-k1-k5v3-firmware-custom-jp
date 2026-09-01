@@ -1,6 +1,6 @@
 # K1／K5 V3版の機能採否と監査
 
-この文書は，PY32F071搭載のUV-K1／UV-K5 V3向け`wrx-jp`における，機能採否の現行台帳です．利用者向けの操作説明は[README.ja.md](../README.ja.md)，開発手順は[DEVELOPMENT.md](../DEVELOPMENT.md)に分けています．
+PY32F071搭載のUV-K1／UV-K5 V3向け`wrx-jp`で有効・保留・除外となる機能を示します．
 
 ## 判断基準
 
@@ -45,7 +45,7 @@ v5.9.0への更新で追加された機能のうち，受信運用とUIに直接
 
 ## RX専用版から外した機能
 
-次の機能はCMakeのRX-only強制境界で無効化し，通常プロファイルのメニューにも出しません．ソースを残すものは，上流互換性と差分追跡のためです．
+次の機能はCMakeのRX-only強制境界で無効化し，通常プロファイルのメニューにも出しません．ソースに残る機能も，ビルド対象とメニューからは除外します．
 
 - RF送信，送信電力・送信帯域の変更，AM時送信，1750 Hz送信，VOX，TOT，アラーム，DTMF calling
 - AirCopy，REGA，F_CAL，F Lock，電池校正メニュー，UARTからのBKレジスタ書き換え
@@ -54,7 +54,7 @@ v5.9.0への更新で追加された機能のうち，受信運用とUIに直接
 
 専用host tool，CHIRP互換アダプタ，UART通信そのものは残しますが，低レベル保守コマンドまでRX-onlyの安全境界を保証するものではありません．正規host toolの操作分離は[機能の技術詳細](FEATURES_TECHNICAL.ja.md)に記載します．
 
-## 変更時の確認
+## 確認項目
 
 1. `CMakeLists.txt`と`CMakePresets.json`の強制無効化境界，メニューの条件コンパイル，PTT分岐を確認する．
 2. `cmake --build --preset JpRxOnly -j2`とホストテストを実行する．

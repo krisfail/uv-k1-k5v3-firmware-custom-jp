@@ -1,10 +1,8 @@
 # UV-K1 / UV-K5 V3 cheatsheet
 
-[日本語版README](README.ja.md) | [英語版README](README.md) | [開発者向けガイド](DEVELOPMENT.md) | [CHIRPドライバ](tools/chirp/README.ja.md)
+[日本語版README](README.ja.md) | [英語版README](README.md) | [開発ガイド](DEVELOPMENT.md) | [CHIRPドライバ](tools/chirp/README.ja.md)
 
 注意事項，forkの関係，免責，バックアップの要件は[README.ja.md](README.ja.md)を確認してください．
-
-このファイルは早見表です．対象機種，メモリーマップ，CHIRPの読み書き範囲などの説明を重複して管理しません．
 
 ## 版の選択
 

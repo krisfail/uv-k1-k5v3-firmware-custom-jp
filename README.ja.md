@@ -1,6 +1,6 @@
 # UV-K1 / UV-K5 V3 日本語・受信専用ファームウェア
 
-[英語版README](README.md) | [操作・ビルドcheatsheet](CHEATSHEET.ja.md) | [開発者向けガイド](DEVELOPMENT.md) | [CHIRP互換アダプタ](tools/chirp/README.ja.md) | [新機能の技術詳細](docs/FEATURES_TECHNICAL.ja.md) | [フォントコード表](docs/FONT_BITMAP_ANNOTATIONS.ja.md) | [機能監査](docs/FEATURE_AUDIT.ja.md) | [実機テスト計画](docs/HARDWARE_TEST_PLAN.ja.md) | [bitmap/font atlas](docs/BITMAP_ATLAS.ja.md) | [ドキュメントサイト](docs/index.md)
+[英語版README](README.md) | [操作・ビルドcheatsheet](CHEATSHEET.ja.md) | [開発ガイド](DEVELOPMENT.md) | [CHIRP互換アダプタ](tools/chirp/README.ja.md) | [新機能の技術詳細](docs/FEATURES_TECHNICAL.ja.md) | [フォントコード表](docs/FONT_BITMAP_ANNOTATIONS.ja.md) | [機能監査](docs/FEATURE_AUDIT.ja.md) | [実機テスト計画](docs/HARDWARE_TEST_PLAN.ja.md) | [bitmap/font atlas](docs/BITMAP_ATLAS.ja.md) | [ドキュメントサイト](docs/index.md)
 
 ## このリポジトリの位置づけ
 
@@ -8,18 +8,17 @@
 
 ファームウェアは**現状有姿（AS IS）**で提供し，動作や特定目的への適合を保証しません．書き込み失敗，無線機の破損，校正データ・EEPROM・設定の消失，復旧不能，法令・無線規制に反する使用について，保守者は責任を負いません．書き込み前に校正データと必要なメモリーをバックアップし，機種に対応したイメージと復旧手段を用意してください．
 
-## この文書で分かること
+## 初回の流れ
 
-この文書は，PY32F071搭載のUV-K1とUV-K5 V3向けファームウェアを，日本語でビルド・書き込み・操作するための案内です．初回は「版の選択」「ビルド」「書き込み」を順に確認し，日常の操作は[CHEATSHEET.ja.md](CHEATSHEET.ja.md)を参照してください．
+対象機種を確認し，「版の選択」「ビルド」「書き込み」の順に進めてください．日常の操作は[CHEATSHEET.ja.md](CHEATSHEET.ja.md)を参照してください．
 
-### 詳しい情報
+### 参考資料
 
 - 日常操作と最小限のビルド手順は[CHEATSHEET.ja.md](CHEATSHEET.ja.md)
 - 専用host toolとCHIRP互換アダプタの位置づけは[専用host toolの説明](tools/host/README.ja.md)，[CHIRP互換アダプタの説明](tools/chirp/README.ja.md)
-- 開発者向けのソース構成・検証・atlas生成は[DEVELOPMENT.md](DEVELOPMENT.md)
+- ソース構成・検証・atlas生成は[DEVELOPMENT.md](DEVELOPMENT.md)
 - 実装の詳細は[技術詳細](docs/FEATURES_TECHNICAL.ja.md)，採否と除外機能は[機能監査](docs/FEATURE_AUDIT.ja.md)，実機確認項目は[実機テスト計画](docs/HARDWARE_TEST_PLAN.ja.md)
 
-このREADMEは利用者向けの案内です．実装の詳細や開発手順は，上記の開発者向け文書にまとめています．
 
 ## 先に版を選ぶ
 
@@ -94,7 +93,7 @@ cmake --build --preset JpRxOnly --target font-atlas
 
 正規の操作環境は，[小規模Windows GUIの専用host tool](tools/host/README.ja.md)です．「メモリー読書き」「1024件チャンネル一覧」「設定読書き」「日本語リソース書込み」を明示的に分け，チャンネル一覧は編集可能なUTF-8 TSVとして扱います．フォントと1024件の名前テーブルは日本語リソース操作として扱います．通信中もGUIは固まらず，変更ブロックだけをreadback付きで書き込みます．操作の詳細は専用host toolと[CHIRP互換アダプタの説明](tools/chirp/README.ja.md)を参照してください．
 
-CHIRPは互換・移行用アダプタとして凍結しています．使用する場合は[CHIRP互換アダプタの説明](tools/chirp/README.ja.md)に従ってください．専用host toolを正規経路とし，CHIRPは最終仕様の正規経路にはしません．
+CHIRPは互換・移行用アダプタです．使用する場合は[CHIRP互換アダプタの説明](tools/chirp/README.ja.md)を参照してください．日本語リソースの明示的な書込みには専用host toolを使用できます．
 
 ドライバまたはフォント資産を変更した場合は，リポジトリルートで配布用モジュールを再生成します．
 
@@ -129,7 +128,7 @@ python -m unittest discover -s tests -p "test_*.py" -v
 3. DFUモードで書き込む．
 4. 起動後，表示版，周波数入力，FM放送，受信音，PTTの動作を確認する．
 
-`JpRxOnly`のPTTはモニター動作です．送信機能を使う目的で`JpRxOnly`を変更・再有効化する手順は，この文書の対象外です．
+`JpRxOnly`のPTTはモニター動作です．`JpRxOnly`に送信機能はありません．
 
 メニューカテゴリ画面では`UP/DOWN`でカテゴリを選び，`M`で項目一覧へ入ります．`EXIT`でカテゴリ一覧へ戻り，`ALL`ではカテゴリ分け前と同じ全項目を表示します．アクション選択画面では`UP/DOWN`で操作を選び，`M`で確定，`EXIT`または`F`でキャンセルします．RX専用版では送信電力やPTTを割り当てる候補は表示しません．
 

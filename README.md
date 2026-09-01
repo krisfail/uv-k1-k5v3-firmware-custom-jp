@@ -28,11 +28,11 @@ The local Japanese build is `JpRxOnly`:
 
 The receive-only UI omits TX power labels such as `LOW` and `HIGH`. Normal PTT operation is monitor control; only an unexpected request reaching the final TX guard shows the Japanese `受信専用` safety label (`TX DISABLE` is the internal state name). Unsupported receive actions show a short reason such as `RXExt OFF`, `VFO ONLY`, `SCAN ACTIVE`, or `FM ONLY`.
 
-`JpRxOnly` is the only supported CMake preset. The former upstream-style presets were removed from this fork so a Japanese or domestic receive-only build cannot be confused with a transmit-capable comparison image.
+`JpRxOnly` is the only supported CMake preset and produces the Japanese, domestic receive-only firmware.
 
-Detailed operation notes are in [README.ja.md](README.ja.md). The quick reference is in [CHEATSHEET.ja.md](CHEATSHEET.ja.md). Technical implementation details are in [docs/FEATURES_TECHNICAL.ja.md](docs/FEATURES_TECHNICAL.ja.md); current feature adoption and exclusions are consolidated in [docs/FEATURE_AUDIT.ja.md](docs/FEATURE_AUDIT.ja.md), with the hardware checklist in [docs/HARDWARE_TEST_PLAN.ja.md](docs/HARDWARE_TEST_PLAN.ja.md). CHIRP remains a migration adapter only; its legal attribution remains in `tools/chirp/NOTICE.md` and `tools/chirp/LICENSE.txt`.
+Detailed operation notes are in [README.ja.md](README.ja.md). The quick reference is in [CHEATSHEET.ja.md](CHEATSHEET.ja.md). Technical implementation details are in [docs/FEATURES_TECHNICAL.ja.md](docs/FEATURES_TECHNICAL.ja.md); feature availability and exclusions are listed in [docs/FEATURE_AUDIT.ja.md](docs/FEATURE_AUDIT.ja.md), with the hardware checklist in [docs/HARDWARE_TEST_PLAN.ja.md](docs/HARDWARE_TEST_PLAN.ja.md). CHIRP is a migration adapter only; its legal attribution remains in `tools/chirp/NOTICE.md` and `tools/chirp/LICENSE.txt`.
 
-This README is a user-facing overview. Development-specific source layout, change boundaries, atlas generation, validation, and release handling are collected in [DEVELOPMENT.md](DEVELOPMENT.md).
+Source layout, change boundaries, atlas generation, validation, and release handling are described in [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ## Building `JpRxOnly`
 
@@ -90,7 +90,7 @@ Restore calibration data before returning to stock firmware or changing firmware
 
 ## Upstream feature summary
 
-The upstream F4HWN work adds features across Fusion, spectrum analysis, broadcast FM, scanning, display and audio controls, memory handling, connectivity, RF logging, and related tools. This README keeps only that summary; consult the [upstream Wiki](https://github.com/armel/uv-k1-k5v3-firmware-custom/wiki) and [upstream repository](https://github.com/armel/uv-k1-k5v3-firmware-custom) for the full catalogue and general documentation.
+The upstream F4HWN work adds features across Fusion, spectrum analysis, broadcast FM, scanning, display and audio controls, memory handling, connectivity, RF logging, and related tools. Consult the [upstream Wiki](https://github.com/armel/uv-k1-k5v3-firmware-custom/wiki) and [upstream repository](https://github.com/armel/uv-k1-k5v3-firmware-custom) for the full catalogue and general documentation.
 
 ## Other references
 

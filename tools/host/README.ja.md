@@ -11,7 +11,7 @@ python -m pip install -r tools/host/requirements.txt
 python tools/host/wrx_jp_host.py
 ```
 
-Pythonを含むWindows packageは提供していない。現行版は実機未検証の開発用ツールである。
+Pythonを含むWindows packageは提供していない。実機未検証の開発用ツールである。
 
 ## 操作範囲
 

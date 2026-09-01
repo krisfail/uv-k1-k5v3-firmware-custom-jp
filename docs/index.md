@@ -2,7 +2,7 @@
 
 日本語・受信専用ファームウェアの利用案内，開発資料，フォント資料をまとめています．
 
-文書の役割を分けています．利用者はREADMEとCHEATSHEET，開発者はDEVELOPMENTと各技術資料を参照してください．このサイトの文書は実装の説明と検証記録に限定します．
+利用案内，開発資料，フォント資料は，以下のリンクから参照できます．
 
 ## 利用者向け
 
@@ -10,9 +10,9 @@
 - [英語README](../README.md)
 - [操作・ビルドのチートシート](../CHEATSHEET.ja.md)
 
-## 開発者向け
+## 開発・検証
 
-- [開発者向けガイド](../DEVELOPMENT.md)
+- [開発ガイド](../DEVELOPMENT.md)
 - [メニュー文言の編集](MENU_TEXT_CATALOG.ja.md)
 - [CHIRP互換アダプタの説明](../tools/chirp/README.ja.md)
 - [新機能の技術詳細](FEATURES_TECHNICAL.ja.md)
@@ -20,7 +20,7 @@
 - [上流からの受信向け取り込み](UPSTREAM_INTEGRATION.ja.md)
 - [実機テスト計画](HARDWARE_TEST_PLAN.ja.md)
 
-`FEATURES_TECHNICAL.ja.md`は現行機能の挙動，`FEATURE_AUDIT.ja.md`は採用・保留・除外と優先順位の判断，`HARDWARE_TEST_PLAN.ja.md`は実機で確認する項目を扱います．ビルド手順やソースの見取り図はDEVELOPMENT.mdを正本とします．
+`FEATURES_TECHNICAL.ja.md`には機能の挙動，`FEATURE_AUDIT.ja.md`には有効・保留・除外の分類，`HARDWARE_TEST_PLAN.ja.md`には実機で確認する項目があります．ビルド手順やソースの見取り図は`DEVELOPMENT.md`を参照してください．
 
 ## フォント・ビットマップ
 
@@ -28,9 +28,6 @@
 - [フォント一覧](FONT_INVENTORY.ja.md)
 - [フォント品質診断](FONT_QUALITY.ja.md)
 - [フォントの出所と変換](FONT_SOURCES.ja.md)
-- [rainy版との日本語大字形比較](FONT_RAINY_COMPARISON.ja.md)
-- [rainy版との全コードポイント比較（K1 Markdown）](assets/font-comparison/rainy-k1/font_diff.md)
-- [rainy版との全コードポイント比較（K1 PNG）](assets/font-comparison/rainy-k1/font_diff.png)
 - [ビットマップ／フォントatlasの説明](BITMAP_ATLAS.ja.md)
 - [bitmap atlas SVG](assets/font-atlas/bitmap_atlas.svg)
 - [bitmap atlas inventory JSON](assets/font-atlas/bitmap_atlas_inventory.json)
