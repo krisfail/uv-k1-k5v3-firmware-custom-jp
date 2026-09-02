@@ -120,18 +120,7 @@ static void UI_PrintStringBufferClipped(const char *pString, uint8_t *buffer,
     const unsigned int char_spacing = char_width + 1;
     for (size_t i = 0; i < Length; i++) {
         const uint8_t code = (uint8_t)pString[i];
-#ifdef ENABLE_JAPANESE
-        const bool is_small_font =
-            font == (const uint8_t *)gFontSmall
-#ifdef ENABLE_SMALL_BOLD
-            || font == (const uint8_t *)gFontSmallBold
-#endif
-            ;
-        const bool is_extended_small = is_small_font && code >= 0x7F && code <= FONT_CODE_MAX;
-#else
-        const bool is_extended_small = false;
-#endif
-        if (code > ' ' && (code < 127 || is_extended_small)) {
+        if (code > ' ' && code < 127) {
             const size_t offset = i * char_spacing + 1u;
             if (offset >= capacity)
                 continue;
@@ -139,12 +128,7 @@ static void UI_PrintStringBufferClipped(const char *pString, uint8_t *buffer,
             size_t copy_width = char_width;
             if (copy_width > capacity - offset)
                 copy_width = capacity - offset;
-#ifdef ENABLE_JAPANESE
-            if (is_extended_small)
-                memcpy(buffer + offset, gFontSmallJapanese[code - 0x7F], copy_width);
-            else
-#endif
-                memcpy(buffer + offset, font + (code - ' ' - 1) * char_width, copy_width);
+            memcpy(buffer + offset, font + (code - ' ' - 1) * char_width, copy_width);
         }
     }
 }
@@ -172,15 +156,6 @@ void UI_PrintString(const char *pString, uint8_t Start, uint8_t End, uint8_t Lin
         {
             const unsigned int index = code - ' ' - 1;
             UI_CopyLargeGlyph(Line, ofs, gFontBig[index], 7u);
-#ifdef ENABLE_JAPANESE
-        }
-        else if (code >= 0x7F && code <= FONT_CODE_MAX)
-        {
-            const uint8_t *glyph = gFontBigJapanese[code - 0x7F];
-            /* Japanese uses the same fixed two-page storage format.  The
-             * glyph data itself decides which rows are lit. */
-            UI_CopyLargeGlyph(Line, ofs, glyph, 7u);
-#endif
         }
     }
 }
@@ -200,12 +175,6 @@ void UI_PrintStringClipped(const char *pString, uint8_t Start, uint8_t End, uint
         {
             const unsigned int index = code - ' ' - 1;
             UI_CopyLargeGlyphClipped(Line, ofs, gFontBig[index], 7u, End);
-#ifdef ENABLE_JAPANESE
-        }
-        else if (code >= 0x7F && code <= FONT_CODE_MAX)
-        {
-            UI_CopyLargeGlyphClipped(Line, ofs, gFontBigJapanese[code - 0x7F], 7u, End);
-#endif
         }
     }
 }
@@ -359,28 +328,6 @@ bool UI_PrintStringJapaneseExternal(const char *pString, uint8_t Start, uint8_t 
                                               Start, End, Line, false);
 }
 
-void UI_PrintStringJapaneseExtraLarge(const char *pString, uint8_t Start, uint8_t End, uint8_t Line, uint8_t Width)
-{
-    const size_t Length = strlen(pString);
-
-    Start = UI_CenteredStart(Start, End, Length, Width);
-
-    for (size_t i = 0; i < Length; i++)
-    {
-        const uint8_t code = (uint8_t)pString[i];
-        const unsigned int ofs = (unsigned int)Start + (i * Width);
-        for (size_t glyph = 0; glyph < FONT_JP_EXTRA_LARGE_GLYPHS; glyph++)
-        {
-            if (gFontJapaneseExtraLargeCodes[glyph] == code)
-            {
-                UI_CopyLargeGlyph(Line, ofs, gFontJapaneseExtraLarge[glyph],
-                                  FONT_JP_EXTRA_LARGE_WIDTH);
-                break;
-            }
-        }
-    }
-}
-
 static bool UI_DecodeExternalUtf8(const uint8_t *input, size_t remaining,
                                   size_t *used, uint16_t *codepoint)
 {
@@ -456,6 +403,49 @@ static void UI_CopyExternalGlyph(uint8_t line, uint8_t x, uint8_t end,
     }
 }
 
+static void UI_CopyExternalGlyphCompact(uint8_t line, uint8_t x, uint8_t end,
+                                        const uint8_t *glyph)
+{
+    if (line >= (sizeof(gFrameBuffer) / sizeof(gFrameBuffer[0])) ||
+        x >= LCD_WIDTH || x > end)
+        return;
+
+    uint8_t width = LCD_WIDTH - x;
+    if (width > 8u)
+        width = 8u;
+    if (width > (uint8_t)(end + 1u - x))
+        width = (uint8_t)(end + 1u - x);
+
+    for (uint8_t column = 0; column < width; column++)
+    {
+        uint8_t value = 0;
+        const uint8_t source_column = (uint8_t)(column * 2u);
+        for (uint8_t row = 0; row < 8u; row++)
+        {
+            const uint8_t source_row = (uint8_t)(row * 2u);
+            const uint16_t bitmap_row =
+                (uint16_t)glyph[source_row * 2u] |
+                ((uint16_t)glyph[source_row * 2u + 1u] << 8);
+            if (bitmap_row & (uint16_t)(0x8000u >> source_column))
+                value |= (uint8_t)(1u << row);
+        }
+        gFrameBuffer[line][x + column] = value;
+    }
+}
+
+static void UI_CopySmallGlyphCompact(uint8_t line, uint8_t x, uint8_t end,
+                                     const uint8_t *glyph)
+{
+    if (line >= (sizeof(gFrameBuffer) / sizeof(gFrameBuffer[0])) ||
+        x >= LCD_WIDTH || x > end || x + 1u >= LCD_WIDTH || x + 1u > end)
+        return;
+
+    uint8_t width = ARRAY_SIZE(gFontSmall[0]);
+    if (width > (uint8_t)(end + 1u - (x + 1u)))
+        width = (uint8_t)(end + 1u - (x + 1u));
+    memcpy(gFrameBuffer[line] + x + 1u, glyph, width);
+}
+
 static bool UI_DrawExternalJapaneseCodepoints(const uint16_t *codepoints,
                                               const size_t count,
                                               const uint16_t pixel_width,
@@ -470,7 +460,7 @@ static bool UI_DrawExternalJapaneseCodepoints(const uint16_t *codepoints,
         pixel_width > (uint16_t)(right + 1u - start))
         return false;
 
-    /* Validate all external glyphs before changing the framebuffer. */
+    /* フレームバッファを書き換える前に、外部字形をすべて検証する。 */
     for (size_t index = 0; index < count; index++)
     {
         if (codepoints[index] >= 0x80u &&
@@ -534,7 +524,71 @@ bool UI_PrintJapaneseChannelName(uint16_t channel, uint8_t Start, uint8_t End, u
 
     return UI_DrawExternalJapaneseCodepoints(codepoints, codepoint_count,
                                               pixel_width, Start, End, Line,
-                                              true);
+                                               true);
+}
+
+bool UI_PrintJapaneseChannelNameCompact(uint16_t channel, uint8_t Start,
+                                        uint8_t End, uint8_t Line)
+{
+    char name[JAPANESE_NAME_RECORD_SIZE];
+    const uint8_t length = JPFONT_ReadChannelName(channel, name, sizeof(name));
+    uint16_t codepoints[JAPANESE_NAME_PAYLOAD_MAX];
+    size_t codepoint_count = 0;
+    size_t offset = 0;
+    uint16_t pixel_width = 0;
+    const uint8_t right = End == 0u ? LCD_WIDTH - 1u : End;
+
+    if (length == 0u || Line >= (sizeof(gFrameBuffer) / sizeof(gFrameBuffer[0])) ||
+        Start >= LCD_WIDTH || Start > right)
+        return false;
+
+    while (offset < length)
+    {
+        size_t used;
+        uint16_t codepoint;
+        if (codepoint_count >= ARRAY_SIZE(codepoints) ||
+            !UI_DecodeExternalUtf8((const uint8_t *)name + offset,
+                                    length - offset, &used, &codepoint))
+            return false;
+        codepoints[codepoint_count++] = codepoint;
+        offset += used;
+        pixel_width = (uint16_t)(pixel_width +
+                     (codepoint < 0x80u ? 7u : 8u));
+    }
+
+    if (pixel_width > (uint16_t)(right + 1u - Start))
+        return false;
+
+    for (size_t index = 0; index < codepoint_count; index++)
+    {
+        if (codepoints[index] >= 0x80u &&
+            !JPFONT_HasGlyph(codepoints[index]))
+            return false;
+    }
+
+    uint8_t x = (uint8_t)(Start +
+                          ((right + 1u - Start - pixel_width) / 2u));
+    for (size_t index = 0; index < codepoint_count; index++)
+    {
+        const uint16_t codepoint = codepoints[index];
+        if (codepoint < 0x80u)
+        {
+            if (codepoint != ' ')
+                UI_CopySmallGlyphCompact(Line, x, right,
+                                         gFontSmall[codepoint - ' ' - 1u]);
+            x = (uint8_t)(x + 7u);
+        }
+        else
+        {
+            uint8_t glyph[JAPANESE_FONT_GLYPH_BYTES];
+            if (!JPFONT_ReadGlyph(codepoint, glyph))
+                return false;
+            UI_CopyExternalGlyphCompact(Line, x, right, glyph);
+            x = (uint8_t)(x + 8u);
+        }
+    }
+
+    return true;
 }
 #endif
 

@@ -1,42 +1,35 @@
-# 日本語フォントの出所と変換方法
+# 外部日本語フォントの出所と生成方法
 
-## `受信専用`の字形
+K1／K5 V3の日本語チャンネル名に使用する外部bitmapフォントの出所と生成条件を記録します。固定UIのメニュー、警告、操作選択はASCII表記を基本とし、この外部フォントへ依存しません。
 
-起動画面で使う`受`，`信`，`専`，`用`の10×16特大字形と，`0x98=専`，`0x99=用`の通常大字形を，Unifoundryが公開する**Izumi 16 Plane 1，JIS X 0213:2004**の16×16 BDFから独立に変換しました．配布元は，Izumi 16をパブリックドメインのJIS X 0213フォントとして案内しています．
+## 採用フォント
 
+- 名称: Izumi Gothic-Medium 16dot
+- 形式: JIS X 0213:2004 Plane 1、16×16 BDF
 - 配布元: [Unifoundry Japanese Font Encodings](https://unifoundry.com/japanese/)
-- ファイル: `izmg16-2004-1.bdf.gz`
-- 取得元URL: `https://unifoundry.com/japanese/izmg16-2004-1.bdf.gz`
-- SHA-256: `005345196615E692C54EF67286B44DD0EAA3A899D066CD407A4B3A810822C20C`
-- ライセンス上の扱い: 配布元の説明に従い，該当字形はパブリックドメイン
+- 入力ファイル: `izmg16-2004-1.bdf.gz`
+- 入力アーカイブSHA-256: `005345196615E692C54EF67286B44DD0EAA3A899D066CD407A4B3A810822C20C`
+- ライセンス: 入力BDFの記載はPublic Domain
 
-ここでいうJIS X 0213は，入力フォントの字形を選ぶための規格です．ファームウェア内の1 byteコード体系そのものをJIS X 0213として扱う意味ではありません．ファームウェア側では，`0xA1`–`0xDF`だけをJIS X 0201半角カタカナとして扱い，その他の拡張範囲は[フォント割り当て台帳](FONT_BITMAP_ANNOTATIONS.ja.md)の定義に従います．
+入力BDFアーカイブ自体はリポジトリへ同梱しません。生成器は入力ファイルのSHA-256と、フォント全体・各字形の16×16形式を検査します。帰属・ライセンス表示は、入力元の条件に従って保持します。
 
-他の日本語字形の帰属・ライセンスは保持します．`rainy-knight/uv-k5-jp`由来部分の帰属は`NOTICE`に記載します．
+## 生成物と形式
 
-## 内部フォールバック用の変換ツール
+- `docs/fonts/japanese_font.bin`: Unicode索引と16×16 bitmapをまとめた外部フォント資産
+- `App/japanese_font_external.h`: 生成形式と外部Flash配置の定義
+- `tools/japanese_font_manifest.json`: 生成条件と入力ハッシュのmanifest
 
-`tools/import_public_domain_bitmap_font.py`は，起動画面と内部フォールバック用の字形を更新する補助ツールです．外部Izumi 16の正本を生成する経路ではありません．BDFを入力した場合は，次の手順でC初期化子候補を生成します．
+ASCIIは外部フォントへ重複収録せず、ファームウェア内蔵の`App/font.c`を使用します。外部フォントが未書込み、未収録、幅超過、またはASCII表示モードの場合は、保存済みASCII名へフォールバックし、名前が空ならチャンネル番号を表示します。
 
-1. BDFの16×16ビットマップを読み取る．
-2. ISO-2022-JPのJIS row-cell値で対象字形を選択する．
-3. 通常大字形は16行の固定セルへ変換し，字形固有の点灯範囲を保持する．起動画面用の特大字形は16行すべてを使用可能にする．
-4. `専`／`用`は，16×16の線の構造を7列／10列へ収める独立の低解像度再構成を使う．その他の字形は，対象列へ対応するソース列に点が一つでもあれば点灯する縮小規則で変換する．
-5. OLEDのLSB-first，2ページ形式へC初期化子として出力する．
+## 再生成
 
-K1では通常大字形の`0x98`／`0x99`と，`ALL`／`MESSAGE`で使う10×16特大字形の4字を使用します．特大字形は通常大字形の上下配置を流用せず，起動画面で16行を使います．ビルドは取得済みBDFを必要とせず，変換後のC配列だけを使用します．
-
-変換例:
+確認済みのBDFを指定して実行します。
 
 ```powershell
-python -X utf8 tools/import_public_domain_bitmap_font.py `
-  tmp/open-fonts/izmg16-2004-1.bdf.gz
+python -X utf8 tools/generate_japanese_font.py `
+  tmp/japanese-font/izmg16-2004-1.bdf.gz
 ```
 
-ソースへ反映したら，atlasとフォント一覧を再生成します．
+生成先は`docs/fonts/japanese_font.bin`、`App/japanese_font_external.h`、`tools/japanese_font_manifest.json`です。これらは同じ入力から生成した派生物として扱い、個別に編集しません。
 
-```powershell
-python -X utf8 tools/render_bitmap_atlas.py `
-  --out docs/assets/font-atlas `
-  --markdown-out docs/FONT_INVENTORY.ja.md
-```
+生成後は、外部フォントREADME、manifest、atlas、ホスト側の転送テストを確認します。実機の外部Flash容量、JEDEC ID、既存領域との衝突、LCD上の視認性、書き込み速度は、ホストテストとビルドだけでは確認できません。

@@ -455,6 +455,11 @@ int MENU_GetLimits(uint8_t menu_id, int32_t *pMin, int32_t *pMax)
             //*pMin = 0;
             *pMax = ARRAY_SIZE(gSubMenu_SET_MET) - 1;
             break;
+#ifdef ENABLE_JAPANESE
+        case MENU_SET_MAIN_FONT:
+            *pMax = ARRAY_SIZE(gSubMenu_SET_MAIN_FONT) - 1;
+            break;
+#endif
         #ifdef ENABLE_FEAT_F4HWN_SCAN_FASTER
         case MENU_SET_SCN:
             //*pMin = 0;
@@ -1093,6 +1098,11 @@ void MENU_AcceptSetting(void)
         case MENU_SET_GUI:
             gSetting_set_gui = gSubMenuSelection;
             break;
+#ifdef ENABLE_JAPANESE
+        case MENU_SET_MAIN_FONT:
+            gSetting_japanese_main_font = gSubMenuSelection;
+            break;
+#endif
         #ifdef ENABLE_FEAT_F4HWN_SCAN_FASTER
         case MENU_SET_SCN:
             gSetting_set_scn = gSubMenuSelection;
@@ -1604,6 +1614,11 @@ void MENU_ShowCurrentSetting(void)
         case MENU_SET_GUI:
             gSubMenuSelection = gSetting_set_gui;
             break;
+#ifdef ENABLE_JAPANESE
+        case MENU_SET_MAIN_FONT:
+            gSubMenuSelection = gSetting_japanese_main_font;
+            break;
+#endif
         #ifdef ENABLE_FEAT_F4HWN_SCAN_FASTER
         case MENU_SET_SCN:
             gSubMenuSelection = gSetting_set_scn;
@@ -1734,27 +1749,19 @@ static void MENU_Key_0_to_9(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
 
 #ifdef ENABLE_FEAT_F4HWN_MENU_CAT
     if (gMenuLevel == MENU_LEVEL_CAT)
-    {   // saut-par-numero global : depuis l'ecran categories, entre dans All a l'item N
-        const uint8_t allCount = UI_MENU_CategoryItemCount(CAT_ALL);
-        uint16_t value;
+    {
+        const uint8_t category = (uint8_t)(Key - KEY_1);
 
-        if (gInputBoxIndex >= 2) {
-            gInputBoxIndex = 0;
-            value = (gInputBox[0] * 10) + gInputBox[1];
-        } else {
-            value = gInputBox[0];
-        }
-
-        if (value > 0 && value <= allCount)
+        /* Dondji風ランチャーでは数字キーも表示中のカテゴリを選ぶ。 */
+        gInputBoxIndex = 0;
+        if (Key >= KEY_1 && Key <= KEY_9 && category < gMenuListCount)
         {
-            gMenuCategory  = CAT_ALL;
-            gMenuCatCursor = gMenuListCount - 1;   // All = derniere entree de gCatOrder
-            UI_MENU_BuildView();
-            gMenuLevel     = MENU_LEVEL_ITEMS;
-            gMenuCursor    = value - 1;
+            gMenuCursor = category;
+            gMenuCatCursor = category;
             gFlagRefreshSetting = true;
+            gRequestDisplayScreen = DISPLAY_MENU;
         }
-        else if (gInputBoxIndex == 0)
+        else
         {
             gBeepToPlay = BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
         }
@@ -2399,6 +2406,30 @@ void MENU_ProcessKeys(KEY_Code_t Key, bool bKeyPressed, bool bKeyHeld)
             break;
         case KEY_MENU:
             MENU_Key_MENU(bKeyPressed, bKeyHeld);
+            break;
+        case KEY_SIDE1:
+        case KEY_SIDE2:
+#ifdef ENABLE_FEAT_F4HWN_MENU_CAT
+            if (gMenuLevel == MENU_LEVEL_CAT)
+            {
+                if (!bKeyPressed || bKeyHeld || gMenuListCount == 0u)
+                    break;
+
+                /* K1の左右キーをランチャーのカテゴリ切替に割り当てる。 */
+                gMenuCursor = NUMBER_AddWithWraparound(
+                    gMenuCursor,
+                    (Key == KEY_SIDE2) ? 1 : -1,
+                    0,
+                    gMenuListCount - 1u);
+                gMenuCatCursor = gMenuCursor;
+                gBeepToPlay = BEEP_1KHZ_60MS_OPTIONAL;
+                gFlagRefreshSetting = true;
+                gRequestDisplayScreen = DISPLAY_MENU;
+                break;
+            }
+#endif
+            if (!bKeyHeld && bKeyPressed)
+                gBeepToPlay = BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL;
             break;
         case KEY_UP:
         case KEY_DOWN:

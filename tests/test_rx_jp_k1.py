@@ -340,60 +340,57 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
         self.assertIn("for (uint32_t frequency = preset->lower;; frequency += preset->step)", presets)
         self.assertIn("gTxVfo->freq_config_TX.Frequency = preset->lower", presets)
 
-    def test_japanese_renderer_and_menu_labels_are_wired(self):
-        font = source("App/japanese_font.c")
+    def test_static_ui_uses_readable_ascii_and_external_names_remain(self):
+        font = source("App/font.c")
         helper = source("App/ui/helper.c")
         menu = source("App/ui/menu.c")
         menu_text = source("App/ui/menu_text.h")
         menu_header = source("App/ui/menu.h")
-        self.assertIn("gFontBigJapanese", font)
-        self.assertIn("gFontSmallJapanese", font)
-        self.assertIn("gFontBigJapanese[code - 0x7F]", helper)
-        self.assertIn("gFontSmallJapanese[code - 0x7F]", helper)
-        self.assertIn("0x80, 0x81, 'D', 'C', 'S'", menu_text)
-        self.assertIn("0x95, 0x96", menu_text)
-        self.assertIn("0xD8, 0xBD, 0xC4", menu_text)
+        self.assertNotIn("gFontBigJapanese", font)
+        self.assertNotIn("gFontSmallJapanese", font)
+        self.assertNotIn("gFontBigJapanese", helper)
+        self.assertNotIn("gFontSmallJapanese", helper)
+        self.assertIn('#define WRX_MENU_LABEL_RX_DCS           "RxDCS"', menu_text)
+        self.assertIn('#define WRX_MENU_CATEGORY_SCAN         "SCAN"', menu_text)
+        self.assertIn("UI_PrintJapaneseChannelName", helper)
         self.assertIn("gSubMenu_RXMode[3]", menu_header)
 
-    def test_extended_japanese_font_covers_large_long_vowel_and_added_terms(self):
+    def test_legacy_japanese_font_and_extra_large_renderer_are_removed(self):
         font_header = source("App/font.h")
-        font = source("App/japanese_font.c")
         helper = source("App/ui/helper.c")
-        self.assertIn("#define FONT_CODE_MAX 0xFF", font_header)
-        self.assertIn("[0xE0 - 0x7F]", font)
-        self.assertIn("// ー", font)
-        self.assertIn(
-            "[0xE0 - 0x7F] = {0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x00,0x00,0x00,0x00,0x00,0x00,0x00}",
-            font,
-        )
-        self.assertIn("glyph data itself decides which rows are lit", helper)
-        self.assertNotIn("FONT_BIG_JAPANESE_RENDER_SHIFT", helper)
-        self.assertIn("[0xFF - 0x7F]", font)
-        self.assertIn("code <= FONT_CODE_MAX", helper)
+        cmake = source("App/CMakeLists.txt")
+        self.assertFalse((ROOT / "App" / "japanese_font.c").exists())
+        self.assertNotIn("FONT_CODE_MAX", font_header)
+        self.assertNotIn("FONT_JP_EXTRA_LARGE", font_header)
+        self.assertNotIn("UI_PrintStringJapaneseExtraLarge", helper)
+        self.assertNotIn("japanese_font.c", cmake)
+        self.assertIn('#include "japanese_font.h"', helper)
+        self.assertIn("JPFONT_ReadChannelName", helper)
 
-    def test_rx_only_menu_uses_expanded_japanese_labels(self):
+    def test_ascii_menu_values_keep_the_rx_only_menu_contract(self):
         menu = source("App/ui/menu.c")
         menu_text = source("App/ui/menu_text.h")
-        self.assertIn("0x80, 0x81, 0xE1, 0xE2", menu_text)
-        self.assertIn("0xEE, 0xFF", menu_text)
-        self.assertIn("0xE3, 0xE4", menu_text)
-        self.assertIn("0xE5, 0xE6", menu_text)
-        self.assertIn("0xE7, 0xE8", menu_text)
-        self.assertIn("0xE9, 0xEA", menu_text)
-        self.assertIn("0xEB, 0xEC", menu_text)
-        self.assertIn("0x93, 0x94", menu_text)
+        self.assertIn('#define WRX_MENU_HELP_RX_EXT           "RX features master"', menu_text)
+        self.assertIn('#define WRX_MENU_LABEL_SET_NFM          "SetNFM"', menu_text)
+        self.assertIn('"NARROWER"', menu)
+        self.assertNotIn("WRX_JP_", menu_text)
+        self.assertNotIn("\\x80", menu_text)
         menu_list = menu.split("const t_menu_item MenuList[]", 1)[1].split("};", 1)[0]
         self.assertIn("#ifndef ENABLE_RX_ONLY", menu_list)
         self.assertIn("MENU_BATCAL", menu_list)
         self.assertIn("FIRST_HIDDEN_MENU_ITEM = MENU_BATCAL", menu)
 
-    def test_status_messages_keep_safety_text_and_localize_battery_labels(self):
+    def test_status_messages_keep_readable_safety_text(self):
         main = source("App/ui/main.c")
         jp_text = source("App/ui/jp_text.h")
-        self.assertIn('[VFO_STATE_BAT_LOW]="\\x8F\\xF7 LOW"', main)
+        self.assertIn('[VFO_STATE_BAT_LOW]="LOW BAT"', main)
         self.assertIn('[VFO_STATE_TX_DISABLE]=WRX_UI_TEXT_VFO_TX_DISABLED', main)
-        self.assertIn('#define WRX_UI_TEXT_VFO_TX_DISABLED  "\\x80\\x81\\x98\\x99"', jp_text)
-        self.assertIn('[VFO_STATE_VOLTAGE_HIGH]="\\x8F\\x92 HIGH"', main)
+        self.assertIn('#define WRX_UI_TEXT_VFO_TX_DISABLED  "RX ONLY"', jp_text)
+        self.assertIn('[VFO_STATE_VOLTAGE_HIGH]="HIGH VOLT"', main)
+
+    def test_rx_only_menu_uses_ascii_auto_label(self):
+        menu = source("App/ui/menu.c")
+        self.assertIn('strcpy(String, "AUTO");', menu)
 
     def test_ptt_is_monitor_and_single_vfo_is_enforced(self):
         generic = source("App/app/generic.c")
@@ -405,7 +402,35 @@ class K1ReceiveOnlyStaticTests(unittest.TestCase):
         self.assertIn("return;", common)
         self.assertIn("RADIO_SetVfoState(VFO_STATE_TX_DISABLE);", functions)
         self.assertIn('"SINGLE"', menu)
-        self.assertIn("const char auto_name[] = {0xEB, 0xEC, 0};", menu)
+        self.assertIn('strcpy(String, "AUTO");', menu)
+
+    def test_main_channel_font_modes_and_category_icons_are_wired(self):
+        misc = source("App/misc.h")
+        settings = source("App/settings.c")
+        app_menu = source("App/app/menu.c")
+        helper = source("App/ui/helper.c")
+        main = source("App/ui/main.c")
+        bitmaps = source("App/bitmaps.c")
+        channel_doc = source("docs/CHANNEL_LIST_FORMAT.ja.md")
+        self.assertIn("JAPANESE_MAIN_FONT_8X8", misc)
+        self.assertIn("JAPANESE_MAIN_FONT_ASCII", misc)
+        self.assertIn("Data[3] & 0x03u", settings)
+        self.assertIn("State[3] & (uint8_t)~0x03u", settings)
+        self.assertIn("MENU_SET_MAIN_FONT", app_menu)
+        self.assertIn("UI_PrintJapaneseChannelNameCompact", helper)
+        self.assertIn("source_row = (uint8_t)(row * 2u)", helper)
+        self.assertIn("gSetting_japanese_main_font", main)
+        self.assertIn("!isMainOnly() ||", main)
+        self.assertIn("const uint8_t status_page", main)
+        self.assertIn("UI_PrintStringSmallNormal(status_text", main)
+        menu_ui = source("App/ui/menu.c")
+        self.assertIn("UI_MENU_DrawCategoryIcon", menu_ui)
+        self.assertIn("Dondji風のカテゴリランチャー", menu_ui)
+        self.assertIn("KEY_SIDE1", app_menu)
+        self.assertIn("KEY_SIDE2", app_menu)
+        self.assertIn("Dondji風ランチャーでは数字キー", app_menu)
+        self.assertNotIn("BITMAP_MenuCategory", bitmaps)
+        self.assertIn("ascii_name", channel_doc)
 
 
 if __name__ == "__main__":

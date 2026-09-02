@@ -26,13 +26,15 @@ void UI_PrintString(const char *pString, uint8_t Start, uint8_t End, uint8_t Lin
 // Draw large text left-aligned and clipped to the inclusive [Start, End] range.
 void UI_PrintStringClipped(const char *pString, uint8_t Start, uint8_t End, uint8_t Line, uint8_t Width);
 #ifdef ENABLE_JAPANESE
-void UI_PrintStringJapaneseExtraLarge(const char *pString, uint8_t Start, uint8_t End, uint8_t Line, uint8_t Width);
-// Try the uploaded 16x16 bitmap font for an internal Japanese UI string.
+// Try the uploaded 16x16 bitmap font for an external Unicode UI string.
 // Returns false when the string cannot be mapped, loaded, or fitted.
 bool UI_PrintStringJapaneseExternal(const char *pString, uint8_t Start, uint8_t End, uint8_t Line);
 // Draw one external UTF-8 channel name using the fixed 16x16 bitmap font.
 // Returns false when no valid external name is stored for the channel.
 bool UI_PrintJapaneseChannelName(uint16_t channel, uint8_t Start, uint8_t End, uint8_t Line);
+// 外部FlashのUTF-8チャンネル名を8×8 nearest-neighborで描画する。
+// 対象は主操作画面だけとする。
+bool UI_PrintJapaneseChannelNameCompact(uint16_t channel, uint8_t Start, uint8_t End, uint8_t Line);
 #endif
 void UI_PrintStringSmallNormal(const char *pString, uint8_t Start, uint8_t End, uint8_t Line);
 // Draw small normal text left-aligned and clipped to the inclusive [Start, End] range.

@@ -22,10 +22,6 @@ DECL_RE = re.compile(
     r"(?P<name>[A-Za-z_]\w*)(?P<dims>(?:\s*\[[^\]]*\])+?)\s*=\s*\{"
 )
 NUMBER_RE = re.compile(r"(?<![A-Za-z0-9_])(?:0[xX][0-9A-Fa-f]+|0[bB][01]+|[0-9]+)[uUlL]*")
-SHARED_GLYPH_LABELS = dict(zip(
-    range(0x80, 0x98),
-    "受信変調追加保存削除名長短押音電源更圧表示画面無",
-))
 FONT_ELEMENT_CODES = {
     "gFontSmall": tuple(range(0x21, 0x7F)),
     "gFontSmallBold": tuple(range(0x21, 0x7F)),
@@ -71,12 +67,8 @@ class Array:
     @property
     def glyph_layout(self) -> tuple[int, int] | None:
         """Return (columns, pages) for fonts stored as two OLED pages."""
-        if self.name in {"gFontBig", "gFontBigJapanese"} and self.element_width == 14:
+        if self.name == "gFontBig" and self.element_width == 14:
             return (7, 2)
-        if self.name == "gFontJapaneseExtraLarge" and self.element_width == 20:
-            return (10, 2)
-        if self.name == "gFontSmallJapanese" and self.element_width == 6:
-            return (6, 1)
         if self.name == "gFontBigDigits" and self.element_width and self.element_width % 2 == 0:
             return (self.element_width // 2, 2)
         return None
@@ -171,23 +163,6 @@ def eval_dimension(expression: str) -> int | None:
     except (ArithmeticError, NameError, TypeError, ValueError):
         return None
     return value if isinstance(value, int) and value > 0 else None
-
-
-def eval_integer_expression(expression: str) -> int | None:
-    expression = expression.strip()
-    try:
-        tree = ast.parse(expression, mode="eval")
-    except SyntaxError:
-        return None
-    allowed = (ast.Expression, ast.Constant, ast.UnaryOp, ast.UAdd, ast.USub,
-               ast.BinOp, ast.Add, ast.Sub, ast.Mult, ast.FloorDiv)
-    if any(not isinstance(node, allowed) for node in ast.walk(tree)):
-        return None
-    try:
-        value = eval(compile(tree, "<expression>", "eval"), {"__builtins__": {}}, {})
-    except (ArithmeticError, NameError, TypeError, ValueError):
-        return None
-    return value if isinstance(value, int) else None
 
 
 def parse_values(initializer: str) -> bytes:
@@ -325,7 +300,7 @@ def parse_glyph_annotations(
     element_width: int | None,
     declared_count: int | None = None,
 ) -> list[dict] | None:
-    """Return code-point and label annotations for Japanese glyph tables."""
+    """Return code-point and label annotations for the built-in large font."""
     if name == "gFontBig" and element_width == 14:
         # The source keeps a disabled space glyph as a line comment.  Do not
         # count that brace as a real glyph, otherwise every code point shifts.
@@ -340,7 +315,7 @@ def parse_glyph_annotations(
                     f"{name} glyph 0x{code:02X} has {len(values)} bytes; "
                     f"expected {element_width}"
                 )
-            label = comment_label(comment) or SHARED_GLYPH_LABELS.get(code)
+            label = comment_label(comment)
             if label is None and 0x20 < code < 0x7F:
                 label = chr(code)
             glyphs.append({"code": code, "label": label, "bytes": values,
@@ -360,62 +335,7 @@ def parse_glyph_annotations(
                 })
         return glyphs
 
-    if name == "gFontJapaneseExtraLarge" and element_width == 20:
-        # The compact table carries each firmware code in its row comment.
-        entries = re.findall(r"\{([^{}]*)\}([^\r\n]*)", initializer)
-        glyphs = []
-        seen_codes: set[int] = set()
-        for source_index, (body, comment) in enumerate(entries):
-            code_match = re.search(r"0[xX]([0-9A-Fa-f]{2})", comment)
-            if code_match is None:
-                raise ValueError(f"{name} glyph {source_index} has no code annotation")
-            code = int(code_match.group(1), 16)
-            if code in seen_codes:
-                raise ValueError(f"duplicate glyph code 0x{code:02X} in {name}")
-            seen_codes.add(code)
-            values = parse_values(body)
-            if len(values) != element_width:
-                raise ValueError(
-                    f"{name} glyph 0x{code:02X} has {len(values)} bytes; "
-                    f"expected {element_width}"
-                )
-            glyphs.append({"code": code, "label": comment_label(comment),
-                           "bytes": values, "occupied": any(values),
-                           "source_index": source_index})
-        return glyphs
-
-    if name not in {"gFontBigJapanese", "gFontSmallJapanese"}:
-        return None
-
-    entries = re.findall(r"\[([^\]]+)\]\s*=\s*\{([^{}]*)\}([ \t]*,?[ \t]*(?://[^\r\n]*)?)", initializer)
-    parsed: dict[int, tuple[str | None, bytes]] = {}
-    max_code = 0x7F
-    for expression, body, comment in entries:
-        index = eval_integer_expression(expression)
-        if index is None:
-            raise ValueError(f"cannot evaluate glyph index {expression!r} in {name}")
-        code = index + 0x7F
-        if code in parsed:
-            raise ValueError(f"duplicate glyph code 0x{code:02X} in {name}")
-        values = parse_values(body)
-        if element_width is not None:
-            if len(values) != element_width:
-                raise ValueError(
-                    f"{name} glyph 0x{code:02X} has {len(values)} bytes; "
-                    f"expected {element_width}"
-                )
-        parsed[code] = (comment_label(comment) or SHARED_GLYPH_LABELS.get(code), values)
-        max_code = max(max_code, code)
-    if not parsed:
-        return []
-    glyphs = []
-    for code in range(0x80, max_code + 1):
-        entry = parsed.get(code)
-        values = entry[1] if entry is not None else bytes(element_width or 0)
-        glyphs.append({"code": code, "label": entry[0] if entry else None,
-                       "bytes": values, "occupied": any(values),
-                       "source_index": code - 0x80})
-    return glyphs
+    return None
 
 
 def parse_source(
@@ -697,7 +617,7 @@ def main() -> None:
     else:
         sources = args.source
     if not sources:
-        candidates = [root / "bitmaps.c", root / "font.c", root / "App" / "bitmaps.c", root / "App" / "font.c", root / "App" / "japanese_font.c"]
+        candidates = [root / "bitmaps.c", root / "font.c", root / "App" / "bitmaps.c", root / "App" / "font.c"]
         sources = [candidate for candidate in candidates if candidate.exists()]
     if not sources:
         raise SystemExit("no source supplied and no bitmaps.c/App/bitmaps.c found")

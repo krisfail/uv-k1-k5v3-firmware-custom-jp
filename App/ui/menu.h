@@ -138,6 +138,9 @@ enum
     MENU_SET_LCK,
     MENU_SET_MET,
     MENU_SET_GUI,
+    #ifdef ENABLE_JAPANESE
+        MENU_SET_MAIN_FONT,
+    #endif
     MENU_SET_TMR,
     #ifdef ENABLE_FEAT_F4HWN_SCAN_FASTER
         MENU_SET_SCN,
@@ -240,6 +243,9 @@ extern const char* const            gSubMenu_D_RSP[4];
     extern const char* const        gSubMenu_SET_TOT[4];
     extern const char* const        gSubMenu_SET_LCK[];
     extern const char* const        gSubMenu_SET_MET[2];
+    #ifdef ENABLE_JAPANESE
+        extern const char* const    gSubMenu_SET_MAIN_FONT[3];
+    #endif
     #ifdef ENABLE_FEAT_F4HWN_SCAN_FASTER
         extern const char* const    gSubMenu_SET_SCN[2];
     #endif

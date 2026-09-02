@@ -35,7 +35,7 @@
 #endif
 
 #ifdef ENABLE_RX_ONLY
-static const char UI_RxOnlyWelcome0[] = {0x80, 0x81, 0x98, 0x99, 0}; // 受信専用
+static const char UI_RxOnlyWelcome0[] = "RX ONLY";
 static const char UI_RxOnlyWelcome1[] = "JP RX-ONLY";
 #endif
 
@@ -342,17 +342,7 @@ void UI_DisplayWelcome(void)
             }
         }
 
-#if defined(ENABLE_RX_ONLY) && defined(ENABLE_JAPANESE)
-        if (gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_ALL ||
-            gEeprom.POWER_ON_DISPLAY_MODE == POWER_ON_DISPLAY_MODE_MESSAGE)
-        {
-            UI_PrintStringJapaneseExtraLarge(WelcomeString0, 0, 127, 0, 11);
-        }
-        else
-#endif
-        {
-            UI_PrintString(WelcomeString0, 0, 127, 0, 10);
-        }
+        UI_PrintString(WelcomeString0, 0, 127, 0, 10);
         UI_PrintString(WelcomeString1, 0, 127, 2, 10);
 
 #ifdef ENABLE_FEAT_F4HWN
@@ -447,11 +437,7 @@ void UI_DisplayWelcomeRxOnlyAll(void)
 #endif
     UI_DisplayClear();
 
-#ifdef ENABLE_JAPANESE
-    UI_PrintStringJapaneseExtraLarge(UI_RxOnlyWelcome0, 0, 127, 0, 11);
-#else
-    UI_PrintString("RX-ONLY", 0, 127, 0, 10);
-#endif
+    UI_PrintString(UI_RxOnlyWelcome0, 0, 127, 0, 10);
     UI_PrintString(UI_RxOnlyWelcome1, 0, 127, 2, 10);
 
 #ifdef ENABLE_FEAT_F4HWN

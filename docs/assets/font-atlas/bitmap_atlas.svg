@@ -1,10 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" viewBox="0 0 1200 14272">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" viewBox="0 0 1200 11268">
 <style>.title{font:bold 24px sans-serif}.meta{font:14px sans-serif}.section{font:bold 17px sans-serif}.sub{font:12px Consolas,monospace}</style>
 <pattern id="cell-grid-6" width="6" height="6" patternUnits="userSpaceOnUse">
 <rect width="6" height="6" fill="#f1f1f1"/>
 <path d="M 6 0H0V6" fill="none" stroke="#d6dde4" stroke-width="1"/>
 </pattern>
-<rect width="100%" height="14272" fill="white"/>
+<rect width="100%" height="11268" fill="white"/>
 <text x="32" y="36" class="title">C bitmap/font atlas</text>
 <text x="32" y="60" class="meta">Each byte is one OLED column; bit 0 is at the top. Source order and conditional variants are preserved.</text>
 <text x="32" y="98" class="section">gFontBig (font, 1316 bytes, [95 - 1][16 - 2])</text>
@@ -1218,1008 +1218,224 @@
 <text x="510" y="3990" class="sub">0x7F</text>
 <rect x="510" y="3997" width="18" height="48" fill="url(#cell-grid-6)"/>
 <path d="M516,3997h5v5h-5zM510,4003h17v5h-17zM516,4009h5v5h-5zM510,4021h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="4142" class="section">gFontBigJapanese (font, 1792 bytes, [FONT_CODE_MAX - 0x7F + 1][14])</text>
-<text x="32" y="4162" class="meta">source: App/japanese_font.c; element width: 14</text>
-<text x="48" y="4207" class="sub">0x80 受</text>
-<rect x="48" y="4214" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M78,4226h11v5h-11zM48,4232h29v5h-29zM54,4238h5v5h-5zM66,4238h5v5h-5zM78,4238h5v5h-5zM48,4244h41v5h-41zM48,4250h5v5h-5zM84,4250h5v5h-5zM54,4256h29v5h-29zM78,4262h5v5h-5zM60,4268h5v5h-5zM72,4268h5v5h-5zM66,4274h5v5h-5zM60,4280h5v5h-5zM72,4280h5v5h-5zM48,4286h11v5h-11zM78,4286h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="114" y="4207" class="sub">0x81 信</text>
-<rect x="114" y="4214" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M126,4226h5v5h-5zM138,4226h11v5h-11zM126,4232h5v5h-5zM120,4238h5v5h-5zM132,4238h23v5h-23zM120,4244h5v5h-5zM114,4250h11v5h-11zM132,4250h23v5h-23zM120,4256h5v5h-5zM120,4262h5v5h-5zM132,4262h23v5h-23zM120,4268h5v5h-5zM120,4274h5v5h-5zM132,4274h23v5h-23zM120,4280h5v5h-5zM132,4280h5v5h-5zM150,4280h5v5h-5zM120,4286h5v5h-5zM132,4286h23v5h-23z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="180" y="4207" class="sub">0x82 変</text>
-<rect x="180" y="4214" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M198,4226h5v5h-5zM180,4232h41v5h-41zM192,4238h5v5h-5zM204,4238h5v5h-5zM180,4244h5v5h-5zM192,4244h5v5h-5zM204,4244h5v5h-5zM216,4244h5v5h-5zM180,4250h5v5h-5zM192,4250h5v5h-5zM204,4250h5v5h-5zM216,4250h5v5h-5zM186,4256h5v5h-5zM192,4262h17v5h-17zM186,4268h11v5h-11zM204,4268h5v5h-5zM198,4274h5v5h-5zM192,4280h5v5h-5zM204,4280h5v5h-5zM180,4286h11v5h-11zM210,4286h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="246" y="4207" class="sub">0x83 調</text>
-<rect x="246" y="4214" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M246,4226h41v5h-41zM258,4232h5v5h-5zM282,4232h5v5h-5zM246,4238h17v5h-17zM270,4238h5v5h-5zM282,4238h5v5h-5zM258,4244h29v5h-29zM246,4250h17v5h-17zM270,4250h5v5h-5zM282,4250h5v5h-5zM258,4256h29v5h-29zM246,4262h17v5h-17zM282,4262h5v5h-5zM258,4268h29v5h-29zM246,4274h23v5h-23zM276,4274h11v5h-11zM246,4280h5v5h-5zM258,4280h29v5h-29zM246,4286h17v5h-17zM282,4286h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="312" y="4207" class="sub">0x84 追</text>
-<rect x="312" y="4214" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M312,4226h5v5h-5zM336,4226h5v5h-5zM318,4232h5v5h-5zM330,4232h23v5h-23zM330,4238h5v5h-5zM348,4238h5v5h-5zM330,4244h23v5h-23zM330,4250h5v5h-5zM312,4256h11v5h-11zM330,4256h23v5h-23zM318,4262h5v5h-5zM330,4262h5v5h-5zM348,4262h5v5h-5zM318,4268h5v5h-5zM330,4268h5v5h-5zM348,4268h5v5h-5zM318,4274h5v5h-5zM330,4274h23v5h-23zM318,4280h5v5h-5zM312,4286h5v5h-5zM324,4286h29v5h-29z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="378" y="4207" class="sub">0x85 加</text>
-<rect x="378" y="4214" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M384,4226h5v5h-5zM384,4232h5v5h-5zM402,4232h17v5h-17zM378,4238h29v5h-29zM414,4238h5v5h-5zM384,4244h5v5h-5zM396,4244h11v5h-11zM414,4244h5v5h-5zM384,4250h5v5h-5zM396,4250h11v5h-11zM414,4250h5v5h-5zM384,4256h5v5h-5zM396,4256h11v5h-11zM414,4256h5v5h-5zM384,4262h5v5h-5zM396,4262h11v5h-11zM414,4262h5v5h-5zM384,4268h5v5h-5zM396,4268h11v5h-11zM414,4268h5v5h-5zM384,4274h5v5h-5zM396,4274h11v5h-11zM414,4274h5v5h-5zM378,4280h5v5h-5zM396,4280h23v5h-23zM378,4286h5v5h-5zM390,4286h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="444" y="4207" class="sub">0x86 保</text>
-<rect x="444" y="4214" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M456,4226h23v5h-23zM456,4232h11v5h-11zM474,4232h5v5h-5zM450,4238h5v5h-5zM462,4238h5v5h-5zM474,4238h5v5h-5zM450,4244h5v5h-5zM462,4244h17v5h-17zM444,4250h11v5h-11zM468,4250h5v5h-5zM450,4256h35v5h-35zM450,4262h5v5h-5zM468,4262h5v5h-5zM450,4268h5v5h-5zM462,4268h17v5h-17zM450,4274h5v5h-5zM462,4274h17v5h-17zM450,4280h11v5h-11zM468,4280h5v5h-5zM480,4280h5v5h-5zM450,4286h5v5h-5zM468,4286h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="510" y="4207" class="sub">0x87 存</text>
-<rect x="510" y="4214" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M528,4226h5v5h-5zM510,4232h41v5h-41zM522,4238h5v5h-5zM522,4244h23v5h-23zM516,4250h5v5h-5zM540,4250h5v5h-5zM510,4256h11v5h-11zM534,4256h5v5h-5zM516,4262h35v5h-35zM516,4268h5v5h-5zM534,4268h5v5h-5zM516,4274h5v5h-5zM534,4274h5v5h-5zM516,4280h5v5h-5zM534,4280h5v5h-5zM516,4286h5v5h-5zM528,4286h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="576" y="4207" class="sub">0x88 削</text>
-<rect x="576" y="4214" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M576,4226h5v5h-5zM588,4226h11v5h-11zM612,4226h5v5h-5zM576,4232h5v5h-5zM588,4232h5v5h-5zM600,4232h5v5h-5zM612,4232h5v5h-5zM588,4238h5v5h-5zM600,4238h5v5h-5zM612,4238h5v5h-5zM576,4244h29v5h-29zM612,4244h5v5h-5zM576,4250h5v5h-5zM594,4250h11v5h-11zM612,4250h5v5h-5zM576,4256h29v5h-29zM612,4256h5v5h-5zM576,4262h5v5h-5zM594,4262h11v5h-11zM612,4262h5v5h-5zM576,4268h23v5h-23zM612,4268h5v5h-5zM576,4274h5v5h-5zM594,4274h5v5h-5zM612,4274h5v5h-5zM576,4280h5v5h-5zM594,4280h5v5h-5zM612,4280h5v5h-5zM576,4286h5v5h-5zM588,4286h11v5h-11zM606,4286h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="642" y="4207" class="sub">0x89 除</text>
-<rect x="642" y="4214" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M642,4226h11v5h-11zM666,4226h5v5h-5zM642,4232h11v5h-11zM660,4232h5v5h-5zM672,4232h5v5h-5zM642,4238h17v5h-17zM678,4238h5v5h-5zM642,4244h5v5h-5zM660,4244h17v5h-17zM642,4250h11v5h-11zM666,4250h5v5h-5zM642,4256h41v5h-41zM642,4262h11v5h-11zM666,4262h5v5h-5zM642,4268h17v5h-17zM666,4268h5v5h-5zM678,4268h5v5h-5zM642,4274h5v5h-5zM654,4274h5v5h-5zM666,4274h5v5h-5zM678,4274h5v5h-5zM642,4280h5v5h-5zM666,4280h5v5h-5zM642,4286h5v5h-5zM660,4286h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="708" y="4207" class="sub">0x8A 名</text>
-<rect x="708" y="4214" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M720,4226h5v5h-5zM720,4232h23v5h-23zM714,4238h5v5h-5zM738,4238h5v5h-5zM708,4244h5v5h-5zM720,4244h5v5h-5zM732,4244h5v5h-5zM726,4250h5v5h-5zM720,4256h5v5h-5zM714,4262h35v5h-35zM708,4268h5v5h-5zM720,4268h5v5h-5zM744,4268h5v5h-5zM720,4274h5v5h-5zM744,4274h5v5h-5zM720,4280h5v5h-5zM744,4280h5v5h-5zM720,4286h29v5h-29z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="774" y="4207" class="sub">0x8B 長</text>
-<rect x="774" y="4214" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M786,4226h23v5h-23zM786,4232h5v5h-5zM786,4238h17v5h-17zM786,4244h5v5h-5zM786,4250h17v5h-17zM786,4256h5v5h-5zM774,4262h41v5h-41zM786,4268h5v5h-5zM798,4268h5v5h-5zM786,4274h5v5h-5zM798,4274h5v5h-5zM810,4274h5v5h-5zM786,4280h5v5h-5zM804,4280h5v5h-5zM780,4286h17v5h-17zM810,4286h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="48" y="4333" class="sub">0x8C 短</text>
-<rect x="48" y="4340" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M48,4352h5v5h-5zM66,4352h23v5h-23zM48,4358h5v5h-5zM48,4364h17v5h-17zM72,4364h17v5h-17zM54,4370h5v5h-5zM72,4370h5v5h-5zM84,4370h5v5h-5zM54,4376h5v5h-5zM72,4376h5v5h-5zM84,4376h5v5h-5zM48,4382h17v5h-17zM72,4382h17v5h-17zM54,4388h5v5h-5zM54,4394h5v5h-5zM72,4394h5v5h-5zM84,4394h5v5h-5zM54,4400h11v5h-11zM72,4400h5v5h-5zM84,4400h5v5h-5zM48,4406h5v5h-5zM60,4406h5v5h-5zM78,4406h5v5h-5zM48,4412h5v5h-5zM66,4412h23v5h-23z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="114" y="4333" class="sub">0x8D 押</text>
-<rect x="114" y="4340" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M120,4352h35v5h-35zM120,4358h11v5h-11zM138,4358h5v5h-5zM150,4358h5v5h-5zM114,4364h17v5h-17zM138,4364h5v5h-5zM150,4364h5v5h-5zM120,4370h35v5h-35zM120,4376h11v5h-11zM138,4376h5v5h-5zM150,4376h5v5h-5zM120,4382h11v5h-11zM138,4382h5v5h-5zM150,4382h5v5h-5zM114,4388h17v5h-17zM138,4388h5v5h-5zM150,4388h5v5h-5zM120,4394h35v5h-35zM120,4400h5v5h-5zM138,4400h5v5h-5zM120,4406h5v5h-5zM138,4406h5v5h-5zM114,4412h11v5h-11zM138,4412h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="180" y="4333" class="sub">0x8E 音</text>
-<rect x="180" y="4340" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M198,4352h5v5h-5zM186,4358h29v5h-29zM192,4364h5v5h-5zM204,4364h5v5h-5zM192,4370h5v5h-5zM204,4370h5v5h-5zM180,4376h41v5h-41zM186,4388h29v5h-29zM186,4394h5v5h-5zM210,4394h5v5h-5zM186,4400h29v5h-29zM186,4406h5v5h-5zM210,4406h5v5h-5zM186,4412h29v5h-29z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="246" y="4333" class="sub">0x8F 電</text>
-<rect x="246" y="4340" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M252,4352h29v5h-29zM264,4358h5v5h-5zM246,4364h41v5h-41zM246,4370h5v5h-5zM264,4370h5v5h-5zM282,4370h5v5h-5zM252,4376h29v5h-29zM252,4382h5v5h-5zM264,4382h5v5h-5zM276,4382h5v5h-5zM252,4388h29v5h-29zM252,4394h5v5h-5zM264,4394h5v5h-5zM276,4394h5v5h-5zM252,4400h29v5h-29zM264,4406h5v5h-5zM282,4406h5v5h-5zM264,4412h23v5h-23z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="312" y="4333" class="sub">0x90 源</text>
-<rect x="312" y="4340" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M312,4352h5v5h-5zM324,4352h29v5h-29zM324,4358h5v5h-5zM342,4358h5v5h-5zM324,4364h5v5h-5zM336,4364h17v5h-17zM312,4370h5v5h-5zM324,4370h5v5h-5zM336,4370h5v5h-5zM348,4370h5v5h-5zM324,4376h5v5h-5zM336,4376h17v5h-17zM324,4382h5v5h-5zM336,4382h5v5h-5zM348,4382h5v5h-5zM324,4388h5v5h-5zM336,4388h17v5h-17zM312,4394h5v5h-5zM324,4394h5v5h-5zM342,4394h5v5h-5zM312,4400h5v5h-5zM324,4400h11v5h-11zM342,4400h11v5h-11zM312,4406h11v5h-11zM342,4406h5v5h-5zM312,4412h5v5h-5zM336,4412h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="378" y="4333" class="sub">0x91 更</text>
-<rect x="378" y="4340" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M378,4352h41v5h-41zM396,4358h5v5h-5zM384,4364h29v5h-29zM384,4370h5v5h-5zM396,4370h5v5h-5zM408,4370h5v5h-5zM384,4376h29v5h-29zM384,4382h5v5h-5zM396,4382h5v5h-5zM408,4382h5v5h-5zM384,4388h29v5h-29zM384,4394h5v5h-5zM396,4394h5v5h-5zM390,4400h5v5h-5zM390,4406h11v5h-11zM378,4412h11v5h-11zM402,4412h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="444" y="4333" class="sub">0x92 圧</text>
-<rect x="444" y="4340" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M450,4352h35v5h-35zM450,4358h5v5h-5zM450,4364h5v5h-5zM468,4364h5v5h-5zM450,4370h5v5h-5zM468,4370h5v5h-5zM450,4376h5v5h-5zM468,4376h5v5h-5zM450,4382h5v5h-5zM462,4382h17v5h-17zM450,4388h5v5h-5zM468,4388h5v5h-5zM450,4394h5v5h-5zM468,4394h5v5h-5zM450,4400h5v5h-5zM468,4400h5v5h-5zM450,4406h5v5h-5zM468,4406h5v5h-5zM444,4412h5v5h-5zM456,4412h29v5h-29z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="510" y="4333" class="sub">0x93 表</text>
-<rect x="510" y="4340" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M528,4352h5v5h-5zM516,4358h29v5h-29zM528,4364h5v5h-5zM516,4370h29v5h-29zM528,4376h5v5h-5zM510,4382h41v5h-41zM522,4388h5v5h-5zM534,4388h5v5h-5zM516,4394h11v5h-11zM534,4394h5v5h-5zM546,4394h5v5h-5zM510,4400h5v5h-5zM522,4400h5v5h-5zM540,4400h5v5h-5zM522,4406h11v5h-11zM540,4406h5v5h-5zM516,4412h11v5h-11zM546,4412h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="576" y="4333" class="sub">0x94 示</text>
-<rect x="576" y="4340" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M582,4352h29v5h-29zM576,4370h41v5h-41zM594,4376h5v5h-5zM594,4382h5v5h-5zM582,4388h5v5h-5zM594,4388h5v5h-5zM606,4388h5v5h-5zM582,4394h5v5h-5zM594,4394h5v5h-5zM612,4394h5v5h-5zM576,4400h5v5h-5zM594,4400h5v5h-5zM612,4400h5v5h-5zM594,4406h5v5h-5zM588,4412h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="642" y="4333" class="sub">0x95 画</text>
-<rect x="642" y="4340" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M642,4352h41v5h-41zM660,4358h5v5h-5zM642,4364h5v5h-5zM660,4364h5v5h-5zM678,4364h5v5h-5zM642,4370h41v5h-41zM642,4376h11v5h-11zM660,4376h5v5h-5zM672,4376h11v5h-11zM642,4382h41v5h-41zM642,4388h11v5h-11zM660,4388h5v5h-5zM672,4388h11v5h-11zM642,4394h11v5h-11zM660,4394h5v5h-5zM672,4394h11v5h-11zM642,4400h41v5h-41zM642,4406h5v5h-5zM678,4406h5v5h-5zM642,4412h41v5h-41z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="708" y="4333" class="sub">0x96 面</text>
-<rect x="708" y="4340" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M708,4352h41v5h-41zM726,4358h5v5h-5zM720,4364h5v5h-5zM708,4370h41v5h-41zM708,4376h5v5h-5zM720,4376h5v5h-5zM732,4376h5v5h-5zM744,4376h5v5h-5zM708,4382h5v5h-5zM720,4382h17v5h-17zM744,4382h5v5h-5zM708,4388h5v5h-5zM720,4388h5v5h-5zM732,4388h5v5h-5zM744,4388h5v5h-5zM708,4394h5v5h-5zM720,4394h17v5h-17zM744,4394h5v5h-5zM708,4400h5v5h-5zM720,4400h5v5h-5zM732,4400h5v5h-5zM744,4400h5v5h-5zM708,4406h5v5h-5zM720,4406h5v5h-5zM732,4406h5v5h-5zM744,4406h5v5h-5zM708,4412h41v5h-41z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="774" y="4333" class="sub">0x97 無</text>
-<rect x="774" y="4340" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M780,4352h5v5h-5zM780,4358h35v5h-35zM774,4364h11v5h-11zM792,4364h5v5h-5zM804,4364h5v5h-5zM780,4370h5v5h-5zM792,4370h5v5h-5zM804,4370h5v5h-5zM774,4376h41v5h-41zM780,4382h5v5h-5zM792,4382h5v5h-5zM804,4382h5v5h-5zM780,4388h5v5h-5zM792,4388h5v5h-5zM804,4388h5v5h-5zM774,4394h41v5h-41zM780,4406h5v5h-5zM792,4406h5v5h-5zM804,4406h5v5h-5zM774,4412h5v5h-5zM786,4412h5v5h-5zM798,4412h5v5h-5zM810,4412h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="48" y="4459" class="sub">0x98 専</text>
-<rect x="48" y="4466" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M66,4478h5v5h-5zM48,4484h41v5h-41zM54,4490h29v5h-29zM54,4496h5v5h-5zM66,4496h5v5h-5zM78,4496h5v5h-5zM54,4502h29v5h-29zM54,4508h5v5h-5zM66,4508h5v5h-5zM78,4508h5v5h-5zM54,4514h29v5h-29zM48,4526h41v5h-41zM66,4532h5v5h-5zM78,4532h5v5h-5zM72,4538h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="114" y="4459" class="sub">0x99 用</text>
-<rect x="114" y="4466" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M120,4478h35v5h-35zM120,4484h5v5h-5zM132,4484h5v5h-5zM150,4484h5v5h-5zM120,4490h5v5h-5zM132,4490h5v5h-5zM150,4490h5v5h-5zM120,4496h35v5h-35zM120,4502h5v5h-5zM132,4502h5v5h-5zM150,4502h5v5h-5zM120,4508h5v5h-5zM132,4508h5v5h-5zM150,4508h5v5h-5zM120,4514h35v5h-35zM114,4520h5v5h-5zM132,4520h5v5h-5zM150,4520h5v5h-5zM114,4526h5v5h-5zM132,4526h5v5h-5zM150,4526h5v5h-5zM114,4532h5v5h-5zM150,4532h5v5h-5zM114,4538h5v5h-5zM144,4538h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="180" y="4459" class="sub">0x9A</text>
-<rect x="180" y="4466" width="42" height="96" fill="url(#cell-grid-6)"/>
-<text x="246" y="4459" class="sub">0x9B</text>
-<rect x="246" y="4466" width="42" height="96" fill="url(#cell-grid-6)"/>
-<text x="312" y="4459" class="sub">0x9C</text>
-<rect x="312" y="4466" width="42" height="96" fill="url(#cell-grid-6)"/>
-<text x="378" y="4459" class="sub">0x9D</text>
-<rect x="378" y="4466" width="42" height="96" fill="url(#cell-grid-6)"/>
-<text x="444" y="4459" class="sub">0x9E</text>
-<rect x="444" y="4466" width="42" height="96" fill="url(#cell-grid-6)"/>
-<text x="510" y="4459" class="sub">0x9F</text>
-<rect x="510" y="4466" width="42" height="96" fill="url(#cell-grid-6)"/>
-<text x="576" y="4459" class="sub">0xA0</text>
-<rect x="576" y="4466" width="42" height="96" fill="url(#cell-grid-6)"/>
-<text x="642" y="4459" class="sub">0xA1 ｡</text>
-<rect x="642" y="4466" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M648,4532h5v5h-5zM642,4538h5v5h-5zM654,4538h5v5h-5zM648,4544h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="708" y="4459" class="sub">0xA2 ｢</text>
-<rect x="708" y="4466" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M732,4466h17v5h-17zM732,4472h5v5h-5zM732,4478h5v5h-5zM732,4484h5v5h-5zM732,4490h5v5h-5zM732,4496h5v5h-5zM732,4502h5v5h-5zM732,4508h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="774" y="4459" class="sub">0xA3 ｣</text>
-<rect x="774" y="4466" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M786,4520h5v5h-5zM786,4526h5v5h-5zM786,4532h5v5h-5zM786,4538h5v5h-5zM786,4544h5v5h-5zM786,4550h5v5h-5zM774,4556h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="48" y="4585" class="sub">0xA4 ､</text>
-<rect x="48" y="4592" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M48,4664h11v5h-11zM48,4670h11v5h-11zM54,4676h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="114" y="4585" class="sub">0xA5 ･</text>
-<rect x="114" y="4592" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M126,4640h17v5h-17zM126,4646h17v5h-17zM126,4652h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="180" y="4585" class="sub">0xA6 ヲ</text>
-<rect x="180" y="4592" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M186,4610h29v5h-29zM210,4616h5v5h-5zM210,4622h5v5h-5zM192,4628h23v5h-23zM210,4634h5v5h-5zM210,4640h5v5h-5zM210,4646h5v5h-5zM210,4652h5v5h-5zM204,4658h5v5h-5zM198,4664h5v5h-5zM192,4670h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="246" y="4585" class="sub">0xA7 ァ</text>
-<rect x="246" y="4592" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M246,4640h29v5h-29zM270,4646h5v5h-5zM258,4652h5v5h-5zM270,4652h5v5h-5zM258,4658h11v5h-11zM258,4664h5v5h-5zM252,4670h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="312" y="4585" class="sub">0xA8 ィ</text>
-<rect x="312" y="4592" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M336,4634h5v5h-5zM330,4640h5v5h-5zM330,4646h5v5h-5zM324,4652h11v5h-11zM318,4658h5v5h-5zM330,4658h5v5h-5zM330,4664h5v5h-5zM330,4670h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="378" y="4585" class="sub">0xA9 ゥ</text>
-<rect x="378" y="4592" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M396,4628h5v5h-5zM396,4634h5v5h-5zM384,4640h29v5h-29zM384,4646h5v5h-5zM408,4646h5v5h-5zM408,4652h5v5h-5zM408,4658h5v5h-5zM402,4664h5v5h-5zM396,4670h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="444" y="4585" class="sub">0xAA ェ</text>
-<rect x="444" y="4592" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M456,4646h17v5h-17zM462,4652h5v5h-5zM462,4658h5v5h-5zM462,4664h5v5h-5zM450,4670h29v5h-29z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="510" y="4585" class="sub">0xAB ォ</text>
-<rect x="510" y="4592" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M534,4628h5v5h-5zM534,4634h5v5h-5zM516,4640h29v5h-29zM534,4646h5v5h-5zM528,4652h11v5h-11zM522,4658h5v5h-5zM534,4658h5v5h-5zM522,4664h5v5h-5zM534,4664h5v5h-5zM516,4670h5v5h-5zM534,4670h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="576" y="4585" class="sub">0xAC ャ</text>
-<rect x="576" y="4592" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M594,4634h5v5h-5zM594,4640h5v5h-5zM576,4646h35v5h-35zM594,4652h5v5h-5zM612,4652h5v5h-5zM594,4658h5v5h-5zM606,4658h5v5h-5zM594,4664h5v5h-5zM594,4670h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="642" y="4585" class="sub">0xAD ュ</text>
-<rect x="642" y="4592" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M648,4640h23v5h-23zM666,4646h5v5h-5zM666,4652h5v5h-5zM666,4658h5v5h-5zM666,4664h5v5h-5zM648,4670h29v5h-29z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="708" y="4585" class="sub">0xAE ョ</text>
-<rect x="708" y="4592" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M720,4634h17v5h-17zM732,4640h5v5h-5zM732,4646h5v5h-5zM720,4652h17v5h-17zM732,4658h5v5h-5zM732,4664h5v5h-5zM720,4670h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="774" y="4585" class="sub">0xAF ッ</text>
-<rect x="774" y="4592" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M780,4646h5v5h-5zM792,4646h5v5h-5zM804,4646h5v5h-5zM780,4652h5v5h-5zM792,4652h5v5h-5zM804,4652h5v5h-5zM780,4658h5v5h-5zM804,4658h5v5h-5zM798,4664h5v5h-5zM792,4670h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="48" y="4711" class="sub">0xB0 ー</text>
-<rect x="48" y="4718" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M48,4766h41v5h-41z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="114" y="4711" class="sub">0xB1 ア</text>
-<rect x="114" y="4718" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M114,4736h41v5h-41zM150,4742h5v5h-5zM132,4748h5v5h-5zM144,4748h5v5h-5zM132,4754h11v5h-11zM132,4760h5v5h-5zM132,4766h5v5h-5zM132,4772h5v5h-5zM132,4778h5v5h-5zM126,4784h5v5h-5zM120,4790h5v5h-5zM114,4796h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="180" y="4711" class="sub">0xB2 イ</text>
-<rect x="180" y="4718" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M210,4736h5v5h-5zM204,4742h5v5h-5zM204,4748h5v5h-5zM198,4754h5v5h-5zM198,4760h5v5h-5zM192,4766h11v5h-11zM186,4772h5v5h-5zM198,4772h5v5h-5zM180,4778h5v5h-5zM198,4778h5v5h-5zM198,4784h5v5h-5zM198,4790h5v5h-5zM198,4796h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="246" y="4711" class="sub">0xB3 ウ</text>
-<rect x="246" y="4718" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M264,4730h5v5h-5zM264,4736h5v5h-5zM246,4742h41v5h-41zM246,4748h5v5h-5zM282,4748h5v5h-5zM282,4754h5v5h-5zM282,4760h5v5h-5zM282,4766h5v5h-5zM276,4772h5v5h-5zM276,4778h5v5h-5zM270,4784h5v5h-5zM264,4790h5v5h-5zM258,4796h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="312" y="4711" class="sub">0xB4 エ</text>
-<rect x="312" y="4718" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M312,4742h41v5h-41zM330,4748h5v5h-5zM330,4754h5v5h-5zM330,4760h5v5h-5zM330,4766h5v5h-5zM330,4772h5v5h-5zM330,4778h5v5h-5zM330,4784h5v5h-5zM312,4790h41v5h-41z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="378" y="4711" class="sub">0xB5 オ</text>
-<rect x="378" y="4718" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M402,4730h5v5h-5zM402,4736h5v5h-5zM378,4742h41v5h-41zM402,4748h5v5h-5zM402,4754h5v5h-5zM402,4760h5v5h-5zM396,4766h11v5h-11zM390,4772h5v5h-5zM402,4772h5v5h-5zM384,4778h5v5h-5zM402,4778h5v5h-5zM378,4784h5v5h-5zM402,4784h5v5h-5zM402,4790h5v5h-5zM396,4796h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="444" y="4711" class="sub">0xB6 カ</text>
-<rect x="444" y="4718" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M462,4730h5v5h-5zM462,4736h5v5h-5zM444,4742h41v5h-41zM462,4748h5v5h-5zM480,4748h5v5h-5zM462,4754h5v5h-5zM480,4754h5v5h-5zM462,4760h5v5h-5zM480,4760h5v5h-5zM462,4766h5v5h-5zM480,4766h5v5h-5zM462,4772h5v5h-5zM480,4772h5v5h-5zM456,4778h5v5h-5zM480,4778h5v5h-5zM456,4784h5v5h-5zM480,4784h5v5h-5zM450,4790h5v5h-5zM474,4790h5v5h-5zM444,4796h5v5h-5zM468,4796h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="510" y="4711" class="sub">0xB7 キ</text>
-<rect x="510" y="4718" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M528,4730h5v5h-5zM528,4736h5v5h-5zM516,4742h29v5h-29zM528,4748h5v5h-5zM528,4754h5v5h-5zM528,4760h5v5h-5zM528,4766h23v5h-23zM510,4772h23v5h-23zM528,4778h5v5h-5zM528,4784h5v5h-5zM528,4790h5v5h-5zM528,4796h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="576" y="4711" class="sub">0xB8 ク</text>
-<rect x="576" y="4718" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M588,4736h17v5h-17zM582,4742h5v5h-5zM606,4742h5v5h-5zM582,4748h5v5h-5zM606,4748h5v5h-5zM576,4754h5v5h-5zM606,4754h5v5h-5zM606,4760h5v5h-5zM606,4766h5v5h-5zM600,4772h5v5h-5zM600,4778h5v5h-5zM594,4784h5v5h-5zM588,4790h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="642" y="4711" class="sub">0xB9 ケ</text>
-<rect x="642" y="4718" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M648,4736h5v5h-5zM654,4742h29v5h-29zM654,4748h5v5h-5zM672,4748h5v5h-5zM654,4754h5v5h-5zM672,4754h5v5h-5zM648,4760h5v5h-5zM672,4760h5v5h-5zM642,4766h5v5h-5zM672,4766h5v5h-5zM672,4772h5v5h-5zM666,4778h5v5h-5zM660,4784h5v5h-5zM654,4790h5v5h-5zM648,4796h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="708" y="4711" class="sub">0xBA コ</text>
-<rect x="708" y="4718" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M714,4742h29v5h-29zM738,4748h5v5h-5zM738,4754h5v5h-5zM738,4760h5v5h-5zM738,4766h5v5h-5zM738,4772h5v5h-5zM738,4778h5v5h-5zM738,4784h5v5h-5zM714,4790h29v5h-29zM738,4796h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="774" y="4711" class="sub">0xBB サ</text>
-<rect x="774" y="4718" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M786,4730h5v5h-5zM804,4730h5v5h-5zM786,4736h5v5h-5zM804,4736h5v5h-5zM786,4742h5v5h-5zM804,4742h5v5h-5zM774,4748h41v5h-41zM786,4754h5v5h-5zM804,4754h5v5h-5zM786,4760h5v5h-5zM804,4760h5v5h-5zM786,4766h5v5h-5zM804,4766h5v5h-5zM786,4772h5v5h-5zM804,4772h5v5h-5zM798,4778h5v5h-5zM792,4784h5v5h-5zM792,4790h5v5h-5zM786,4796h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="48" y="4837" class="sub">0xBC シ</text>
-<rect x="48" y="4844" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M54,4862h5v5h-5zM60,4868h11v5h-11zM84,4874h5v5h-5zM84,4880h5v5h-5zM54,4886h11v5h-11zM78,4886h5v5h-5zM78,4892h5v5h-5zM72,4898h5v5h-5zM72,4904h5v5h-5zM66,4910h5v5h-5zM66,4916h5v5h-5zM54,4922h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="114" y="4837" class="sub">0xBD ス</text>
-<rect x="114" y="4844" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M120,4862h23v5h-23zM138,4868h5v5h-5zM138,4874h5v5h-5zM138,4880h5v5h-5zM138,4886h5v5h-5zM138,4892h5v5h-5zM132,4898h11v5h-11zM132,4904h17v5h-17zM126,4910h5v5h-5zM144,4910h5v5h-5zM126,4916h5v5h-5zM144,4916h5v5h-5zM120,4922h5v5h-5zM150,4922h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="180" y="4837" class="sub">0xBE セ</text>
-<rect x="180" y="4844" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M192,4856h5v5h-5zM192,4862h5v5h-5zM192,4868h5v5h-5zM180,4874h41v5h-41zM192,4880h5v5h-5zM216,4880h5v5h-5zM192,4886h5v5h-5zM210,4886h5v5h-5zM192,4892h5v5h-5zM192,4898h5v5h-5zM192,4904h5v5h-5zM192,4910h5v5h-5zM192,4916h5v5h-5zM192,4922h29v5h-29z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="246" y="4837" class="sub">0xBF ソ</text>
-<rect x="246" y="4844" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M252,4856h5v5h-5zM276,4856h5v5h-5zM252,4862h5v5h-5zM276,4862h5v5h-5zM252,4868h5v5h-5zM276,4868h5v5h-5zM252,4874h11v5h-11zM276,4874h5v5h-5zM258,4880h5v5h-5zM276,4880h5v5h-5zM270,4886h11v5h-11zM270,4892h5v5h-5zM270,4898h5v5h-5zM264,4904h11v5h-11zM264,4910h5v5h-5zM264,4916h5v5h-5zM258,4922h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="312" y="4837" class="sub">0xC0 タ</text>
-<rect x="312" y="4844" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M324,4856h5v5h-5zM324,4862h23v5h-23zM318,4868h5v5h-5zM342,4868h5v5h-5zM318,4874h5v5h-5zM342,4874h5v5h-5zM318,4880h17v5h-17zM342,4880h5v5h-5zM312,4886h5v5h-5zM330,4886h17v5h-17zM342,4892h5v5h-5zM342,4898h5v5h-5zM336,4904h5v5h-5zM330,4910h5v5h-5zM324,4916h5v5h-5zM318,4922h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="378" y="4837" class="sub">0xC1 チ</text>
-<rect x="378" y="4844" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M396,4856h17v5h-17zM384,4862h11v5h-11zM402,4862h5v5h-5zM402,4868h5v5h-5zM402,4874h5v5h-5zM396,4880h5v5h-5zM378,4886h41v5h-41zM396,4892h5v5h-5zM396,4898h5v5h-5zM390,4904h5v5h-5zM390,4910h5v5h-5zM390,4916h5v5h-5zM384,4922h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="444" y="4837" class="sub">0xC2 ツ</text>
-<rect x="444" y="4844" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M456,4856h5v5h-5zM480,4856h5v5h-5zM444,4862h5v5h-5zM456,4862h5v5h-5zM480,4862h5v5h-5zM444,4868h5v5h-5zM456,4868h5v5h-5zM480,4868h5v5h-5zM444,4874h5v5h-5zM462,4874h5v5h-5zM474,4874h5v5h-5zM450,4880h5v5h-5zM474,4880h5v5h-5zM474,4886h5v5h-5zM468,4892h5v5h-5zM468,4898h5v5h-5zM462,4904h5v5h-5zM462,4910h5v5h-5zM450,4916h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="510" y="4837" class="sub">0xC3 テ</text>
-<rect x="510" y="4844" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M516,4856h29v5h-29zM510,4880h41v5h-41zM534,4886h5v5h-5zM534,4892h5v5h-5zM534,4898h5v5h-5zM528,4904h5v5h-5zM528,4910h5v5h-5zM528,4916h5v5h-5zM522,4922h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="576" y="4837" class="sub">0xC4 ト</text>
-<rect x="576" y="4844" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M588,4856h5v5h-5zM588,4862h5v5h-5zM588,4868h5v5h-5zM588,4874h5v5h-5zM588,4880h11v5h-11zM588,4886h17v5h-17zM588,4892h5v5h-5zM600,4892h11v5h-11zM588,4898h5v5h-5zM606,4898h5v5h-5zM588,4904h5v5h-5zM588,4910h5v5h-5zM588,4916h5v5h-5zM588,4922h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="642" y="4837" class="sub">0xC5 ナ</text>
-<rect x="642" y="4844" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M666,4856h5v5h-5zM666,4862h5v5h-5zM666,4868h5v5h-5zM642,4874h41v5h-41zM666,4880h5v5h-5zM666,4886h5v5h-5zM660,4892h5v5h-5zM660,4898h5v5h-5zM654,4904h5v5h-5zM654,4910h5v5h-5zM648,4916h5v5h-5zM648,4922h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="708" y="4837" class="sub">0xC6 ニ</text>
-<rect x="708" y="4844" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M714,4868h29v5h-29zM708,4910h41v5h-41z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="774" y="4837" class="sub">0xC7 ヌ</text>
-<rect x="774" y="4844" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M780,4862h35v5h-35zM810,4868h5v5h-5zM804,4874h5v5h-5zM804,4880h5v5h-5zM780,4886h5v5h-5zM798,4886h5v5h-5zM786,4892h5v5h-5zM798,4892h5v5h-5zM792,4898h5v5h-5zM792,4904h11v5h-11zM786,4910h5v5h-5zM804,4910h5v5h-5zM786,4916h5v5h-5zM810,4916h5v5h-5zM774,4922h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="48" y="4963" class="sub">0xC8 ネ</text>
-<rect x="48" y="4970" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M66,4982h5v5h-5zM66,4988h5v5h-5zM54,4994h29v5h-29zM78,5000h5v5h-5zM72,5006h5v5h-5zM66,5012h5v5h-5zM60,5018h17v5h-17zM54,5024h5v5h-5zM66,5024h5v5h-5zM78,5024h5v5h-5zM48,5030h5v5h-5zM66,5030h5v5h-5zM84,5030h5v5h-5zM66,5036h5v5h-5zM66,5042h5v5h-5zM66,5048h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="114" y="4963" class="sub">0xC9 ノ</text>
-<rect x="114" y="4970" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M144,4982h5v5h-5zM144,4988h5v5h-5zM144,4994h5v5h-5zM144,5000h5v5h-5zM138,5006h5v5h-5zM138,5012h5v5h-5zM138,5018h5v5h-5zM132,5024h5v5h-5zM132,5030h5v5h-5zM132,5036h5v5h-5zM126,5042h5v5h-5zM120,5048h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="180" y="4963" class="sub">0xCA ハ</text>
-<rect x="180" y="4970" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M192,4988h5v5h-5zM204,4988h5v5h-5zM192,4994h5v5h-5zM204,4994h5v5h-5zM192,5000h5v5h-5zM204,5000h5v5h-5zM192,5006h5v5h-5zM204,5006h5v5h-5zM186,5012h5v5h-5zM204,5012h5v5h-5zM186,5018h5v5h-5zM210,5018h5v5h-5zM186,5024h5v5h-5zM210,5024h5v5h-5zM186,5030h5v5h-5zM210,5030h5v5h-5zM180,5036h5v5h-5zM216,5036h5v5h-5zM180,5042h5v5h-5zM216,5042h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="246" y="4963" class="sub">0xCB ヒ</text>
-<rect x="246" y="4970" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M252,4982h5v5h-5zM252,4988h5v5h-5zM252,4994h5v5h-5zM276,4994h5v5h-5zM252,5000h5v5h-5zM270,5000h5v5h-5zM252,5006h5v5h-5zM264,5006h5v5h-5zM252,5012h11v5h-11zM252,5018h5v5h-5zM252,5024h5v5h-5zM252,5030h5v5h-5zM252,5036h5v5h-5zM252,5042h5v5h-5zM258,5048h23v5h-23z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="312" y="4963" class="sub">0xCC フ</text>
-<rect x="312" y="4970" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M318,4988h35v5h-35zM348,4994h5v5h-5zM348,5000h5v5h-5zM348,5006h5v5h-5zM342,5012h5v5h-5zM342,5018h5v5h-5zM342,5024h5v5h-5zM336,5030h5v5h-5zM336,5036h5v5h-5zM330,5042h5v5h-5zM324,5048h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="378" y="4963" class="sub">0xCD ヘ</text>
-<rect x="378" y="4970" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M390,5000h5v5h-5zM384,5006h5v5h-5zM396,5006h5v5h-5zM378,5012h5v5h-5zM402,5012h5v5h-5zM408,5018h5v5h-5zM414,5024h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="444" y="4963" class="sub">0xCE ホ</text>
-<rect x="444" y="4970" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M462,4982h5v5h-5zM462,4988h5v5h-5zM444,4994h41v5h-41zM462,5000h5v5h-5zM462,5006h5v5h-5zM462,5012h5v5h-5zM450,5018h5v5h-5zM462,5018h5v5h-5zM474,5018h5v5h-5zM450,5024h5v5h-5zM462,5024h5v5h-5zM474,5024h5v5h-5zM450,5030h5v5h-5zM462,5030h5v5h-5zM480,5030h5v5h-5zM444,5036h5v5h-5zM462,5036h5v5h-5zM480,5036h5v5h-5zM462,5042h5v5h-5zM456,5048h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="510" y="4963" class="sub">0xCF マ</text>
-<rect x="510" y="4970" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M510,4988h41v5h-41zM546,4994h5v5h-5zM540,5000h5v5h-5zM540,5006h5v5h-5zM516,5012h5v5h-5zM534,5012h5v5h-5zM522,5018h5v5h-5zM534,5018h5v5h-5zM528,5024h5v5h-5zM528,5030h5v5h-5zM534,5036h5v5h-5zM540,5042h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="576" y="4963" class="sub">0xD0 ミ</text>
-<rect x="576" y="4970" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M582,4988h11v5h-11zM594,4994h5v5h-5zM600,5000h5v5h-5zM606,5006h5v5h-5zM588,5012h5v5h-5zM594,5018h5v5h-5zM600,5024h5v5h-5zM582,5036h5v5h-5zM588,5042h5v5h-5zM594,5048h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="642" y="4963" class="sub">0xD1 ム</text>
-<rect x="642" y="4970" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M654,4988h5v5h-5zM654,4994h5v5h-5zM654,5000h5v5h-5zM654,5006h5v5h-5zM654,5012h5v5h-5zM648,5018h5v5h-5zM648,5024h5v5h-5zM666,5024h5v5h-5zM648,5030h5v5h-5zM672,5030h5v5h-5zM648,5036h5v5h-5zM678,5036h5v5h-5zM648,5042h5v5h-5zM678,5042h5v5h-5zM642,5048h41v5h-41z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="708" y="4963" class="sub">0xD2 メ</text>
-<rect x="708" y="4970" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M738,4988h5v5h-5zM738,4994h5v5h-5zM738,5000h5v5h-5zM714,5006h5v5h-5zM732,5006h5v5h-5zM720,5012h5v5h-5zM732,5012h5v5h-5zM726,5018h11v5h-11zM726,5024h17v5h-17zM726,5030h5v5h-5zM744,5030h5v5h-5zM726,5036h5v5h-5zM720,5042h5v5h-5zM720,5048h5v5h-5zM714,5054h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="774" y="4963" class="sub">0xD3 モ</text>
-<rect x="774" y="4970" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M780,4988h35v5h-35zM792,4994h5v5h-5zM792,5000h5v5h-5zM792,5006h5v5h-5zM774,5012h41v5h-41zM792,5018h5v5h-5zM792,5024h5v5h-5zM792,5030h5v5h-5zM792,5036h5v5h-5zM792,5042h5v5h-5zM792,5048h23v5h-23z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="48" y="5089" class="sub">0xD4 ヤ</text>
-<rect x="48" y="5096" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M54,5108h5v5h-5zM60,5114h5v5h-5zM60,5120h5v5h-5zM60,5126h29v5h-29zM60,5132h5v5h-5zM84,5132h5v5h-5zM48,5138h23v5h-23zM78,5138h5v5h-5zM66,5144h11v5h-11zM66,5150h5v5h-5zM66,5156h5v5h-5zM66,5162h5v5h-5zM66,5168h5v5h-5zM66,5174h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="114" y="5089" class="sub">0xD5 ユ</text>
-<rect x="114" y="5096" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M120,5114h23v5h-23zM138,5120h5v5h-5zM138,5126h5v5h-5zM138,5132h5v5h-5zM138,5138h5v5h-5zM138,5144h5v5h-5zM138,5150h5v5h-5zM138,5156h5v5h-5zM138,5162h5v5h-5zM114,5168h41v5h-41z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="180" y="5089" class="sub">0xD6 ヨ</text>
-<rect x="180" y="5096" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M186,5108h35v5h-35zM216,5114h5v5h-5zM216,5120h5v5h-5zM216,5126h5v5h-5zM216,5132h5v5h-5zM186,5138h35v5h-35zM216,5144h5v5h-5zM216,5150h5v5h-5zM216,5156h5v5h-5zM216,5162h5v5h-5zM186,5168h35v5h-35z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="246" y="5089" class="sub">0xD7 ラ</text>
-<rect x="246" y="5096" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M252,5108h29v5h-29zM246,5132h41v5h-41zM282,5138h5v5h-5zM276,5144h5v5h-5zM276,5150h5v5h-5zM270,5156h5v5h-5zM270,5162h5v5h-5zM264,5168h5v5h-5zM258,5174h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="312" y="5089" class="sub">0xD8 リ</text>
-<rect x="312" y="5096" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M318,5108h5v5h-5zM342,5108h5v5h-5zM318,5114h5v5h-5zM342,5114h5v5h-5zM318,5120h5v5h-5zM342,5120h5v5h-5zM318,5126h5v5h-5zM342,5126h5v5h-5zM318,5132h5v5h-5zM342,5132h5v5h-5zM318,5138h5v5h-5zM342,5138h5v5h-5zM318,5144h5v5h-5zM342,5144h5v5h-5zM342,5150h5v5h-5zM342,5156h5v5h-5zM336,5162h5v5h-5zM336,5168h5v5h-5zM330,5174h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="378" y="5089" class="sub">0xD9 ル</text>
-<rect x="378" y="5096" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M402,5108h5v5h-5zM402,5114h5v5h-5zM390,5120h5v5h-5zM402,5120h5v5h-5zM390,5126h5v5h-5zM402,5126h5v5h-5zM390,5132h5v5h-5zM402,5132h5v5h-5zM390,5138h5v5h-5zM402,5138h5v5h-5zM384,5144h5v5h-5zM402,5144h5v5h-5zM384,5150h5v5h-5zM402,5150h5v5h-5zM384,5156h5v5h-5zM402,5156h5v5h-5zM414,5156h5v5h-5zM384,5162h5v5h-5zM402,5162h5v5h-5zM414,5162h5v5h-5zM384,5168h5v5h-5zM402,5168h17v5h-17zM378,5174h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="444" y="5089" class="sub">0xDA レ</text>
-<rect x="444" y="5096" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M456,5108h5v5h-5zM456,5114h5v5h-5zM456,5120h5v5h-5zM456,5126h5v5h-5zM456,5132h5v5h-5zM456,5138h5v5h-5zM456,5144h5v5h-5zM456,5150h5v5h-5zM480,5150h5v5h-5zM456,5156h5v5h-5zM474,5156h5v5h-5zM456,5162h5v5h-5zM468,5162h5v5h-5zM456,5168h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="510" y="5089" class="sub">0xDB ロ</text>
-<rect x="510" y="5096" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M510,5114h41v5h-41zM510,5120h5v5h-5zM546,5120h5v5h-5zM510,5126h5v5h-5zM546,5126h5v5h-5zM510,5132h5v5h-5zM546,5132h5v5h-5zM510,5138h5v5h-5zM546,5138h5v5h-5zM510,5144h5v5h-5zM546,5144h5v5h-5zM510,5150h5v5h-5zM546,5150h5v5h-5zM510,5156h5v5h-5zM546,5156h5v5h-5zM510,5162h5v5h-5zM546,5162h5v5h-5zM510,5168h41v5h-41z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="576" y="5089" class="sub">0xDC ワ</text>
-<rect x="576" y="5096" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M576,5114h41v5h-41zM576,5120h5v5h-5zM612,5120h5v5h-5zM576,5126h5v5h-5zM612,5126h5v5h-5zM576,5132h5v5h-5zM612,5132h5v5h-5zM576,5138h5v5h-5zM612,5138h5v5h-5zM612,5144h5v5h-5zM612,5150h5v5h-5zM606,5156h5v5h-5zM606,5162h5v5h-5zM600,5168h5v5h-5zM594,5174h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="642" y="5089" class="sub">0xDD ン</text>
-<rect x="642" y="5096" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M648,5114h5v5h-5zM654,5120h5v5h-5zM672,5120h5v5h-5zM654,5126h5v5h-5zM672,5126h5v5h-5zM672,5132h5v5h-5zM672,5138h5v5h-5zM672,5144h5v5h-5zM666,5150h11v5h-11zM666,5156h5v5h-5zM666,5162h5v5h-5zM648,5168h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="708" y="5089" class="sub">0xDE ﾞ</text>
-<rect x="708" y="5096" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M708,5108h5v5h-5zM720,5108h5v5h-5zM708,5114h5v5h-5zM720,5114h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="774" y="5089" class="sub">0xDF ﾟ</text>
-<rect x="774" y="5096" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M774,5108h17v5h-17zM774,5114h5v5h-5zM786,5114h5v5h-5zM774,5120h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="48" y="5215" class="sub">0xE0 ー</text>
-<rect x="48" y="5222" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M48,5264h41v5h-41z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="114" y="5215" class="sub">0xE1 拡</text>
-<rect x="114" y="5222" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M120,5228h5v5h-5zM138,5228h5v5h-5zM120,5234h5v5h-5zM138,5234h5v5h-5zM120,5240h29v5h-29zM138,5252h5v5h-5zM120,5258h11v5h-11zM138,5258h5v5h-5zM120,5264h5v5h-5zM138,5264h5v5h-5zM120,5270h5v5h-5zM132,5270h5v5h-5zM144,5270h5v5h-5zM132,5276h5v5h-5zM144,5276h5v5h-5zM126,5282h11v5h-11zM144,5282h5v5h-5zM120,5288h29v5h-29zM120,5294h23v5h-23z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="180" y="5215" class="sub">0xE2 張</text>
-<rect x="180" y="5222" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M186,5228h5v5h-5zM204,5228h11v5h-11zM186,5234h29v5h-29zM198,5240h17v5h-17zM186,5246h11v5h-11zM186,5252h5v5h-5zM198,5252h17v5h-17zM198,5258h11v5h-11zM186,5264h35v5h-35zM192,5276h5v5h-5zM204,5276h11v5h-11zM192,5282h5v5h-5zM210,5282h5v5h-5zM192,5288h23v5h-23zM186,5294h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="246" y="5215" class="sub">0xE3 優</text>
-<rect x="246" y="5222" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M258,5228h11v5h-11zM276,5228h5v5h-5zM252,5234h29v5h-29zM252,5240h5v5h-5zM252,5246h5v5h-5zM264,5246h17v5h-17zM252,5252h5v5h-5zM264,5252h5v5h-5zM276,5252h5v5h-5zM246,5258h35v5h-35zM252,5264h29v5h-29zM252,5270h29v5h-29zM252,5276h5v5h-5zM264,5276h11v5h-11zM252,5282h23v5h-23zM252,5288h5v5h-5zM264,5288h11v5h-11zM252,5294h17v5h-17zM276,5294h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="312" y="5215" class="sub">0xE4 先</text>
-<rect x="312" y="5222" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M330,5228h5v5h-5zM318,5240h29v5h-29zM318,5246h5v5h-5zM330,5246h5v5h-5zM330,5252h5v5h-5zM318,5258h29v5h-29zM318,5264h29v5h-29zM324,5276h5v5h-5zM336,5276h5v5h-5zM324,5282h5v5h-5zM318,5288h5v5h-5zM336,5288h5v5h-5zM348,5288h5v5h-5zM318,5294h5v5h-5zM336,5294h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="378" y="5215" class="sub">0xE5 情</text>
-<rect x="378" y="5222" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M384,5228h5v5h-5zM396,5228h17v5h-17zM384,5234h5v5h-5zM396,5234h17v5h-17zM384,5240h29v5h-29zM384,5246h29v5h-29zM384,5252h5v5h-5zM396,5252h17v5h-17zM384,5258h5v5h-5zM396,5258h17v5h-17zM384,5264h5v5h-5zM396,5264h5v5h-5zM408,5264h5v5h-5zM396,5270h17v5h-17zM408,5276h5v5h-5zM384,5282h5v5h-5zM396,5282h17v5h-17zM408,5288h5v5h-5zM384,5294h5v5h-5zM408,5294h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="444" y="5215" class="sub">0xE6 報</text>
-<rect x="444" y="5222" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M468,5228h11v5h-11zM450,5234h29v5h-29zM450,5246h17v5h-17zM474,5246h5v5h-5zM450,5252h17v5h-17zM462,5258h17v5h-17zM450,5264h29v5h-29zM468,5270h11v5h-11zM450,5276h29v5h-29zM450,5282h11v5h-11zM474,5282h5v5h-5zM468,5288h11v5h-11zM468,5294h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="510" y="5215" class="sub">0xE7 反</text>
-<rect x="510" y="5222" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M522,5228h23v5h-23zM516,5234h29v5h-29zM516,5240h5v5h-5zM516,5246h5v5h-5zM516,5252h29v5h-29zM516,5258h11v5h-11zM540,5258h5v5h-5zM522,5264h5v5h-5zM540,5264h5v5h-5zM516,5270h5v5h-5zM528,5270h11v5h-11zM516,5276h5v5h-5zM528,5276h11v5h-11zM516,5282h5v5h-5zM528,5282h11v5h-11zM516,5288h29v5h-29zM516,5294h11v5h-11zM540,5294h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="576" y="5215" class="sub">0xE8 転</text>
-<rect x="576" y="5222" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M600,5228h11v5h-11zM582,5234h23v5h-23zM582,5240h11v5h-11zM582,5246h11v5h-11zM582,5258h35v5h-35zM582,5264h11v5h-11zM600,5264h5v5h-5zM582,5270h11v5h-11zM600,5270h5v5h-5zM600,5276h11v5h-11zM582,5282h17v5h-17zM600,5288h11v5h-11zM600,5294h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="642" y="5215" class="sub">0xE9 音</text>
-<rect x="642" y="5222" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M660,5228h5v5h-5zM648,5234h29v5h-29zM654,5240h5v5h-5zM666,5240h5v5h-5zM654,5246h5v5h-5zM648,5252h29v5h-29zM654,5264h17v5h-17zM648,5270h5v5h-5zM672,5270h5v5h-5zM648,5276h29v5h-29zM648,5282h5v5h-5zM672,5282h5v5h-5zM648,5288h11v5h-11zM666,5288h11v5h-11zM648,5294h29v5h-29z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="708" y="5215" class="sub">0xEA 声</text>
-<rect x="708" y="5222" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M726,5228h5v5h-5zM714,5234h29v5h-29zM726,5240h5v5h-5zM720,5246h17v5h-17zM714,5252h29v5h-29zM714,5258h29v5h-29zM714,5264h5v5h-5zM726,5264h5v5h-5zM738,5264h5v5h-5zM714,5270h29v5h-29zM714,5276h11v5h-11zM732,5276h11v5h-11zM714,5282h5v5h-5zM714,5288h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="774" y="5215" class="sub">0xEB 自</text>
-<rect x="774" y="5222" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M792,5228h5v5h-5zM786,5234h11v5h-11zM780,5240h29v5h-29zM774,5246h5v5h-5zM810,5246h5v5h-5zM774,5252h41v5h-41zM774,5258h11v5h-11zM804,5258h11v5h-11zM774,5264h5v5h-5zM810,5264h5v5h-5zM774,5270h41v5h-41zM774,5276h41v5h-41zM774,5282h5v5h-5zM810,5282h5v5h-5zM774,5288h41v5h-41zM774,5294h41v5h-41z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="48" y="5341" class="sub">0xEC 動</text>
-<rect x="48" y="5348" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M54,5354h11v5h-11zM54,5360h11v5h-11zM54,5366h17v5h-17zM54,5372h29v5h-29zM54,5378h11v5h-11zM78,5378h5v5h-5zM54,5384h17v5h-17zM78,5384h5v5h-5zM78,5390h5v5h-5zM54,5396h17v5h-17zM78,5396h5v5h-5zM60,5402h5v5h-5zM54,5408h17v5h-17zM60,5414h11v5h-11zM54,5420h5v5h-5zM66,5420h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="114" y="5341" class="sub">0xED 狭</text>
-<rect x="114" y="5348" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M138,5354h5v5h-5zM120,5360h5v5h-5zM138,5360h5v5h-5zM120,5366h29v5h-29zM120,5372h5v5h-5zM120,5378h5v5h-5zM132,5378h17v5h-17zM120,5384h11v5h-11zM138,5384h5v5h-5zM120,5390h29v5h-29zM120,5396h5v5h-5zM138,5396h5v5h-5zM120,5402h5v5h-5zM138,5402h5v5h-5zM138,5408h11v5h-11zM126,5414h11v5h-11zM144,5414h5v5h-5zM120,5420h11v5h-11zM150,5420h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="180" y="5341" class="sub">0xEE 帯</text>
-<rect x="180" y="5348" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M186,5360h29v5h-29zM186,5366h5v5h-5zM198,5366h5v5h-5zM210,5366h5v5h-5zM186,5372h29v5h-29zM192,5378h17v5h-17zM186,5384h29v5h-29zM180,5390h5v5h-5zM198,5390h5v5h-5zM216,5390h5v5h-5zM192,5396h17v5h-17zM186,5402h29v5h-29zM186,5408h5v5h-5zM210,5408h5v5h-5zM186,5414h5v5h-5zM204,5414h11v5h-11zM198,5420h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="246" y="5341" class="sub">0xEF 量</text>
-<rect x="246" y="5348" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M252,5354h29v5h-29zM252,5360h5v5h-5zM276,5360h5v5h-5zM252,5366h29v5h-29zM252,5378h29v5h-29zM252,5384h29v5h-29zM252,5390h5v5h-5zM264,5390h5v5h-5zM276,5390h5v5h-5zM252,5396h29v5h-29zM252,5402h5v5h-5zM264,5402h5v5h-5zM276,5402h5v5h-5zM252,5408h29v5h-29zM264,5414h5v5h-5zM252,5420h29v5h-29z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="312" y="5341" class="sub">0xF0 高</text>
-<rect x="312" y="5348" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M330,5354h5v5h-5zM318,5360h29v5h-29zM324,5372h17v5h-17zM324,5378h17v5h-17zM324,5384h11v5h-11zM318,5390h29v5h-29zM330,5396h5v5h-5zM318,5402h11v5h-11zM336,5402h11v5h-11zM318,5408h5v5h-5zM336,5408h11v5h-11zM318,5414h23v5h-23zM318,5420h5v5h-5zM342,5420h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="378" y="5341" class="sub">0xF1 速</text>
-<rect x="378" y="5348" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M384,5360h29v5h-29zM396,5366h11v5h-11zM396,5372h17v5h-17zM378,5384h11v5h-11zM396,5384h17v5h-17zM384,5390h5v5h-5zM396,5390h11v5h-11zM384,5396h5v5h-5zM396,5396h17v5h-17zM390,5402h11v5h-11zM408,5402h5v5h-5zM384,5408h5v5h-5zM384,5414h11v5h-11zM384,5420h29v5h-29z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="444" y="5341" class="sub">0xF2 周</text>
-<rect x="444" y="5348" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M450,5354h29v5h-29zM450,5360h5v5h-5zM462,5360h5v5h-5zM474,5360h11v5h-11zM450,5366h5v5h-5zM462,5366h5v5h-5zM450,5372h29v5h-29zM450,5378h5v5h-5zM480,5378h5v5h-5zM450,5384h29v5h-29zM450,5390h5v5h-5zM450,5396h29v5h-29zM450,5402h11v5h-11zM474,5402h5v5h-5zM450,5408h29v5h-29zM450,5414h5v5h-5zM480,5414h5v5h-5zM474,5420h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="510" y="5341" class="sub">0xF3 波</text>
-<rect x="510" y="5348" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M534,5354h5v5h-5zM516,5360h29v5h-29zM522,5366h5v5h-5zM534,5366h11v5h-11zM516,5378h5v5h-5zM522,5384h23v5h-23zM522,5390h11v5h-11zM540,5390h5v5h-5zM522,5396h11v5h-11zM540,5396h5v5h-5zM516,5402h11v5h-11zM534,5402h5v5h-5zM516,5408h11v5h-11zM534,5408h5v5h-5zM516,5414h29v5h-29zM522,5420h11v5h-11zM540,5420h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="576" y="5341" class="sub">0xF4 数</text>
-<rect x="576" y="5348" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M588,5354h5v5h-5zM582,5360h11v5h-11zM600,5360h5v5h-5zM582,5366h29v5h-29zM582,5372h11v5h-11zM582,5378h29v5h-29zM594,5384h17v5h-17zM582,5390h11v5h-11zM600,5390h11v5h-11zM582,5396h29v5h-29zM582,5402h5v5h-5zM582,5408h11v5h-11zM600,5408h11v5h-11zM582,5414h29v5h-29zM582,5420h5v5h-5zM594,5420h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="642" y="5341" class="sub">0xF5 設</text>
-<rect x="642" y="5348" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M648,5354h5v5h-5zM666,5354h5v5h-5zM648,5360h5v5h-5zM666,5360h5v5h-5zM648,5366h17v5h-17zM660,5372h5v5h-5zM672,5372h5v5h-5zM648,5378h11v5h-11zM672,5378h5v5h-5zM648,5390h29v5h-29zM672,5396h5v5h-5zM648,5402h11v5h-11zM666,5402h5v5h-5zM654,5408h5v5h-5zM666,5408h5v5h-5zM648,5414h29v5h-29zM648,5420h17v5h-17zM672,5420h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="708" y="5341" class="sub">0xF6 定</text>
-<rect x="708" y="5348" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M726,5354h5v5h-5zM714,5360h29v5h-29zM714,5366h5v5h-5zM738,5366h5v5h-5zM714,5378h29v5h-29zM726,5384h5v5h-5zM726,5390h5v5h-5zM714,5396h5v5h-5zM726,5396h17v5h-17zM714,5402h5v5h-5zM726,5402h5v5h-5zM714,5408h17v5h-17zM714,5414h17v5h-17zM726,5420h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="774" y="5341" class="sub">0xF7 池</text>
-<rect x="774" y="5348" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M798,5354h5v5h-5zM780,5360h5v5h-5zM798,5366h11v5h-11zM792,5372h17v5h-17zM780,5378h17v5h-17zM786,5384h5v5h-5zM792,5390h5v5h-5zM786,5396h5v5h-5zM798,5396h11v5h-11zM786,5402h5v5h-5zM780,5408h5v5h-5zM780,5414h5v5h-5zM810,5414h5v5h-5zM792,5420h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="48" y="5467" class="sub">0xF8 初</text>
-<rect x="48" y="5474" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M54,5486h5v5h-5zM66,5486h23v5h-23zM54,5492h11v5h-11zM72,5492h5v5h-5zM84,5492h5v5h-5zM60,5498h5v5h-5zM72,5498h5v5h-5zM84,5498h5v5h-5zM60,5504h5v5h-5zM72,5504h5v5h-5zM84,5504h5v5h-5zM54,5510h11v5h-11zM72,5510h5v5h-5zM84,5510h5v5h-5zM54,5516h11v5h-11zM72,5516h5v5h-5zM84,5516h5v5h-5zM54,5522h17v5h-17zM84,5522h5v5h-5zM84,5528h5v5h-5zM84,5534h5v5h-5zM60,5540h11v5h-11zM84,5540h5v5h-5zM60,5546h5v5h-5zM78,5546h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="114" y="5467" class="sub">0xF9 期</text>
-<rect x="114" y="5474" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M120,5480h5v5h-5zM144,5480h5v5h-5zM120,5486h35v5h-35zM120,5492h5v5h-5zM132,5492h5v5h-5zM150,5492h5v5h-5zM120,5498h11v5h-11zM138,5498h17v5h-17zM120,5504h35v5h-35zM120,5510h5v5h-5zM132,5510h5v5h-5zM150,5510h5v5h-5zM120,5516h35v5h-35zM138,5522h17v5h-17zM120,5528h23v5h-23zM150,5528h5v5h-5zM132,5534h11v5h-11zM150,5534h5v5h-5zM120,5540h5v5h-5zM132,5540h5v5h-5zM150,5540h5v5h-5zM132,5546h5v5h-5zM144,5546h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="180" y="5467" class="sub">0xFA 化</text>
-<rect x="180" y="5474" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M192,5480h5v5h-5zM192,5486h11v5h-11zM198,5492h5v5h-5zM186,5498h5v5h-5zM210,5498h5v5h-5zM186,5504h5v5h-5zM198,5504h11v5h-11zM186,5510h5v5h-5zM198,5510h5v5h-5zM186,5516h5v5h-5zM198,5516h5v5h-5zM198,5522h5v5h-5zM198,5528h5v5h-5zM198,5534h5v5h-5zM216,5534h5v5h-5zM198,5540h5v5h-5zM216,5540h5v5h-5zM198,5546h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="246" y="5467" class="sub">0xFB 校</text>
-<rect x="246" y="5474" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M252,5480h5v5h-5zM270,5480h5v5h-5zM270,5486h5v5h-5zM252,5492h29v5h-29zM252,5498h11v5h-11zM252,5504h5v5h-5zM264,5504h5v5h-5zM276,5504h5v5h-5zM252,5510h17v5h-17zM276,5510h5v5h-5zM252,5516h11v5h-11zM276,5516h5v5h-5zM252,5522h5v5h-5zM270,5522h5v5h-5zM252,5528h5v5h-5zM270,5528h5v5h-5zM252,5534h5v5h-5zM270,5534h5v5h-5zM264,5540h17v5h-17zM258,5546h11v5h-11zM276,5546h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="312" y="5467" class="sub">0xFC 正</text>
-<rect x="312" y="5474" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M318,5480h11v5h-11zM336,5480h11v5h-11zM318,5486h29v5h-29zM330,5498h5v5h-5zM330,5504h5v5h-5zM318,5510h5v5h-5zM330,5510h5v5h-5zM318,5516h5v5h-5zM330,5516h17v5h-17zM330,5522h5v5h-5zM330,5528h5v5h-5zM330,5534h5v5h-5zM318,5540h5v5h-5zM330,5540h5v5h-5zM312,5546h41v5h-41z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="378" y="5467" class="sub">0xFD 負</text>
-<rect x="378" y="5474" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M390,5480h11v5h-11zM384,5486h23v5h-23zM384,5492h5v5h-5zM396,5492h11v5h-11zM384,5498h29v5h-29zM384,5504h29v5h-29zM384,5510h5v5h-5zM408,5510h5v5h-5zM384,5516h5v5h-5zM408,5516h5v5h-5zM384,5522h29v5h-29zM384,5528h5v5h-5zM408,5528h5v5h-5zM384,5534h29v5h-29zM384,5540h11v5h-11zM402,5540h5v5h-5zM384,5546h5v5h-5zM408,5546h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="444" y="5467" class="sub">0xFE 切</text>
-<rect x="444" y="5474" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M450,5480h5v5h-5zM462,5480h17v5h-17zM450,5486h5v5h-5zM462,5486h23v5h-23zM450,5492h5v5h-5zM480,5492h5v5h-5zM450,5498h11v5h-11zM468,5498h5v5h-5zM480,5498h5v5h-5zM450,5504h5v5h-5zM468,5504h5v5h-5zM480,5504h5v5h-5zM450,5510h5v5h-5zM468,5510h5v5h-5zM480,5510h5v5h-5zM450,5516h5v5h-5zM468,5516h5v5h-5zM480,5516h5v5h-5zM450,5522h5v5h-5zM462,5522h5v5h-5zM480,5522h5v5h-5zM450,5528h17v5h-17zM480,5528h5v5h-5zM456,5534h11v5h-11zM480,5534h5v5h-5zM462,5540h5v5h-5zM480,5540h5v5h-5zM474,5546h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="510" y="5467" class="sub">0xFF 幅</text>
-<rect x="510" y="5474" width="42" height="96" fill="url(#cell-grid-6)"/>
-<path d="M516,5480h5v5h-5zM528,5480h17v5h-17zM516,5486h5v5h-5zM534,5486h11v5h-11zM516,5492h29v5h-29zM516,5498h17v5h-17zM516,5504h29v5h-29zM516,5510h11v5h-11zM516,5516h29v5h-29zM516,5522h11v5h-11zM516,5528h29v5h-29zM528,5540h17v5h-17zM528,5546h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="5667" class="section">gFontJapaneseExtraLargeCodes (font, 4 bytes, [FONT_JP_EXTRA_LARGE_GLYPHS])</text>
-<text x="32" y="5687" class="meta">source: App/japanese_font.c; element width: 1</text>
-<text x="48" y="5732" class="sub">element 0</text>
-<rect x="48" y="5739" width="6" height="48" fill="url(#cell-grid-6)"/>
-<path d="M48,5781h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="78" y="5732" class="sub">element 1</text>
-<rect x="78" y="5739" width="6" height="48" fill="url(#cell-grid-6)"/>
-<path d="M78,5739h5v5h-5zM78,5781h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="108" y="5732" class="sub">element 2</text>
-<rect x="108" y="5739" width="6" height="48" fill="url(#cell-grid-6)"/>
-<path d="M108,5757h5v5h-5zM108,5763h5v5h-5zM108,5781h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="138" y="5732" class="sub">element 3</text>
-<rect x="138" y="5739" width="6" height="48" fill="url(#cell-grid-6)"/>
-<path d="M138,5739h5v5h-5zM138,5757h5v5h-5zM138,5763h5v5h-5zM138,5781h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="5884" class="section">gFontJapaneseExtraLarge (font, 80 bytes, [4][20])</text>
-<text x="32" y="5904" class="meta">source: App/japanese_font.c; element width: 20</text>
-<text x="48" y="5949" class="sub">0x80 受</text>
-<rect x="48" y="5956" width="60" height="96" fill="url(#cell-grid-6)"/>
-<path d="M84,5968h17v5h-17zM60,5974h17v5h-17zM90,5974h11v5h-11zM54,5980h53v5h-53zM54,5986h5v5h-5zM96,5986h11v5h-11zM60,5992h41v5h-41zM66,5998h5v5h-5zM90,5998h11v5h-11zM72,6004h5v5h-5zM84,6004h5v5h-5zM66,6010h23v5h-23zM60,6016h11v5h-11zM84,6016h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="132" y="5949" class="sub">0x81 信</text>
-<rect x="132" y="5956" width="60" height="96" fill="url(#cell-grid-6)"/>
-<path d="M144,5968h11v5h-11zM144,5974h11v5h-11zM138,5980h11v5h-11zM138,5986h11v5h-11zM156,5986h29v5h-29zM138,5992h11v5h-11zM156,5992h29v5h-29zM138,5998h11v5h-11zM138,6004h11v5h-11zM156,6004h29v5h-29zM138,6010h11v5h-11zM156,6010h5v5h-5zM180,6010h5v5h-5zM138,6016h11v5h-11zM156,6016h5v5h-5zM180,6016h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="216" y="5949" class="sub">0x98 専</text>
-<rect x="216" y="5956" width="60" height="96" fill="url(#cell-grid-6)"/>
-<path d="M240,5968h5v5h-5zM240,5974h5v5h-5zM216,5980h59v5h-59zM240,5986h5v5h-5zM228,5992h35v5h-35zM222,5998h5v5h-5zM240,5998h5v5h-5zM258,5998h5v5h-5zM216,6004h59v5h-59zM222,6010h5v5h-5zM240,6010h5v5h-5zM258,6010h5v5h-5zM222,6016h5v5h-5zM240,6016h5v5h-5zM258,6016h5v5h-5zM216,6022h59v5h-59z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="300" y="5949" class="sub">0x99 用</text>
-<rect x="300" y="5956" width="60" height="96" fill="url(#cell-grid-6)"/>
-<path d="M306,5968h47v5h-47zM306,5974h5v5h-5zM324,5974h5v5h-5zM348,5974h5v5h-5zM306,5980h5v5h-5zM324,5980h5v5h-5zM348,5980h5v5h-5zM306,5986h47v5h-47zM306,5992h5v5h-5zM324,5992h5v5h-5zM348,5992h5v5h-5zM306,5998h5v5h-5zM324,5998h5v5h-5zM348,5998h5v5h-5zM306,6004h5v5h-5zM324,6004h5v5h-5zM348,6004h5v5h-5zM300,6010h5v5h-5zM324,6010h5v5h-5zM348,6010h5v5h-5zM300,6016h5v5h-5zM324,6016h5v5h-5zM348,6016h5v5h-5zM300,6022h5v5h-5zM324,6022h5v5h-5zM348,6022h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="6149" class="section">gFontSmallJapanese (font, 768 bytes, [FONT_CODE_MAX - 0x7F + 1][6])</text>
-<text x="32" y="6169" class="meta">source: App/japanese_font.c; element width: 6</text>
-<text x="48" y="6214" class="sub">0x80 受</text>
-<rect x="48" y="6221" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M78,6227h5v5h-5zM48,6233h35v5h-35zM48,6239h35v5h-35zM60,6245h5v5h-5zM72,6245h11v5h-11zM60,6251h17v5h-17zM48,6257h11v5h-11zM78,6257h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="108" y="6214" class="sub">0x81 信</text>
-<rect x="108" y="6221" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M120,6227h5v5h-5zM132,6227h11v5h-11zM114,6233h29v5h-29zM114,6239h5v5h-5zM114,6245h5v5h-5zM126,6245h17v5h-17zM114,6251h5v5h-5zM126,6251h17v5h-17zM114,6257h5v5h-5zM126,6257h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="168" y="6214" class="sub">0x82 変</text>
-<rect x="168" y="6221" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M186,6227h5v5h-5zM168,6233h35v5h-35zM168,6239h17v5h-17zM192,6239h5v5h-5zM174,6245h23v5h-23zM180,6251h17v5h-17zM168,6257h11v5h-11zM198,6257h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="228" y="6214" class="sub">0x83 調</text>
-<rect x="228" y="6221" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M228,6227h35v5h-35zM228,6233h17v5h-17zM252,6233h5v5h-5zM240,6239h23v5h-23zM228,6245h35v5h-35zM228,6251h35v5h-35zM228,6257h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="288" y="6214" class="sub">0x84 追</text>
-<rect x="288" y="6221" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M288,6227h5v5h-5zM312,6227h5v5h-5zM294,6233h5v5h-5zM306,6233h17v5h-17zM288,6239h11v5h-11zM306,6239h17v5h-17zM294,6245h5v5h-5zM306,6245h5v5h-5zM294,6251h5v5h-5zM306,6251h17v5h-17zM288,6257h5v5h-5zM300,6257h23v5h-23z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="348" y="6214" class="sub">0x85 加</text>
-<rect x="348" y="6221" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M354,6227h5v5h-5zM348,6233h35v5h-35zM354,6239h5v5h-5zM366,6239h11v5h-11zM354,6245h5v5h-5zM366,6245h11v5h-11zM348,6251h11v5h-11zM366,6251h17v5h-17zM348,6257h5v5h-5zM360,6257h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="408" y="6214" class="sub">0x86 保</text>
-<rect x="408" y="6221" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M420,6227h23v5h-23zM414,6233h17v5h-17zM438,6233h5v5h-5zM414,6239h29v5h-29zM414,6245h5v5h-5zM426,6245h17v5h-17zM414,6251h29v5h-29zM414,6257h5v5h-5zM432,6257h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="468" y="6214" class="sub">0x87 存</text>
-<rect x="468" y="6221" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M486,6227h5v5h-5zM468,6233h35v5h-35zM468,6239h35v5h-35zM474,6245h29v5h-29zM474,6251h5v5h-5zM492,6251h5v5h-5zM474,6257h5v5h-5zM486,6257h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="528" y="6214" class="sub">0x88 削</text>
-<rect x="528" y="6221" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M528,6227h5v5h-5zM540,6227h11v5h-11zM528,6233h5v5h-5zM540,6233h5v5h-5zM552,6233h5v5h-5zM528,6239h29v5h-29zM528,6245h29v5h-29zM528,6251h5v5h-5zM546,6251h5v5h-5zM528,6257h5v5h-5zM540,6257h11v5h-11zM558,6257h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="588" y="6214" class="sub">0x89 除</text>
-<rect x="588" y="6221" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M588,6227h11v5h-11zM612,6227h5v5h-5zM588,6233h23v5h-23zM618,6233h5v5h-5zM588,6239h35v5h-35zM588,6245h17v5h-17zM612,6245h5v5h-5zM588,6251h5v5h-5zM600,6251h5v5h-5zM612,6251h5v5h-5zM588,6257h5v5h-5zM606,6257h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="648" y="6214" class="sub">0x8A 名</text>
-<rect x="648" y="6221" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M660,6227h5v5h-5zM654,6233h29v5h-29zM648,6239h5v5h-5zM660,6239h5v5h-5zM672,6239h5v5h-5zM648,6245h35v5h-35zM660,6251h5v5h-5zM660,6257h23v5h-23z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="708" y="6214" class="sub">0x8B 長</text>
-<rect x="708" y="6221" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M720,6227h23v5h-23zM720,6233h17v5h-17zM720,6239h5v5h-5zM708,6245h35v5h-35zM720,6251h5v5h-5zM732,6251h11v5h-11zM714,6257h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="48" y="6292" class="sub">0x8C 短</text>
-<rect x="48" y="6299" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M48,6305h5v5h-5zM66,6305h17v5h-17zM48,6311h17v5h-17zM72,6311h11v5h-11zM48,6317h17v5h-17zM72,6317h11v5h-11zM54,6323h5v5h-5zM72,6323h5v5h-5zM48,6329h17v5h-17zM72,6329h11v5h-11zM48,6335h5v5h-5zM66,6335h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="108" y="6292" class="sub">0x8D 押</text>
-<rect x="108" y="6299" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M114,6305h29v5h-29zM108,6311h17v5h-17zM132,6311h5v5h-5zM114,6317h29v5h-29zM108,6323h35v5h-35zM114,6329h5v5h-5zM132,6329h5v5h-5zM108,6335h11v5h-11zM132,6335h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="168" y="6292" class="sub">0x8E 音</text>
-<rect x="168" y="6299" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M186,6305h5v5h-5zM174,6311h29v5h-29zM180,6317h5v5h-5zM192,6317h5v5h-5zM174,6323h29v5h-29zM174,6329h29v5h-29zM174,6335h29v5h-29z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="228" y="6292" class="sub">0x8F 電</text>
-<rect x="228" y="6299" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M234,6305h29v5h-29zM228,6311h35v5h-35zM228,6317h11v5h-11zM246,6317h5v5h-5zM258,6317h5v5h-5zM234,6323h29v5h-29zM234,6329h29v5h-29zM246,6335h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="288" y="6292" class="sub">0x90 源</text>
-<rect x="288" y="6299" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M288,6305h5v5h-5zM300,6305h23v5h-23zM300,6311h5v5h-5zM312,6311h11v5h-11zM288,6317h5v5h-5zM300,6317h5v5h-5zM312,6317h5v5h-5zM288,6323h5v5h-5zM300,6323h5v5h-5zM312,6323h11v5h-11zM288,6329h23v5h-23zM318,6329h5v5h-5zM288,6335h5v5h-5zM312,6335h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="348" y="6292" class="sub">0x91 更</text>
-<rect x="348" y="6299" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M348,6305h35v5h-35zM354,6311h29v5h-29zM354,6317h5v5h-5zM366,6317h5v5h-5zM378,6317h5v5h-5zM354,6323h29v5h-29zM360,6329h11v5h-11zM348,6335h11v5h-11zM372,6335h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="408" y="6292" class="sub">0x92 圧</text>
-<rect x="408" y="6299" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M414,6305h29v5h-29zM414,6311h5v5h-5zM432,6311h5v5h-5zM414,6317h5v5h-5zM426,6317h17v5h-17zM414,6323h5v5h-5zM432,6323h5v5h-5zM414,6329h5v5h-5zM432,6329h5v5h-5zM408,6335h5v5h-5zM420,6335h23v5h-23z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="468" y="6292" class="sub">0x93 表</text>
-<rect x="468" y="6299" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M486,6305h5v5h-5zM474,6311h29v5h-29zM468,6317h35v5h-35zM474,6323h11v5h-11zM492,6323h5v5h-5zM468,6329h5v5h-5zM480,6329h11v5h-11zM498,6329h5v5h-5zM474,6335h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="528" y="6292" class="sub">0x94 示</text>
-<rect x="528" y="6299" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M534,6305h29v5h-29zM528,6317h35v5h-35zM534,6323h5v5h-5zM546,6323h5v5h-5zM558,6323h5v5h-5zM528,6329h5v5h-5zM546,6329h5v5h-5zM540,6335h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="588" y="6292" class="sub">0x95 画</text>
-<rect x="588" y="6299" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M588,6305h35v5h-35zM588,6311h5v5h-5zM606,6311h5v5h-5zM588,6317h35v5h-35zM588,6323h11v5h-11zM606,6323h5v5h-5zM618,6323h5v5h-5zM588,6329h35v5h-35zM588,6335h35v5h-35z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="648" y="6292" class="sub">0x96 面</text>
-<rect x="648" y="6299" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M648,6305h35v5h-35zM660,6311h11v5h-11zM648,6317h35v5h-35zM648,6323h5v5h-5zM660,6323h17v5h-17zM648,6329h5v5h-5zM660,6329h5v5h-5zM672,6329h5v5h-5zM648,6335h35v5h-35z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="708" y="6292" class="sub">0x97 無</text>
-<rect x="708" y="6299" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M714,6305h5v5h-5zM708,6311h35v5h-35zM714,6317h5v5h-5zM726,6317h5v5h-5zM738,6317h5v5h-5zM708,6323h35v5h-35zM714,6329h5v5h-5zM726,6329h5v5h-5zM738,6329h5v5h-5zM708,6335h5v5h-5zM720,6335h5v5h-5zM732,6335h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="48" y="6370" class="sub">0x98 専</text>
-<rect x="48" y="6377" width="36" height="48" fill="url(#cell-grid-6)"/>
-<text x="108" y="6370" class="sub">0x99 用</text>
-<rect x="108" y="6377" width="36" height="48" fill="url(#cell-grid-6)"/>
-<text x="168" y="6370" class="sub">0x9A</text>
-<rect x="168" y="6377" width="36" height="48" fill="url(#cell-grid-6)"/>
-<text x="228" y="6370" class="sub">0x9B</text>
-<rect x="228" y="6377" width="36" height="48" fill="url(#cell-grid-6)"/>
-<text x="288" y="6370" class="sub">0x9C</text>
-<rect x="288" y="6377" width="36" height="48" fill="url(#cell-grid-6)"/>
-<text x="348" y="6370" class="sub">0x9D</text>
-<rect x="348" y="6377" width="36" height="48" fill="url(#cell-grid-6)"/>
-<text x="408" y="6370" class="sub">0x9E</text>
-<rect x="408" y="6377" width="36" height="48" fill="url(#cell-grid-6)"/>
-<text x="468" y="6370" class="sub">0x9F</text>
-<rect x="468" y="6377" width="36" height="48" fill="url(#cell-grid-6)"/>
-<text x="528" y="6370" class="sub">0xA0</text>
-<rect x="528" y="6377" width="36" height="48" fill="url(#cell-grid-6)"/>
-<text x="588" y="6370" class="sub">0xA1 ｡</text>
-<rect x="588" y="6377" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M594,6401h5v5h-5zM588,6407h5v5h-5zM600,6407h5v5h-5zM594,6413h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="648" y="6370" class="sub">0xA2 ｢</text>
-<rect x="648" y="6377" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M648,6377h17v5h-17zM648,6383h5v5h-5zM648,6389h5v5h-5zM648,6395h5v5h-5zM648,6401h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="708" y="6370" class="sub">0xA3 ｣</text>
-<rect x="708" y="6377" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M720,6389h5v5h-5zM720,6395h5v5h-5zM720,6401h5v5h-5zM720,6407h5v5h-5zM708,6413h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="48" y="6448" class="sub">0xA4 ､</text>
-<rect x="48" y="6455" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M48,6485h5v5h-5zM54,6491h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="108" y="6448" class="sub">0xA5 ･</text>
-<rect x="108" y="6455" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M114,6473h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="168" y="6448" class="sub">0xA6 ヲ</text>
-<rect x="168" y="6455" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M168,6461h17v5h-17zM180,6467h5v5h-5zM168,6473h17v5h-17zM180,6479h5v5h-5zM174,6485h5v5h-5zM168,6491h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="228" y="6448" class="sub">0xA7 ァ</text>
-<rect x="228" y="6455" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M228,6473h17v5h-17zM234,6479h11v5h-11zM234,6485h5v5h-5zM228,6491h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="288" y="6448" class="sub">0xA8 ィ</text>
-<rect x="288" y="6455" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M300,6473h5v5h-5zM294,6479h5v5h-5zM288,6485h11v5h-11zM294,6491h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="348" y="6448" class="sub">0xA9 ゥ</text>
-<rect x="348" y="6455" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M354,6473h5v5h-5zM348,6479h17v5h-17zM348,6485h5v5h-5zM360,6485h5v5h-5zM360,6491h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="408" y="6448" class="sub">0xAA ェ</text>
-<rect x="408" y="6455" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M408,6479h17v5h-17zM414,6485h5v5h-5zM408,6491h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="468" y="6448" class="sub">0xAB ォ</text>
-<rect x="468" y="6455" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M480,6473h5v5h-5zM468,6479h17v5h-17zM474,6485h11v5h-11zM468,6491h5v5h-5zM480,6491h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="528" y="6448" class="sub">0xAC ャ</text>
-<rect x="528" y="6455" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M534,6473h5v5h-5zM528,6479h17v5h-17zM534,6485h11v5h-11zM534,6491h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="588" y="6448" class="sub">0xAD ュ</text>
-<rect x="588" y="6455" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M588,6479h11v5h-11zM594,6485h5v5h-5zM588,6491h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="648" y="6448" class="sub">0xAE ョ</text>
-<rect x="648" y="6455" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M648,6473h17v5h-17zM654,6479h11v5h-11zM660,6485h5v5h-5zM648,6491h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="708" y="6448" class="sub">0xAF ッ</text>
-<rect x="708" y="6455" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M708,6473h17v5h-17zM708,6479h17v5h-17zM720,6485h5v5h-5zM708,6491h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="48" y="6526" class="sub">0xB0 ー</text>
-<rect x="48" y="6533" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M48,6545h5v5h-5zM54,6551h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="108" y="6526" class="sub">0xB1 ア</text>
-<rect x="108" y="6533" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M108,6539h17v5h-17zM120,6545h5v5h-5zM114,6551h11v5h-11zM114,6557h5v5h-5zM114,6563h5v5h-5zM108,6569h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="168" y="6526" class="sub">0xB2 イ</text>
-<rect x="168" y="6533" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M180,6533h5v5h-5zM180,6539h5v5h-5zM174,6545h5v5h-5zM168,6551h11v5h-11zM174,6557h5v5h-5zM174,6563h5v5h-5zM174,6569h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="228" y="6526" class="sub">0xB3 ウ</text>
-<rect x="228" y="6533" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M234,6533h5v5h-5zM228,6539h17v5h-17zM228,6545h5v5h-5zM240,6545h5v5h-5zM228,6551h5v5h-5zM240,6551h5v5h-5zM240,6557h5v5h-5zM240,6563h5v5h-5zM234,6569h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="288" y="6526" class="sub">0xB4 エ</text>
-<rect x="288" y="6533" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M288,6539h17v5h-17zM294,6545h5v5h-5zM294,6551h5v5h-5zM294,6557h5v5h-5zM294,6563h5v5h-5zM288,6569h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="348" y="6526" class="sub">0xB5 オ</text>
-<rect x="348" y="6533" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M360,6533h5v5h-5zM348,6539h17v5h-17zM360,6545h5v5h-5zM354,6551h11v5h-11zM348,6557h5v5h-5zM360,6557h5v5h-5zM360,6563h5v5h-5zM354,6569h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="408" y="6526" class="sub">0xB6 カ</text>
-<rect x="408" y="6533" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M414,6533h5v5h-5zM408,6539h17v5h-17zM414,6545h11v5h-11zM414,6551h11v5h-11zM408,6557h5v5h-5zM420,6557h5v5h-5zM408,6563h5v5h-5zM420,6563h5v5h-5zM408,6569h5v5h-5zM420,6569h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="468" y="6526" class="sub">0xB7 キ</text>
-<rect x="468" y="6533" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M474,6533h5v5h-5zM468,6539h17v5h-17zM474,6545h5v5h-5zM474,6551h5v5h-5zM468,6557h17v5h-17zM474,6563h5v5h-5zM474,6569h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="528" y="6526" class="sub">0xB8 ク</text>
-<rect x="528" y="6533" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M534,6533h5v5h-5zM534,6539h11v5h-11zM528,6545h5v5h-5zM540,6545h5v5h-5zM540,6551h5v5h-5zM540,6557h5v5h-5zM534,6563h5v5h-5zM528,6569h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="588" y="6526" class="sub">0xB9 ケ</text>
-<rect x="588" y="6533" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M588,6533h5v5h-5zM588,6539h17v5h-17zM588,6545h11v5h-11zM594,6551h5v5h-5zM594,6557h5v5h-5zM594,6563h5v5h-5zM588,6569h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="648" y="6526" class="sub">0xBA コ</text>
-<rect x="648" y="6533" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M648,6539h17v5h-17zM660,6545h5v5h-5zM660,6551h5v5h-5zM660,6557h5v5h-5zM660,6563h5v5h-5zM648,6569h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="708" y="6526" class="sub">0xBB サ</text>
-<rect x="708" y="6533" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M708,6533h5v5h-5zM720,6533h5v5h-5zM708,6539h17v5h-17zM708,6545h5v5h-5zM720,6545h5v5h-5zM708,6551h5v5h-5zM720,6551h5v5h-5zM720,6557h5v5h-5zM714,6563h5v5h-5zM708,6569h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="48" y="6604" class="sub">0xBC シ</text>
-<rect x="48" y="6611" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M48,6611h11v5h-11zM48,6623h11v5h-11zM60,6635h5v5h-5zM60,6641h5v5h-5zM48,6647h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="108" y="6604" class="sub">0xBD ス</text>
-<rect x="108" y="6611" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M108,6617h17v5h-17zM120,6623h5v5h-5zM114,6629h5v5h-5zM114,6635h5v5h-5zM108,6641h5v5h-5zM120,6641h5v5h-5zM108,6647h5v5h-5zM120,6647h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="168" y="6604" class="sub">0xBE セ</text>
-<rect x="168" y="6611" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M168,6611h5v5h-5zM168,6617h17v5h-17zM168,6623h5v5h-5zM180,6623h5v5h-5zM168,6629h5v5h-5zM180,6629h5v5h-5zM168,6635h5v5h-5zM168,6641h5v5h-5zM168,6647h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="228" y="6604" class="sub">0xBF ソ</text>
-<rect x="228" y="6611" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M228,6611h5v5h-5zM240,6611h5v5h-5zM234,6617h11v5h-11zM234,6623h11v5h-11zM240,6629h5v5h-5zM240,6635h5v5h-5zM234,6641h5v5h-5zM228,6647h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="288" y="6604" class="sub">0xC0 タ</text>
-<rect x="288" y="6611" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M294,6611h5v5h-5zM294,6617h11v5h-11zM288,6623h5v5h-5zM300,6623h5v5h-5zM294,6629h11v5h-11zM300,6635h5v5h-5zM294,6641h5v5h-5zM288,6647h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="348" y="6604" class="sub">0xC1 チ</text>
-<rect x="348" y="6611" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M360,6611h5v5h-5zM348,6617h11v5h-11zM354,6623h5v5h-5zM348,6629h17v5h-17zM354,6635h5v5h-5zM354,6641h5v5h-5zM348,6647h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="408" y="6604" class="sub">0xC2 ツ</text>
-<rect x="408" y="6611" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M408,6617h17v5h-17zM408,6623h17v5h-17zM408,6629h17v5h-17zM420,6635h5v5h-5zM420,6641h5v5h-5zM408,6647h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="468" y="6604" class="sub">0xC3 テ</text>
-<rect x="468" y="6611" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M468,6617h17v5h-17zM468,6629h17v5h-17zM474,6635h5v5h-5zM474,6641h5v5h-5zM468,6647h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="528" y="6604" class="sub">0xC4 ト</text>
-<rect x="528" y="6611" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M528,6611h5v5h-5zM528,6617h5v5h-5zM528,6623h5v5h-5zM528,6629h11v5h-11zM528,6635h5v5h-5zM540,6635h5v5h-5zM528,6641h5v5h-5zM528,6647h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="588" y="6604" class="sub">0xC5 ナ</text>
-<rect x="588" y="6611" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M594,6611h5v5h-5zM594,6617h5v5h-5zM588,6623h17v5h-17zM594,6629h5v5h-5zM594,6635h5v5h-5zM594,6641h5v5h-5zM588,6647h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="648" y="6604" class="sub">0xC6 ニ</text>
-<rect x="648" y="6611" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M654,6617h11v5h-11zM648,6647h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="708" y="6604" class="sub">0xC7 ヌ</text>
-<rect x="708" y="6611" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M708,6617h17v5h-17zM720,6623h5v5h-5zM708,6629h5v5h-5zM720,6629h5v5h-5zM714,6635h5v5h-5zM714,6641h5v5h-5zM708,6647h5v5h-5zM720,6647h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="48" y="6682" class="sub">0xC8 ネ</text>
-<rect x="48" y="6689" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M54,6689h5v5h-5zM48,6695h17v5h-17zM60,6701h5v5h-5zM54,6707h5v5h-5zM48,6713h17v5h-17zM54,6719h5v5h-5zM54,6725h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="108" y="6682" class="sub">0xC9 ノ</text>
-<rect x="108" y="6689" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M120,6689h5v5h-5zM120,6695h5v5h-5zM120,6701h5v5h-5zM120,6707h5v5h-5zM120,6713h5v5h-5zM114,6719h5v5h-5zM108,6725h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="168" y="6682" class="sub">0xCA ハ</text>
-<rect x="168" y="6689" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M174,6689h5v5h-5zM180,6695h5v5h-5zM168,6701h5v5h-5zM180,6701h5v5h-5zM168,6707h5v5h-5zM180,6707h5v5h-5zM168,6713h5v5h-5zM180,6713h5v5h-5zM168,6719h5v5h-5zM180,6719h5v5h-5zM168,6725h5v5h-5zM180,6725h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="228" y="6682" class="sub">0xCB ヒ</text>
-<rect x="228" y="6689" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M228,6689h5v5h-5zM228,6695h5v5h-5zM228,6701h17v5h-17zM228,6707h5v5h-5zM228,6713h5v5h-5zM228,6719h5v5h-5zM234,6725h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="288" y="6682" class="sub">0xCC フ</text>
-<rect x="288" y="6689" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M288,6695h17v5h-17zM300,6701h5v5h-5zM300,6707h5v5h-5zM300,6713h5v5h-5zM294,6719h5v5h-5zM288,6725h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="348" y="6682" class="sub">0xCD ヘ</text>
-<rect x="348" y="6689" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M354,6695h5v5h-5zM354,6701h5v5h-5zM348,6707h5v5h-5zM360,6707h5v5h-5zM348,6713h5v5h-5zM360,6713h5v5h-5zM360,6719h5v5h-5zM360,6725h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="408" y="6682" class="sub">0xCE ホ</text>
-<rect x="408" y="6689" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M414,6689h5v5h-5zM408,6695h17v5h-17zM414,6701h5v5h-5zM408,6707h17v5h-17zM408,6713h17v5h-17zM414,6719h5v5h-5zM414,6725h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="468" y="6682" class="sub">0xCF マ</text>
-<rect x="468" y="6689" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M468,6695h17v5h-17zM480,6701h5v5h-5zM480,6707h5v5h-5zM468,6713h11v5h-11zM474,6719h5v5h-5zM480,6725h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="528" y="6682" class="sub">0xD0 ミ</text>
-<rect x="528" y="6689" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M528,6695h17v5h-17zM534,6707h11v5h-11zM528,6725h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="588" y="6682" class="sub">0xD1 ム</text>
-<rect x="588" y="6689" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M594,6689h5v5h-5zM594,6695h5v5h-5zM594,6701h5v5h-5zM588,6707h5v5h-5zM588,6713h5v5h-5zM600,6713h5v5h-5zM588,6719h5v5h-5zM600,6719h5v5h-5zM588,6725h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="648" y="6682" class="sub">0xD2 メ</text>
-<rect x="648" y="6689" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M660,6689h5v5h-5zM648,6695h5v5h-5zM660,6695h5v5h-5zM654,6701h5v5h-5zM654,6707h5v5h-5zM654,6713h5v5h-5zM648,6719h5v5h-5zM660,6719h5v5h-5zM648,6725h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="708" y="6682" class="sub">0xD3 モ</text>
-<rect x="708" y="6689" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M708,6695h17v5h-17zM714,6701h5v5h-5zM708,6707h17v5h-17zM714,6713h5v5h-5zM714,6719h5v5h-5zM714,6725h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="48" y="6760" class="sub">0xD4 ヤ</text>
-<rect x="48" y="6767" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M54,6767h5v5h-5zM48,6773h17v5h-17zM54,6779h11v5h-11zM54,6785h11v5h-11zM54,6791h5v5h-5zM54,6797h5v5h-5zM54,6803h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="108" y="6760" class="sub">0xD5 ユ</text>
-<rect x="108" y="6767" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M108,6773h11v5h-11zM114,6779h5v5h-5zM114,6785h5v5h-5zM114,6791h5v5h-5zM114,6797h5v5h-5zM108,6803h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="168" y="6760" class="sub">0xD6 ヨ</text>
-<rect x="168" y="6767" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M168,6773h17v5h-17zM180,6779h5v5h-5zM168,6785h17v5h-17zM180,6791h5v5h-5zM180,6797h5v5h-5zM168,6803h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="228" y="6760" class="sub">0xD7 ラ</text>
-<rect x="228" y="6767" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M228,6773h17v5h-17zM228,6785h17v5h-17zM240,6791h5v5h-5zM240,6797h5v5h-5zM228,6803h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="288" y="6760" class="sub">0xD8 リ</text>
-<rect x="288" y="6767" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M288,6767h5v5h-5zM300,6767h5v5h-5zM288,6773h5v5h-5zM300,6773h5v5h-5zM288,6779h5v5h-5zM300,6779h5v5h-5zM288,6785h5v5h-5zM300,6785h5v5h-5zM300,6791h5v5h-5zM300,6797h5v5h-5zM294,6803h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="348" y="6760" class="sub">0xD9 ル</text>
-<rect x="348" y="6767" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M354,6767h5v5h-5zM354,6773h5v5h-5zM348,6779h11v5h-11zM348,6785h11v5h-11zM348,6791h11v5h-11zM348,6797h11v5h-11zM348,6803h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="408" y="6760" class="sub">0xDA レ</text>
-<rect x="408" y="6767" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M408,6767h5v5h-5zM408,6773h5v5h-5zM408,6779h5v5h-5zM408,6785h5v5h-5zM408,6791h5v5h-5zM408,6797h5v5h-5zM420,6797h5v5h-5zM408,6803h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="468" y="6760" class="sub">0xDB ロ</text>
-<rect x="468" y="6767" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M468,6773h17v5h-17zM468,6779h5v5h-5zM480,6779h5v5h-5zM468,6785h5v5h-5zM480,6785h5v5h-5zM468,6791h5v5h-5zM480,6791h5v5h-5zM468,6797h5v5h-5zM480,6797h5v5h-5zM468,6803h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="528" y="6760" class="sub">0xDC ワ</text>
-<rect x="528" y="6767" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M528,6773h17v5h-17zM528,6779h5v5h-5zM540,6779h5v5h-5zM540,6785h5v5h-5zM540,6791h5v5h-5zM534,6797h5v5h-5zM528,6803h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="588" y="6760" class="sub">0xDD ン</text>
-<rect x="588" y="6767" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M588,6773h11v5h-11zM600,6791h5v5h-5zM600,6797h5v5h-5zM588,6803h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="648" y="6760" class="sub">0xDE ﾞ</text>
-<rect x="648" y="6767" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M648,6767h5v5h-5zM660,6767h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="708" y="6760" class="sub">0xDF ﾟ</text>
-<rect x="708" y="6767" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M714,6767h5v5h-5zM708,6773h5v5h-5zM720,6773h5v5h-5zM714,6779h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="48" y="6838" class="sub">0xE0 ー</text>
-<rect x="48" y="6845" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M48,6863h35v5h-35zM48,6869h35v5h-35z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="108" y="6838" class="sub">0xE1 拡</text>
-<rect x="108" y="6845" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M114,6851h5v5h-5zM126,6851h11v5h-11zM114,6857h11v5h-11zM114,6863h17v5h-17zM114,6869h5v5h-5zM114,6875h23v5h-23zM114,6881h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="168" y="6838" class="sub">0xE2 張</text>
-<rect x="168" y="6845" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M180,6851h17v5h-17zM174,6857h5v5h-5zM186,6857h5v5h-5zM168,6863h29v5h-29zM180,6869h5v5h-5zM192,6869h5v5h-5zM180,6875h17v5h-17zM174,6881h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="228" y="6838" class="sub">0xE3 優</text>
-<rect x="228" y="6845" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M234,6851h23v5h-23zM234,6857h23v5h-23zM234,6863h29v5h-29zM234,6869h23v5h-23zM234,6875h23v5h-23z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="288" y="6838" class="sub">0xE4 先</text>
-<rect x="288" y="6845" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M294,6851h17v5h-17zM306,6857h5v5h-5zM294,6863h23v5h-23zM294,6875h5v5h-5zM312,6881h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="348" y="6838" class="sub">0xE5 情</text>
-<rect x="348" y="6845" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M354,6851h23v5h-23zM348,6857h11v5h-11zM366,6857h11v5h-11zM366,6863h11v5h-11zM360,6869h5v5h-5zM372,6869h5v5h-5zM360,6875h5v5h-5zM372,6875h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="408" y="6838" class="sub">0xE6 報</text>
-<rect x="408" y="6845" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M414,6851h17v5h-17zM414,6857h11v5h-11zM414,6863h23v5h-23zM414,6869h23v5h-23zM414,6875h5v5h-5zM426,6875h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="468" y="6838" class="sub">0xE7 反</text>
-<rect x="468" y="6845" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M474,6851h5v5h-5zM474,6857h5v5h-5zM474,6863h11v5h-11zM492,6863h5v5h-5zM486,6869h5v5h-5zM486,6875h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="528" y="6838" class="sub">0xE8 転</text>
-<rect x="528" y="6845" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M534,6851h11v5h-11zM534,6857h11v5h-11zM534,6863h23v5h-23zM534,6869h5v5h-5zM534,6875h23v5h-23z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="588" y="6838" class="sub">0xE9 音</text>
-<rect x="588" y="6845" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M594,6851h23v5h-23zM594,6857h23v5h-23zM594,6863h23v5h-23zM594,6869h5v5h-5zM612,6869h5v5h-5zM594,6875h23v5h-23z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="648" y="6838" class="sub">0xEA 声</text>
-<rect x="648" y="6845" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M660,6851h11v5h-11zM660,6857h17v5h-17zM654,6863h23v5h-23zM654,6869h23v5h-23z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="708" y="6838" class="sub">0xEB 自</text>
-<rect x="708" y="6845" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M720,6851h5v5h-5zM708,6857h11v5h-11zM732,6857h11v5h-11zM708,6863h5v5h-5zM738,6863h5v5h-5zM708,6869h11v5h-11zM732,6869h11v5h-11zM708,6875h11v5h-11zM732,6875h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="48" y="6916" class="sub">0xEC 動</text>
-<rect x="48" y="6923" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M54,6929h11v5h-11zM72,6929h5v5h-5zM54,6935h23v5h-23zM54,6941h11v5h-11zM54,6947h11v5h-11zM54,6953h17v5h-17zM72,6959h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="108" y="6916" class="sub">0xED 狭</text>
-<rect x="108" y="6923" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M114,6929h5v5h-5zM126,6929h11v5h-11zM114,6935h5v5h-5zM126,6935h11v5h-11zM114,6941h23v5h-23zM114,6947h5v5h-5zM126,6947h5v5h-5zM120,6953h5v5h-5zM132,6953h5v5h-5zM114,6959h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="168" y="6916" class="sub">0xEE 帯</text>
-<rect x="168" y="6923" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M174,6929h23v5h-23zM174,6935h23v5h-23zM180,6941h11v5h-11zM180,6947h11v5h-11zM192,6953h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="228" y="6916" class="sub">0xEF 量</text>
-<rect x="228" y="6923" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M234,6929h23v5h-23zM234,6935h23v5h-23zM234,6941h23v5h-23zM234,6947h23v5h-23zM234,6953h23v5h-23zM240,6959h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="288" y="6916" class="sub">0xF0 高</text>
-<rect x="288" y="6923" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M294,6929h23v5h-23zM294,6935h23v5h-23zM294,6941h23v5h-23zM294,6947h23v5h-23zM294,6953h23v5h-23zM312,6959h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="348" y="6916" class="sub">0xF1 速</text>
-<rect x="348" y="6923" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M360,6929h17v5h-17zM360,6935h17v5h-17zM354,6941h5v5h-5zM366,6941h11v5h-11zM366,6947h11v5h-11zM354,6953h5v5h-5zM366,6959h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="408" y="6916" class="sub">0xF2 周</text>
-<rect x="408" y="6923" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M414,6929h5v5h-5zM426,6929h17v5h-17zM426,6935h5v5h-5zM414,6941h23v5h-23zM414,6947h23v5h-23zM414,6953h11v5h-11zM438,6953h5v5h-5zM432,6959h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="468" y="6916" class="sub">0xF3 波</text>
-<rect x="468" y="6923" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M474,6929h23v5h-23zM480,6941h17v5h-17zM474,6947h17v5h-17zM474,6953h5v5h-5zM486,6953h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="528" y="6916" class="sub">0xF4 数</text>
-<rect x="528" y="6923" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M534,6929h23v5h-23zM534,6935h23v5h-23zM534,6941h5v5h-5zM546,6941h11v5h-11zM534,6947h11v5h-11zM552,6947h5v5h-5zM534,6953h11v5h-11zM552,6953h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="588" y="6916" class="sub">0xF5 設</text>
-<rect x="588" y="6923" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M594,6929h5v5h-5zM606,6929h11v5h-11zM612,6935h5v5h-5zM594,6941h5v5h-5zM606,6941h11v5h-11zM606,6947h11v5h-11zM594,6953h23v5h-23z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="648" y="6916" class="sub">0xF6 定</text>
-<rect x="648" y="6923" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M654,6929h23v5h-23zM660,6935h11v5h-11zM666,6941h5v5h-5zM654,6947h5v5h-5zM666,6947h5v5h-5zM654,6953h11v5h-11zM666,6959h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="708" y="6916" class="sub">0xF7 池</text>
-<rect x="708" y="6923" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M726,6929h5v5h-5zM720,6935h17v5h-17zM720,6941h5v5h-5zM720,6953h5v5h-5zM726,6959h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="48" y="6994" class="sub">0xF8 初</text>
-<rect x="48" y="7001" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M54,7007h29v5h-29zM54,7019h11v5h-11zM54,7025h17v5h-17zM78,7025h5v5h-5zM78,7031h5v5h-5zM72,7037h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="108" y="6994" class="sub">0xF9 期</text>
-<rect x="108" y="7001" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M114,7007h17v5h-17zM138,7007h5v5h-5zM114,7013h29v5h-29zM114,7019h17v5h-17zM138,7019h5v5h-5zM114,7025h17v5h-17zM138,7025h5v5h-5zM114,7031h17v5h-17zM138,7031h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="168" y="6994" class="sub">0xFA 化</text>
-<rect x="168" y="7001" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M180,7007h5v5h-5zM174,7013h5v5h-5zM186,7013h11v5h-11zM174,7019h5v5h-5zM186,7019h5v5h-5zM198,7031h5v5h-5zM186,7037h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="228" y="6994" class="sub">0xFB 校</text>
-<rect x="228" y="7001" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M234,7007h5v5h-5zM246,7007h11v5h-11zM234,7013h11v5h-11zM234,7019h11v5h-11zM234,7025h5v5h-5zM246,7025h5v5h-5zM246,7031h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="288" y="6994" class="sub">0xFC 正</text>
-<rect x="288" y="7001" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M300,7007h11v5h-11zM294,7019h5v5h-5zM306,7019h11v5h-11zM294,7031h5v5h-5zM306,7031h5v5h-5zM294,7037h23v5h-23z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="348" y="6994" class="sub">0xFD 負</text>
-<rect x="348" y="7001" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M354,7007h17v5h-17zM354,7013h23v5h-23zM354,7019h5v5h-5zM372,7019h5v5h-5zM354,7025h5v5h-5zM372,7025h5v5h-5zM354,7031h23v5h-23z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="408" y="6994" class="sub">0xFE 切</text>
-<rect x="408" y="7001" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M414,7007h5v5h-5zM426,7007h17v5h-17zM414,7013h5v5h-5zM426,7019h5v5h-5zM438,7019h5v5h-5zM414,7025h17v5h-17zM438,7025h5v5h-5zM420,7031h5v5h-5zM438,7031h5v5h-5zM432,7037h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="468" y="6994" class="sub">0xFF 幅</text>
-<rect x="468" y="7001" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M474,7007h5v5h-5zM486,7007h11v5h-11zM474,7013h11v5h-11zM492,7013h5v5h-5zM474,7019h23v5h-23zM474,7025h23v5h-23zM486,7031h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="7146" class="section">gFontPowerSave (font, 12 bytes, [2][6])</text>
-<text x="32" y="7166" class="meta">source: App/bitmaps.c; element width: 6</text>
-<text x="48" y="7211" class="sub">element 0</text>
-<rect x="48" y="7218" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M54,7218h23v5h-23zM54,7224h5v5h-5zM78,7224h5v5h-5zM54,7230h5v5h-5zM78,7230h5v5h-5zM54,7236h23v5h-23zM54,7242h5v5h-5zM54,7248h5v5h-5zM54,7254h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="108" y="7211" class="sub">element 1</text>
-<rect x="108" y="7218" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M120,7218h17v5h-17zM114,7224h5v5h-5zM138,7224h5v5h-5zM114,7230h5v5h-5zM120,7236h17v5h-17zM138,7242h5v5h-5zM114,7248h5v5h-5zM138,7248h5v5h-5zM120,7254h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="7363" class="section">gFontPttOnePush (font, 12 bytes, [2][6])</text>
-<text x="32" y="7383" class="meta">source: App/bitmaps.c; element width: 6</text>
-<text x="48" y="7428" class="sub">element 0</text>
-<rect x="48" y="7435" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M60,7435h17v5h-17zM54,7441h5v5h-5zM78,7441h5v5h-5zM54,7447h5v5h-5zM78,7447h5v5h-5zM54,7453h5v5h-5zM78,7453h5v5h-5zM54,7459h5v5h-5zM78,7459h5v5h-5zM54,7465h5v5h-5zM78,7465h5v5h-5zM60,7471h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="108" y="7428" class="sub">element 1</text>
-<rect x="108" y="7435" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M114,7435h23v5h-23zM114,7441h5v5h-5zM138,7441h5v5h-5zM114,7447h5v5h-5zM138,7447h5v5h-5zM114,7453h23v5h-23zM114,7459h5v5h-5zM114,7465h5v5h-5zM114,7471h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="7580" class="section">gFontPttClassic (font, 12 bytes, [2][6])</text>
-<text x="32" y="7600" class="meta">source: App/bitmaps.c; element width: 6</text>
-<text x="48" y="7645" class="sub">element 0</text>
-<rect x="48" y="7652" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M60,7652h17v5h-17zM54,7658h5v5h-5zM78,7658h5v5h-5zM54,7664h5v5h-5zM54,7670h5v5h-5zM54,7676h5v5h-5zM54,7682h5v5h-5zM78,7682h5v5h-5zM60,7688h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="108" y="7645" class="sub">element 1</text>
-<rect x="108" y="7652" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M114,7652h5v5h-5zM114,7658h5v5h-5zM114,7664h5v5h-5zM114,7670h5v5h-5zM114,7676h5v5h-5zM114,7682h5v5h-5zM114,7688h29v5h-29z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="7797" class="section">gFontF (font, 8 bytes, [8])</text>
-<text x="32" y="7817" class="meta">source: App/bitmaps.c; element width: 8</text>
-<text x="48" y="7862" class="sub">element 0</text>
-<rect x="48" y="7869" width="48" height="48" fill="url(#cell-grid-6)"/>
-<path d="M48,7869h5v5h-5zM90,7869h5v5h-5zM48,7875h5v5h-5zM60,7875h35v5h-35zM48,7881h5v5h-5zM60,7881h35v5h-35zM48,7887h5v5h-5zM84,7887h11v5h-11zM48,7893h5v5h-5zM60,7893h35v5h-35zM48,7899h5v5h-5zM60,7899h35v5h-35zM48,7905h5v5h-5zM60,7905h35v5h-35z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="8014" class="section">gFontS (font, 6 bytes, [6])</text>
-<text x="32" y="8034" class="meta">source: App/bitmaps.c; element width: 6</text>
-<text x="48" y="8079" class="sub">element 0</text>
-<rect x="48" y="8086" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M54,8086h23v5h-23zM48,8092h5v5h-5zM78,8092h5v5h-5zM48,8098h5v5h-5zM54,8104h23v5h-23zM78,8110h5v5h-5zM48,8116h5v5h-5zM78,8116h5v5h-5zM54,8122h23v5h-23z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="8231" class="section">gFontKeyLock (font, 9 bytes, [9])</text>
-<text x="32" y="8251" class="meta">source: App/bitmaps.c; element width: 9</text>
-<text x="48" y="8296" class="sub">element 0</text>
-<rect x="48" y="8303" width="54" height="48" fill="url(#cell-grid-6)"/>
-<path d="M60,8303h29v5h-29zM54,8309h5v5h-5zM90,8309h5v5h-5zM48,8315h53v5h-53zM48,8321h5v5h-5zM96,8321h5v5h-5zM48,8327h5v5h-5zM96,8327h5v5h-5zM48,8333h5v5h-5zM96,8333h5v5h-5zM48,8339h53v5h-53z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="8448" class="section">gFontLight (font, 9 bytes, [9])</text>
-<text x="32" y="8468" class="meta">source: App/bitmaps.c; element width: 9</text>
-<text x="48" y="8513" class="sub">element 0</text>
-<rect x="48" y="8520" width="54" height="48" fill="url(#cell-grid-6)"/>
-<path d="M60,8520h29v5h-29zM54,8526h5v5h-5zM90,8526h5v5h-5zM48,8532h5v5h-5zM66,8532h5v5h-5zM78,8532h5v5h-5zM96,8532h5v5h-5zM48,8538h5v5h-5zM66,8538h17v5h-17zM96,8538h5v5h-5zM54,8544h5v5h-5zM72,8544h5v5h-5zM90,8544h5v5h-5zM60,8550h29v5h-29zM66,8556h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="8665" class="section">gFontLightOff (font, 9 bytes, [9])</text>
-<text x="32" y="8685" class="meta">source: App/bitmaps.c; element width: 9</text>
-<text x="48" y="8730" class="sub">element 0</text>
-<rect x="48" y="8737" width="54" height="48" fill="url(#cell-grid-6)"/>
-<path d="M60,8737h29v5h-29zM54,8743h5v5h-5zM90,8743h5v5h-5zM48,8749h5v5h-5zM96,8749h5v5h-5zM48,8755h5v5h-5zM96,8755h5v5h-5zM54,8761h5v5h-5zM90,8761h5v5h-5zM60,8767h29v5h-29zM66,8773h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="8882" class="section">gFontMute (font, 12 bytes, [12])</text>
-<text x="32" y="8902" class="meta">source: App/bitmaps.c; element width: 12</text>
-<text x="48" y="8947" class="sub">element 0</text>
-<rect x="48" y="8954" width="72" height="48" fill="url(#cell-grid-6)"/>
-<path d="M72,8954h11v5h-11zM66,8960h5v5h-5zM78,8960h5v5h-5zM90,8960h5v5h-5zM114,8960h5v5h-5zM48,8966h17v5h-17zM78,8966h5v5h-5zM96,8966h5v5h-5zM108,8966h5v5h-5zM48,8972h11v5h-11zM78,8972h5v5h-5zM102,8972h5v5h-5zM48,8978h17v5h-17zM78,8978h5v5h-5zM96,8978h5v5h-5zM108,8978h5v5h-5zM66,8984h5v5h-5zM78,8984h5v5h-5zM90,8984h5v5h-5zM114,8984h5v5h-5zM72,8990h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="9099" class="section">gFontXB (font, 12 bytes, [2][6])</text>
-<text x="32" y="9119" class="meta">source: App/bitmaps.c; element width: 6</text>
-<text x="48" y="9164" class="sub">element 0</text>
-<rect x="48" y="9171" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M54,9171h5v5h-5zM78,9171h5v5h-5zM54,9177h5v5h-5zM78,9177h5v5h-5zM60,9183h5v5h-5zM72,9183h5v5h-5zM66,9189h5v5h-5zM60,9195h5v5h-5zM72,9195h5v5h-5zM54,9201h5v5h-5zM78,9201h5v5h-5zM54,9207h5v5h-5zM78,9207h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="108" y="9164" class="sub">element 1</text>
-<rect x="108" y="9171" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M114,9171h23v5h-23zM114,9177h5v5h-5zM138,9177h5v5h-5zM114,9183h5v5h-5zM138,9183h5v5h-5zM114,9189h23v5h-23zM114,9195h5v5h-5zM138,9195h5v5h-5zM114,9201h5v5h-5zM138,9201h5v5h-5zM114,9207h23v5h-23z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="9316" class="section">gFontMO (font, 12 bytes, [2][6])</text>
-<text x="32" y="9336" class="meta">source: App/bitmaps.c; element width: 6</text>
-<text x="48" y="9381" class="sub">element 0</text>
-<rect x="48" y="9388" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M54,9388h5v5h-5zM78,9388h5v5h-5zM54,9394h11v5h-11zM72,9394h11v5h-11zM54,9400h5v5h-5zM66,9400h5v5h-5zM78,9400h5v5h-5zM54,9406h5v5h-5zM66,9406h5v5h-5zM78,9406h5v5h-5zM54,9412h5v5h-5zM66,9412h5v5h-5zM78,9412h5v5h-5zM54,9418h5v5h-5zM78,9418h5v5h-5zM54,9424h5v5h-5zM78,9424h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="108" y="9381" class="sub">element 1</text>
-<rect x="108" y="9388" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M120,9388h17v5h-17zM114,9394h5v5h-5zM138,9394h5v5h-5zM114,9400h5v5h-5zM138,9400h5v5h-5zM114,9406h5v5h-5zM138,9406h5v5h-5zM114,9412h5v5h-5zM138,9412h5v5h-5zM114,9418h5v5h-5zM138,9418h5v5h-5zM120,9424h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="9533" class="section">gFontDWR (font, 18 bytes, [3][6])</text>
-<text x="32" y="9553" class="meta">source: App/bitmaps.c; element width: 6</text>
-<text x="48" y="9598" class="sub">element 0</text>
-<rect x="48" y="9605" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M54,9605h23v5h-23zM54,9611h5v5h-5zM78,9611h5v5h-5zM54,9617h5v5h-5zM78,9617h5v5h-5zM54,9623h5v5h-5zM78,9623h5v5h-5zM54,9629h5v5h-5zM78,9629h5v5h-5zM54,9635h5v5h-5zM78,9635h5v5h-5zM54,9641h23v5h-23z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="108" y="9598" class="sub">element 1</text>
-<rect x="108" y="9605" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M114,9605h5v5h-5zM138,9605h5v5h-5zM114,9611h5v5h-5zM138,9611h5v5h-5zM114,9617h5v5h-5zM138,9617h5v5h-5zM114,9623h5v5h-5zM126,9623h5v5h-5zM138,9623h5v5h-5zM114,9629h5v5h-5zM126,9629h5v5h-5zM138,9629h5v5h-5zM114,9635h5v5h-5zM126,9635h5v5h-5zM138,9635h5v5h-5zM120,9641h5v5h-5zM132,9641h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="168" y="9598" class="sub">element 2</text>
-<rect x="168" y="9605" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M174,9605h23v5h-23zM174,9611h5v5h-5zM198,9611h5v5h-5zM174,9617h5v5h-5zM198,9617h5v5h-5zM174,9623h23v5h-23zM174,9629h5v5h-5zM186,9629h5v5h-5zM174,9635h5v5h-5zM192,9635h5v5h-5zM174,9641h5v5h-5zM198,9641h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="9750" class="section">gFontRO (font, 12 bytes, [2][6])</text>
-<text x="32" y="9770" class="meta">source: App/bitmaps.c; element width: 6</text>
-<text x="48" y="9815" class="sub">element 0</text>
-<rect x="48" y="9822" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M54,9822h23v5h-23zM54,9828h5v5h-5zM78,9828h5v5h-5zM54,9834h5v5h-5zM78,9834h5v5h-5zM54,9840h23v5h-23zM54,9846h5v5h-5zM66,9846h5v5h-5zM54,9852h5v5h-5zM72,9852h5v5h-5zM54,9858h5v5h-5zM78,9858h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="108" y="9815" class="sub">element 1</text>
-<rect x="108" y="9822" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M120,9822h17v5h-17zM114,9828h5v5h-5zM138,9828h5v5h-5zM114,9834h5v5h-5zM138,9834h5v5h-5zM114,9840h5v5h-5zM138,9840h5v5h-5zM114,9846h5v5h-5zM138,9846h5v5h-5zM114,9852h5v5h-5zM138,9852h5v5h-5zM120,9858h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="9967" class="section">gFontHold (font, 10 bytes, [2][5])</text>
-<text x="32" y="9987" class="meta">source: App/bitmaps.c; element width: 5</text>
-<text x="48" y="10032" class="sub">element 0</text>
-<rect x="48" y="10039" width="30" height="48" fill="url(#cell-grid-6)"/>
-<path d="M54,10039h5v5h-5zM60,10045h5v5h-5zM66,10051h5v5h-5zM72,10057h5v5h-5zM66,10063h5v5h-5zM60,10069h5v5h-5zM54,10075h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="102" y="10032" class="sub">element 1</text>
-<rect x="102" y="10039" width="30" height="48" fill="url(#cell-grid-6)"/>
-<path d="M126,10039h5v5h-5zM120,10045h5v5h-5zM114,10051h5v5h-5zM108,10057h5v5h-5zM114,10063h5v5h-5zM120,10069h5v5h-5zM126,10075h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="10184" class="section">BITMAP_BatteryLevel (bitmap, 2 bytes, [2])</text>
-<text x="32" y="10204" class="meta">source: App/bitmaps.c; element width: 2</text>
-<text x="48" y="10249" class="sub">byte offset +0x0000</text>
-<rect x="48" y="10256" width="12" height="48" fill="url(#cell-grid-6)"/>
-<path d="M48,10256h11v5h-11zM48,10268h11v5h-11zM48,10274h11v5h-11zM48,10280h11v5h-11zM48,10292h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="10351" class="section">BITMAP_BatteryLevel1 (bitmap, 17 bytes, [17])</text>
-<text x="32" y="10371" class="meta">source: App/bitmaps.c; element width: 17</text>
-<text x="48" y="10416" class="sub">byte offset +0x0000</text>
-<rect x="48" y="10423" width="102" height="48" fill="url(#cell-grid-6)"/>
-<path d="M66,10423h83v5h-83zM54,10429h11v5h-11zM144,10429h5v5h-5zM54,10435h5v5h-5zM144,10435h5v5h-5zM54,10441h5v5h-5zM144,10441h5v5h-5zM54,10447h5v5h-5zM144,10447h5v5h-5zM54,10453h11v5h-11zM144,10453h5v5h-5zM66,10459h83v5h-83z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="10518" class="section">BITMAP_USB_C (bitmap, 9 bytes, [9])</text>
-<text x="32" y="10538" class="meta">source: App/bitmaps.c; element width: 9</text>
-<text x="48" y="10583" class="sub">byte offset +0x0000</text>
-<rect x="48" y="10590" width="54" height="48" fill="url(#cell-grid-6)"/>
-<path d="M60,10590h5v5h-5zM90,10590h5v5h-5zM60,10596h5v5h-5zM90,10596h5v5h-5zM54,10602h47v5h-47zM54,10608h5v5h-5zM96,10608h5v5h-5zM54,10614h5v5h-5zM96,10614h5v5h-5zM60,10620h5v5h-5zM90,10620h5v5h-5zM66,10626h23v5h-23z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="10685" class="section">gFontVox (font, 12 bytes, [2][6])</text>
-<text x="32" y="10705" class="meta">source: App/bitmaps.c; element width: 6</text>
-<text x="48" y="10750" class="sub">element 0</text>
-<rect x="48" y="10757" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M54,10757h5v5h-5zM78,10757h5v5h-5zM54,10763h5v5h-5zM78,10763h5v5h-5zM54,10769h5v5h-5zM78,10769h5v5h-5zM54,10775h5v5h-5zM78,10775h5v5h-5zM54,10781h5v5h-5zM78,10781h5v5h-5zM60,10787h5v5h-5zM72,10787h5v5h-5zM66,10793h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="108" y="10750" class="sub">element 1</text>
-<rect x="108" y="10757" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M114,10757h5v5h-5zM138,10757h5v5h-5zM114,10763h5v5h-5zM138,10763h5v5h-5zM120,10769h5v5h-5zM132,10769h5v5h-5zM126,10775h5v5h-5zM120,10781h5v5h-5zM132,10781h5v5h-5zM114,10787h5v5h-5zM138,10787h5v5h-5zM114,10793h5v5h-5zM138,10793h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="10902" class="section">BITMAP_VFO_Lock (bitmap, 7 bytes, [7])</text>
-<text x="32" y="10922" class="meta">source: App/bitmaps.c; element width: 7</text>
-<text x="48" y="10967" class="sub">byte offset +0x0000</text>
-<rect x="48" y="10974" width="42" height="48" fill="url(#cell-grid-6)"/>
-<path d="M60,10974h17v5h-17zM54,10980h5v5h-5zM78,10980h5v5h-5zM48,10986h41v5h-41zM48,10992h5v5h-5zM84,10992h5v5h-5zM48,10998h5v5h-5zM84,10998h5v5h-5zM48,11004h41v5h-41z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="11069" class="section">BITMAP_VFO_Default (bitmap, 7 bytes, [7])</text>
-<text x="32" y="11089" class="meta">source: App/bitmaps.c; element width: 7</text>
-<text x="48" y="11134" class="sub">byte offset +0x0000</text>
-<rect x="48" y="11141" width="42" height="48" fill="url(#cell-grid-6)"/>
-<path d="M48,11141h11v5h-11zM48,11147h23v5h-23zM48,11153h35v5h-35zM48,11159h41v5h-41zM48,11165h35v5h-35zM48,11171h23v5h-23zM48,11177h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="11236" class="section">BITMAP_VFO_NotDefault (bitmap, 7 bytes, [7])</text>
-<text x="32" y="11256" class="meta">source: App/bitmaps.c; element width: 7</text>
-<text x="48" y="11301" class="sub">byte offset +0x0000</text>
-<rect x="48" y="11308" width="42" height="48" fill="url(#cell-grid-6)"/>
-<path d="M48,11308h11v5h-11zM60,11314h11v5h-11zM72,11320h11v5h-11zM84,11326h5v5h-5zM72,11332h11v5h-11zM60,11338h11v5h-11zM48,11344h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="11403" class="section">BITMAP_VFO_Default [2] (bitmap, 7 bytes, [7])</text>
-<text x="32" y="11423" class="meta">source: App/bitmaps.c; element width: 7</text>
-<text x="48" y="11468" class="sub">byte offset +0x0000</text>
-<rect x="48" y="11475" width="42" height="48" fill="url(#cell-grid-6)"/>
-<path d="M48,11481h11v5h-11zM48,11487h23v5h-23zM48,11493h35v5h-35zM48,11499h23v5h-23zM48,11505h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="11570" class="section">BITMAP_VFO_NotDefault [2] (bitmap, 7 bytes, [7])</text>
-<text x="32" y="11590" class="meta">source: App/bitmaps.c; element width: 7</text>
-<text x="48" y="11635" class="sub">byte offset +0x0000</text>
-<rect x="48" y="11642" width="42" height="48" fill="url(#cell-grid-6)"/>
-<path d="M48,11648h11v5h-11zM60,11654h11v5h-11zM72,11660h11v5h-11zM60,11666h11v5h-11zM48,11672h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="11737" class="section">BITMAP_VFO_Empty (bitmap, 7 bytes, [7])</text>
-<text x="32" y="11757" class="meta">source: App/bitmaps.c; element width: 7</text>
-<text x="48" y="11802" class="sub">byte offset +0x0000</text>
-<rect x="48" y="11809" width="42" height="48" fill="url(#cell-grid-6)"/>
-<text x="32" y="11904" class="section">BITMAP_compand (bitmap, 6 bytes, [6])</text>
-<text x="32" y="11924" class="meta">source: App/bitmaps.c; element width: 6</text>
-<text x="48" y="11969" class="sub">byte offset +0x0000</text>
-<rect x="48" y="11976" width="36" height="48" fill="url(#cell-grid-6)"/>
-<path d="M60,11982h17v5h-17zM54,11988h5v5h-5zM78,11988h5v5h-5zM54,11994h5v5h-5zM54,12000h5v5h-5zM54,12006h5v5h-5zM78,12006h5v5h-5zM60,12012h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="12071" class="section">BITMAP_Ready (bitmap, 7 bytes, [7])</text>
-<text x="32" y="12091" class="meta">source: App/bitmaps.c; element width: 7</text>
-<text x="48" y="12136" class="sub">byte offset +0x0000</text>
-<rect x="48" y="12143" width="42" height="48" fill="url(#cell-grid-6)"/>
-<path d="M84,12149h5v5h-5zM78,12155h5v5h-5zM48,12161h5v5h-5zM72,12161h5v5h-5zM54,12167h5v5h-5zM66,12167h5v5h-5zM60,12173h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="12238" class="section">BITMAP_NotReady (bitmap, 7 bytes, [7])</text>
-<text x="32" y="12258" class="meta">source: App/bitmaps.c; element width: 7</text>
-<text x="48" y="12303" class="sub">byte offset +0x0000</text>
-<rect x="48" y="12310" width="42" height="48" fill="url(#cell-grid-6)"/>
-<path d="M54,12316h5v5h-5zM78,12316h5v5h-5zM60,12322h5v5h-5zM72,12322h5v5h-5zM66,12328h5v5h-5zM66,12334h5v5h-5zM60,12340h5v5h-5zM72,12340h5v5h-5zM54,12346h5v5h-5zM78,12346h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="12405" class="section">BITMAP_PowerUser (bitmap, 3 bytes, [3])</text>
-<text x="32" y="12425" class="meta">source: App/bitmaps.c; element width: 3</text>
-<text x="48" y="12470" class="sub">byte offset +0x0000</text>
-<rect x="48" y="12477" width="18" height="48" fill="url(#cell-grid-6)"/>
-<path d="M48,12483h5v5h-5zM48,12489h11v5h-11zM48,12495h17v5h-17zM48,12501h11v5h-11zM48,12507h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="12572" class="section">BITMAP_NOAA (bitmap, 12 bytes, [12])</text>
-<text x="32" y="12592" class="meta">source: App/bitmaps.c; element width: 12</text>
-<text x="48" y="12637" class="sub">byte offset +0x0000</text>
-<rect x="48" y="12644" width="72" height="48" fill="url(#cell-grid-6)"/>
-<path d="M54,12644h5v5h-5zM78,12644h5v5h-5zM90,12644h5v5h-5zM114,12644h5v5h-5zM54,12650h5v5h-5zM78,12650h5v5h-5zM90,12650h5v5h-5zM114,12650h5v5h-5zM54,12656h5v5h-5zM78,12656h5v5h-5zM96,12656h5v5h-5zM108,12656h5v5h-5zM54,12662h5v5h-5zM66,12662h5v5h-5zM78,12662h5v5h-5zM102,12662h5v5h-5zM54,12668h5v5h-5zM66,12668h5v5h-5zM78,12668h5v5h-5zM96,12668h5v5h-5zM108,12668h5v5h-5zM54,12674h11v5h-11zM72,12674h11v5h-11zM90,12674h5v5h-5zM114,12674h5v5h-5zM54,12680h5v5h-5zM78,12680h5v5h-5zM90,12680h5v5h-5zM114,12680h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="12739" class="section">BITMAP_FoxHuntSignal (bitmap, 10 bytes, [10])</text>
-<text x="32" y="12759" class="meta">source: App/bitmaps.c; element width: 10</text>
-<text x="48" y="12804" class="sub">byte offset +0x0000</text>
-<rect x="48" y="12811" width="60" height="48" fill="url(#cell-grid-6)"/>
-<path d="M90,12811h5v5h-5zM78,12817h5v5h-5zM96,12817h5v5h-5zM54,12823h11v5h-11zM84,12823h5v5h-5zM102,12823h5v5h-5zM48,12829h23v5h-23zM84,12829h5v5h-5zM102,12829h5v5h-5zM54,12835h11v5h-11zM84,12835h5v5h-5zM102,12835h5v5h-5zM78,12841h5v5h-5zM96,12841h5v5h-5zM90,12847h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="12906" class="section">BITMAP_FoxHuntSpeaker (bitmap, 10 bytes, [10])</text>
-<text x="32" y="12926" class="meta">source: App/bitmaps.c; element width: 10</text>
-<text x="48" y="12971" class="sub">byte offset +0x0000</text>
-<rect x="48" y="12978" width="60" height="48" fill="url(#cell-grid-6)"/>
-<path d="M66,12978h5v5h-5zM90,12978h5v5h-5zM60,12984h11v5h-11zM78,12984h5v5h-5zM96,12984h5v5h-5zM48,12990h23v5h-23zM84,12990h5v5h-5zM102,12990h5v5h-5zM48,12996h23v5h-23zM84,12996h5v5h-5zM102,12996h5v5h-5zM48,13002h23v5h-23zM84,13002h5v5h-5zM102,13002h5v5h-5zM60,13008h11v5h-11zM78,13008h5v5h-5zM96,13008h5v5h-5zM66,13014h5v5h-5zM90,13014h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="13073" class="section">BITMAP_FoxHuntUp (bitmap, 11 bytes, [11])</text>
-<text x="32" y="13093" class="meta">source: App/bitmaps.c; element width: 11</text>
-<text x="48" y="13138" class="sub">byte offset +0x0000</text>
-<rect x="48" y="13145" width="66" height="48" fill="url(#cell-grid-6)"/>
-<path d="M78,13145h5v5h-5zM72,13151h17v5h-17zM66,13157h29v5h-29zM60,13163h41v5h-41zM54,13169h53v5h-53zM48,13175h65v5h-65z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="13240" class="section">BITMAP_FoxHuntDown (bitmap, 11 bytes, [11])</text>
-<text x="32" y="13260" class="meta">source: App/bitmaps.c; element width: 11</text>
-<text x="48" y="13305" class="sub">byte offset +0x0000</text>
-<rect x="48" y="13312" width="66" height="48" fill="url(#cell-grid-6)"/>
-<path d="M48,13312h65v5h-65zM54,13318h53v5h-53zM60,13324h41v5h-41zM66,13330h29v5h-29zM72,13336h17v5h-17zM78,13342h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="13407" class="section">BITMAP_FoxHuntFlat (bitmap, 11 bytes, [11])</text>
-<text x="32" y="13427" class="meta">source: App/bitmaps.c; element width: 11</text>
-<text x="48" y="13472" class="sub">byte offset +0x0000</text>
-<rect x="48" y="13479" width="66" height="48" fill="url(#cell-grid-6)"/>
-<path d="M48,13485h65v5h-65zM48,13503h65v5h-65z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="13574" class="section">BITMAP_FoxHuntBars (bitmap, 11 bytes, [11])</text>
-<text x="32" y="13594" class="meta">source: App/bitmaps.c; element width: 11</text>
-<text x="48" y="13639" class="sub">byte offset +0x0000</text>
-<rect x="48" y="13646" width="66" height="48" fill="url(#cell-grid-6)"/>
-<path d="M102,13646h11v5h-11zM102,13652h11v5h-11zM84,13658h11v5h-11zM102,13658h11v5h-11zM84,13664h11v5h-11zM102,13664h11v5h-11zM66,13670h11v5h-11zM84,13670h11v5h-11zM102,13670h11v5h-11zM66,13676h11v5h-11zM84,13676h11v5h-11zM102,13676h11v5h-11zM48,13682h11v5h-11zM66,13682h11v5h-11zM84,13682h11v5h-11zM102,13682h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="13741" class="section">BITMAP_FoxHuntGraph (bitmap, 15 bytes, [15])</text>
-<text x="32" y="13761" class="meta">source: App/bitmaps.c; element width: 15</text>
-<text x="48" y="13806" class="sub">byte offset +0x0000</text>
-<rect x="48" y="13813" width="90" height="48" fill="url(#cell-grid-6)"/>
-<path d="M60,13819h5v5h-5zM108,13819h5v5h-5zM54,13825h5v5h-5zM66,13825h5v5h-5zM102,13825h5v5h-5zM114,13825h5v5h-5zM48,13831h5v5h-5zM72,13831h5v5h-5zM96,13831h5v5h-5zM120,13831h5v5h-5zM78,13837h5v5h-5zM90,13837h5v5h-5zM126,13837h5v5h-5zM84,13843h5v5h-5zM132,13843h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="13908" class="section">BITMAP_FoxHuntTx (bitmap, 16 bytes, [16])</text>
-<text x="32" y="13928" class="meta">source: App/bitmaps.c; element width: 16</text>
-<text x="48" y="13973" class="sub">byte offset +0x0000</text>
-<rect x="48" y="13980" width="96" height="48" fill="url(#cell-grid-6)"/>
-<path d="M60,13980h5v5h-5zM126,13980h5v5h-5zM54,13986h5v5h-5zM72,13986h5v5h-5zM114,13986h5v5h-5zM132,13986h5v5h-5zM48,13992h5v5h-5zM66,13992h5v5h-5zM90,13992h11v5h-11zM120,13992h5v5h-5zM138,13992h5v5h-5zM48,13998h5v5h-5zM66,13998h5v5h-5zM84,13998h23v5h-23zM120,13998h5v5h-5zM138,13998h5v5h-5zM48,14004h5v5h-5zM66,14004h5v5h-5zM90,14004h11v5h-11zM120,14004h5v5h-5zM138,14004h5v5h-5zM54,14010h5v5h-5zM72,14010h5v5h-5zM114,14010h5v5h-5zM132,14010h5v5h-5zM60,14016h5v5h-5zM126,14016h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="14075" class="section">BITMAP_CurrentIndicator (bitmap, 8 bytes, [8])</text>
-<text x="32" y="14095" class="meta">source: App/bitmaps.c; element width: 8</text>
-<text x="48" y="14140" class="sub">byte offset +0x0000</text>
-<rect x="48" y="14147" width="48" height="48" fill="url(#cell-grid-6)"/>
-<path d="M48,14147h11v5h-11zM48,14153h23v5h-23zM48,14159h35v5h-35zM48,14165h47v5h-47zM48,14171h47v5h-47zM48,14177h35v5h-35zM48,14183h23v5h-23zM48,14189h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
-<text x="32" y="14247" class="meta">arrays: 48; generated offline from C sources</text>
+<text x="32" y="4142" class="section">gFontPowerSave (font, 12 bytes, [2][6])</text>
+<text x="32" y="4162" class="meta">source: App/bitmaps.c; element width: 6</text>
+<text x="48" y="4207" class="sub">element 0</text>
+<rect x="48" y="4214" width="36" height="48" fill="url(#cell-grid-6)"/>
+<path d="M54,4214h23v5h-23zM54,4220h5v5h-5zM78,4220h5v5h-5zM54,4226h5v5h-5zM78,4226h5v5h-5zM54,4232h23v5h-23zM54,4238h5v5h-5zM54,4244h5v5h-5zM54,4250h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="108" y="4207" class="sub">element 1</text>
+<rect x="108" y="4214" width="36" height="48" fill="url(#cell-grid-6)"/>
+<path d="M120,4214h17v5h-17zM114,4220h5v5h-5zM138,4220h5v5h-5zM114,4226h5v5h-5zM120,4232h17v5h-17zM138,4238h5v5h-5zM114,4244h5v5h-5zM138,4244h5v5h-5zM120,4250h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="4359" class="section">gFontPttOnePush (font, 12 bytes, [2][6])</text>
+<text x="32" y="4379" class="meta">source: App/bitmaps.c; element width: 6</text>
+<text x="48" y="4424" class="sub">element 0</text>
+<rect x="48" y="4431" width="36" height="48" fill="url(#cell-grid-6)"/>
+<path d="M60,4431h17v5h-17zM54,4437h5v5h-5zM78,4437h5v5h-5zM54,4443h5v5h-5zM78,4443h5v5h-5zM54,4449h5v5h-5zM78,4449h5v5h-5zM54,4455h5v5h-5zM78,4455h5v5h-5zM54,4461h5v5h-5zM78,4461h5v5h-5zM60,4467h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="108" y="4424" class="sub">element 1</text>
+<rect x="108" y="4431" width="36" height="48" fill="url(#cell-grid-6)"/>
+<path d="M114,4431h23v5h-23zM114,4437h5v5h-5zM138,4437h5v5h-5zM114,4443h5v5h-5zM138,4443h5v5h-5zM114,4449h23v5h-23zM114,4455h5v5h-5zM114,4461h5v5h-5zM114,4467h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="4576" class="section">gFontPttClassic (font, 12 bytes, [2][6])</text>
+<text x="32" y="4596" class="meta">source: App/bitmaps.c; element width: 6</text>
+<text x="48" y="4641" class="sub">element 0</text>
+<rect x="48" y="4648" width="36" height="48" fill="url(#cell-grid-6)"/>
+<path d="M60,4648h17v5h-17zM54,4654h5v5h-5zM78,4654h5v5h-5zM54,4660h5v5h-5zM54,4666h5v5h-5zM54,4672h5v5h-5zM54,4678h5v5h-5zM78,4678h5v5h-5zM60,4684h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="108" y="4641" class="sub">element 1</text>
+<rect x="108" y="4648" width="36" height="48" fill="url(#cell-grid-6)"/>
+<path d="M114,4648h5v5h-5zM114,4654h5v5h-5zM114,4660h5v5h-5zM114,4666h5v5h-5zM114,4672h5v5h-5zM114,4678h5v5h-5zM114,4684h29v5h-29z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="4793" class="section">gFontF (font, 8 bytes, [8])</text>
+<text x="32" y="4813" class="meta">source: App/bitmaps.c; element width: 8</text>
+<text x="48" y="4858" class="sub">element 0</text>
+<rect x="48" y="4865" width="48" height="48" fill="url(#cell-grid-6)"/>
+<path d="M48,4865h5v5h-5zM90,4865h5v5h-5zM48,4871h5v5h-5zM60,4871h35v5h-35zM48,4877h5v5h-5zM60,4877h35v5h-35zM48,4883h5v5h-5zM84,4883h11v5h-11zM48,4889h5v5h-5zM60,4889h35v5h-35zM48,4895h5v5h-5zM60,4895h35v5h-35zM48,4901h5v5h-5zM60,4901h35v5h-35z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="5010" class="section">gFontS (font, 6 bytes, [6])</text>
+<text x="32" y="5030" class="meta">source: App/bitmaps.c; element width: 6</text>
+<text x="48" y="5075" class="sub">element 0</text>
+<rect x="48" y="5082" width="36" height="48" fill="url(#cell-grid-6)"/>
+<path d="M54,5082h23v5h-23zM48,5088h5v5h-5zM78,5088h5v5h-5zM48,5094h5v5h-5zM54,5100h23v5h-23zM78,5106h5v5h-5zM48,5112h5v5h-5zM78,5112h5v5h-5zM54,5118h23v5h-23z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="5227" class="section">gFontKeyLock (font, 9 bytes, [9])</text>
+<text x="32" y="5247" class="meta">source: App/bitmaps.c; element width: 9</text>
+<text x="48" y="5292" class="sub">element 0</text>
+<rect x="48" y="5299" width="54" height="48" fill="url(#cell-grid-6)"/>
+<path d="M60,5299h29v5h-29zM54,5305h5v5h-5zM90,5305h5v5h-5zM48,5311h53v5h-53zM48,5317h5v5h-5zM96,5317h5v5h-5zM48,5323h5v5h-5zM96,5323h5v5h-5zM48,5329h5v5h-5zM96,5329h5v5h-5zM48,5335h53v5h-53z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="5444" class="section">gFontLight (font, 9 bytes, [9])</text>
+<text x="32" y="5464" class="meta">source: App/bitmaps.c; element width: 9</text>
+<text x="48" y="5509" class="sub">element 0</text>
+<rect x="48" y="5516" width="54" height="48" fill="url(#cell-grid-6)"/>
+<path d="M60,5516h29v5h-29zM54,5522h5v5h-5zM90,5522h5v5h-5zM48,5528h5v5h-5zM66,5528h5v5h-5zM78,5528h5v5h-5zM96,5528h5v5h-5zM48,5534h5v5h-5zM66,5534h17v5h-17zM96,5534h5v5h-5zM54,5540h5v5h-5zM72,5540h5v5h-5zM90,5540h5v5h-5zM60,5546h29v5h-29zM66,5552h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="5661" class="section">gFontLightOff (font, 9 bytes, [9])</text>
+<text x="32" y="5681" class="meta">source: App/bitmaps.c; element width: 9</text>
+<text x="48" y="5726" class="sub">element 0</text>
+<rect x="48" y="5733" width="54" height="48" fill="url(#cell-grid-6)"/>
+<path d="M60,5733h29v5h-29zM54,5739h5v5h-5zM90,5739h5v5h-5zM48,5745h5v5h-5zM96,5745h5v5h-5zM48,5751h5v5h-5zM96,5751h5v5h-5zM54,5757h5v5h-5zM90,5757h5v5h-5zM60,5763h29v5h-29zM66,5769h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="5878" class="section">gFontMute (font, 12 bytes, [12])</text>
+<text x="32" y="5898" class="meta">source: App/bitmaps.c; element width: 12</text>
+<text x="48" y="5943" class="sub">element 0</text>
+<rect x="48" y="5950" width="72" height="48" fill="url(#cell-grid-6)"/>
+<path d="M72,5950h11v5h-11zM66,5956h5v5h-5zM78,5956h5v5h-5zM90,5956h5v5h-5zM114,5956h5v5h-5zM48,5962h17v5h-17zM78,5962h5v5h-5zM96,5962h5v5h-5zM108,5962h5v5h-5zM48,5968h11v5h-11zM78,5968h5v5h-5zM102,5968h5v5h-5zM48,5974h17v5h-17zM78,5974h5v5h-5zM96,5974h5v5h-5zM108,5974h5v5h-5zM66,5980h5v5h-5zM78,5980h5v5h-5zM90,5980h5v5h-5zM114,5980h5v5h-5zM72,5986h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="6095" class="section">gFontXB (font, 12 bytes, [2][6])</text>
+<text x="32" y="6115" class="meta">source: App/bitmaps.c; element width: 6</text>
+<text x="48" y="6160" class="sub">element 0</text>
+<rect x="48" y="6167" width="36" height="48" fill="url(#cell-grid-6)"/>
+<path d="M54,6167h5v5h-5zM78,6167h5v5h-5zM54,6173h5v5h-5zM78,6173h5v5h-5zM60,6179h5v5h-5zM72,6179h5v5h-5zM66,6185h5v5h-5zM60,6191h5v5h-5zM72,6191h5v5h-5zM54,6197h5v5h-5zM78,6197h5v5h-5zM54,6203h5v5h-5zM78,6203h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="108" y="6160" class="sub">element 1</text>
+<rect x="108" y="6167" width="36" height="48" fill="url(#cell-grid-6)"/>
+<path d="M114,6167h23v5h-23zM114,6173h5v5h-5zM138,6173h5v5h-5zM114,6179h5v5h-5zM138,6179h5v5h-5zM114,6185h23v5h-23zM114,6191h5v5h-5zM138,6191h5v5h-5zM114,6197h5v5h-5zM138,6197h5v5h-5zM114,6203h23v5h-23z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="6312" class="section">gFontMO (font, 12 bytes, [2][6])</text>
+<text x="32" y="6332" class="meta">source: App/bitmaps.c; element width: 6</text>
+<text x="48" y="6377" class="sub">element 0</text>
+<rect x="48" y="6384" width="36" height="48" fill="url(#cell-grid-6)"/>
+<path d="M54,6384h5v5h-5zM78,6384h5v5h-5zM54,6390h11v5h-11zM72,6390h11v5h-11zM54,6396h5v5h-5zM66,6396h5v5h-5zM78,6396h5v5h-5zM54,6402h5v5h-5zM66,6402h5v5h-5zM78,6402h5v5h-5zM54,6408h5v5h-5zM66,6408h5v5h-5zM78,6408h5v5h-5zM54,6414h5v5h-5zM78,6414h5v5h-5zM54,6420h5v5h-5zM78,6420h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="108" y="6377" class="sub">element 1</text>
+<rect x="108" y="6384" width="36" height="48" fill="url(#cell-grid-6)"/>
+<path d="M120,6384h17v5h-17zM114,6390h5v5h-5zM138,6390h5v5h-5zM114,6396h5v5h-5zM138,6396h5v5h-5zM114,6402h5v5h-5zM138,6402h5v5h-5zM114,6408h5v5h-5zM138,6408h5v5h-5zM114,6414h5v5h-5zM138,6414h5v5h-5zM120,6420h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="6529" class="section">gFontDWR (font, 18 bytes, [3][6])</text>
+<text x="32" y="6549" class="meta">source: App/bitmaps.c; element width: 6</text>
+<text x="48" y="6594" class="sub">element 0</text>
+<rect x="48" y="6601" width="36" height="48" fill="url(#cell-grid-6)"/>
+<path d="M54,6601h23v5h-23zM54,6607h5v5h-5zM78,6607h5v5h-5zM54,6613h5v5h-5zM78,6613h5v5h-5zM54,6619h5v5h-5zM78,6619h5v5h-5zM54,6625h5v5h-5zM78,6625h5v5h-5zM54,6631h5v5h-5zM78,6631h5v5h-5zM54,6637h23v5h-23z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="108" y="6594" class="sub">element 1</text>
+<rect x="108" y="6601" width="36" height="48" fill="url(#cell-grid-6)"/>
+<path d="M114,6601h5v5h-5zM138,6601h5v5h-5zM114,6607h5v5h-5zM138,6607h5v5h-5zM114,6613h5v5h-5zM138,6613h5v5h-5zM114,6619h5v5h-5zM126,6619h5v5h-5zM138,6619h5v5h-5zM114,6625h5v5h-5zM126,6625h5v5h-5zM138,6625h5v5h-5zM114,6631h5v5h-5zM126,6631h5v5h-5zM138,6631h5v5h-5zM120,6637h5v5h-5zM132,6637h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="168" y="6594" class="sub">element 2</text>
+<rect x="168" y="6601" width="36" height="48" fill="url(#cell-grid-6)"/>
+<path d="M174,6601h23v5h-23zM174,6607h5v5h-5zM198,6607h5v5h-5zM174,6613h5v5h-5zM198,6613h5v5h-5zM174,6619h23v5h-23zM174,6625h5v5h-5zM186,6625h5v5h-5zM174,6631h5v5h-5zM192,6631h5v5h-5zM174,6637h5v5h-5zM198,6637h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="6746" class="section">gFontRO (font, 12 bytes, [2][6])</text>
+<text x="32" y="6766" class="meta">source: App/bitmaps.c; element width: 6</text>
+<text x="48" y="6811" class="sub">element 0</text>
+<rect x="48" y="6818" width="36" height="48" fill="url(#cell-grid-6)"/>
+<path d="M54,6818h23v5h-23zM54,6824h5v5h-5zM78,6824h5v5h-5zM54,6830h5v5h-5zM78,6830h5v5h-5zM54,6836h23v5h-23zM54,6842h5v5h-5zM66,6842h5v5h-5zM54,6848h5v5h-5zM72,6848h5v5h-5zM54,6854h5v5h-5zM78,6854h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="108" y="6811" class="sub">element 1</text>
+<rect x="108" y="6818" width="36" height="48" fill="url(#cell-grid-6)"/>
+<path d="M120,6818h17v5h-17zM114,6824h5v5h-5zM138,6824h5v5h-5zM114,6830h5v5h-5zM138,6830h5v5h-5zM114,6836h5v5h-5zM138,6836h5v5h-5zM114,6842h5v5h-5zM138,6842h5v5h-5zM114,6848h5v5h-5zM138,6848h5v5h-5zM120,6854h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="6963" class="section">gFontHold (font, 10 bytes, [2][5])</text>
+<text x="32" y="6983" class="meta">source: App/bitmaps.c; element width: 5</text>
+<text x="48" y="7028" class="sub">element 0</text>
+<rect x="48" y="7035" width="30" height="48" fill="url(#cell-grid-6)"/>
+<path d="M54,7035h5v5h-5zM60,7041h5v5h-5zM66,7047h5v5h-5zM72,7053h5v5h-5zM66,7059h5v5h-5zM60,7065h5v5h-5zM54,7071h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="102" y="7028" class="sub">element 1</text>
+<rect x="102" y="7035" width="30" height="48" fill="url(#cell-grid-6)"/>
+<path d="M126,7035h5v5h-5zM120,7041h5v5h-5zM114,7047h5v5h-5zM108,7053h5v5h-5zM114,7059h5v5h-5zM120,7065h5v5h-5zM126,7071h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="7180" class="section">BITMAP_BatteryLevel (bitmap, 2 bytes, [2])</text>
+<text x="32" y="7200" class="meta">source: App/bitmaps.c; element width: 2</text>
+<text x="48" y="7245" class="sub">byte offset +0x0000</text>
+<rect x="48" y="7252" width="12" height="48" fill="url(#cell-grid-6)"/>
+<path d="M48,7252h11v5h-11zM48,7264h11v5h-11zM48,7270h11v5h-11zM48,7276h11v5h-11zM48,7288h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="7347" class="section">BITMAP_BatteryLevel1 (bitmap, 17 bytes, [17])</text>
+<text x="32" y="7367" class="meta">source: App/bitmaps.c; element width: 17</text>
+<text x="48" y="7412" class="sub">byte offset +0x0000</text>
+<rect x="48" y="7419" width="102" height="48" fill="url(#cell-grid-6)"/>
+<path d="M66,7419h83v5h-83zM54,7425h11v5h-11zM144,7425h5v5h-5zM54,7431h5v5h-5zM144,7431h5v5h-5zM54,7437h5v5h-5zM144,7437h5v5h-5zM54,7443h5v5h-5zM144,7443h5v5h-5zM54,7449h11v5h-11zM144,7449h5v5h-5zM66,7455h83v5h-83z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="7514" class="section">BITMAP_USB_C (bitmap, 9 bytes, [9])</text>
+<text x="32" y="7534" class="meta">source: App/bitmaps.c; element width: 9</text>
+<text x="48" y="7579" class="sub">byte offset +0x0000</text>
+<rect x="48" y="7586" width="54" height="48" fill="url(#cell-grid-6)"/>
+<path d="M60,7586h5v5h-5zM90,7586h5v5h-5zM60,7592h5v5h-5zM90,7592h5v5h-5zM54,7598h47v5h-47zM54,7604h5v5h-5zM96,7604h5v5h-5zM54,7610h5v5h-5zM96,7610h5v5h-5zM60,7616h5v5h-5zM90,7616h5v5h-5zM66,7622h23v5h-23z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="7681" class="section">gFontVox (font, 12 bytes, [2][6])</text>
+<text x="32" y="7701" class="meta">source: App/bitmaps.c; element width: 6</text>
+<text x="48" y="7746" class="sub">element 0</text>
+<rect x="48" y="7753" width="36" height="48" fill="url(#cell-grid-6)"/>
+<path d="M54,7753h5v5h-5zM78,7753h5v5h-5zM54,7759h5v5h-5zM78,7759h5v5h-5zM54,7765h5v5h-5zM78,7765h5v5h-5zM54,7771h5v5h-5zM78,7771h5v5h-5zM54,7777h5v5h-5zM78,7777h5v5h-5zM60,7783h5v5h-5zM72,7783h5v5h-5zM66,7789h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="108" y="7746" class="sub">element 1</text>
+<rect x="108" y="7753" width="36" height="48" fill="url(#cell-grid-6)"/>
+<path d="M114,7753h5v5h-5zM138,7753h5v5h-5zM114,7759h5v5h-5zM138,7759h5v5h-5zM120,7765h5v5h-5zM132,7765h5v5h-5zM126,7771h5v5h-5zM120,7777h5v5h-5zM132,7777h5v5h-5zM114,7783h5v5h-5zM138,7783h5v5h-5zM114,7789h5v5h-5zM138,7789h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="7898" class="section">BITMAP_VFO_Lock (bitmap, 7 bytes, [7])</text>
+<text x="32" y="7918" class="meta">source: App/bitmaps.c; element width: 7</text>
+<text x="48" y="7963" class="sub">byte offset +0x0000</text>
+<rect x="48" y="7970" width="42" height="48" fill="url(#cell-grid-6)"/>
+<path d="M60,7970h17v5h-17zM54,7976h5v5h-5zM78,7976h5v5h-5zM48,7982h41v5h-41zM48,7988h5v5h-5zM84,7988h5v5h-5zM48,7994h5v5h-5zM84,7994h5v5h-5zM48,8000h41v5h-41z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="8065" class="section">BITMAP_VFO_Default (bitmap, 7 bytes, [7])</text>
+<text x="32" y="8085" class="meta">source: App/bitmaps.c; element width: 7</text>
+<text x="48" y="8130" class="sub">byte offset +0x0000</text>
+<rect x="48" y="8137" width="42" height="48" fill="url(#cell-grid-6)"/>
+<path d="M48,8137h11v5h-11zM48,8143h23v5h-23zM48,8149h35v5h-35zM48,8155h41v5h-41zM48,8161h35v5h-35zM48,8167h23v5h-23zM48,8173h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="8232" class="section">BITMAP_VFO_NotDefault (bitmap, 7 bytes, [7])</text>
+<text x="32" y="8252" class="meta">source: App/bitmaps.c; element width: 7</text>
+<text x="48" y="8297" class="sub">byte offset +0x0000</text>
+<rect x="48" y="8304" width="42" height="48" fill="url(#cell-grid-6)"/>
+<path d="M48,8304h11v5h-11zM60,8310h11v5h-11zM72,8316h11v5h-11zM84,8322h5v5h-5zM72,8328h11v5h-11zM60,8334h11v5h-11zM48,8340h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="8399" class="section">BITMAP_VFO_Default [2] (bitmap, 7 bytes, [7])</text>
+<text x="32" y="8419" class="meta">source: App/bitmaps.c; element width: 7</text>
+<text x="48" y="8464" class="sub">byte offset +0x0000</text>
+<rect x="48" y="8471" width="42" height="48" fill="url(#cell-grid-6)"/>
+<path d="M48,8477h11v5h-11zM48,8483h23v5h-23zM48,8489h35v5h-35zM48,8495h23v5h-23zM48,8501h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="8566" class="section">BITMAP_VFO_NotDefault [2] (bitmap, 7 bytes, [7])</text>
+<text x="32" y="8586" class="meta">source: App/bitmaps.c; element width: 7</text>
+<text x="48" y="8631" class="sub">byte offset +0x0000</text>
+<rect x="48" y="8638" width="42" height="48" fill="url(#cell-grid-6)"/>
+<path d="M48,8644h11v5h-11zM60,8650h11v5h-11zM72,8656h11v5h-11zM60,8662h11v5h-11zM48,8668h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="8733" class="section">BITMAP_VFO_Empty (bitmap, 7 bytes, [7])</text>
+<text x="32" y="8753" class="meta">source: App/bitmaps.c; element width: 7</text>
+<text x="48" y="8798" class="sub">byte offset +0x0000</text>
+<rect x="48" y="8805" width="42" height="48" fill="url(#cell-grid-6)"/>
+<text x="32" y="8900" class="section">BITMAP_compand (bitmap, 6 bytes, [6])</text>
+<text x="32" y="8920" class="meta">source: App/bitmaps.c; element width: 6</text>
+<text x="48" y="8965" class="sub">byte offset +0x0000</text>
+<rect x="48" y="8972" width="36" height="48" fill="url(#cell-grid-6)"/>
+<path d="M60,8978h17v5h-17zM54,8984h5v5h-5zM78,8984h5v5h-5zM54,8990h5v5h-5zM54,8996h5v5h-5zM54,9002h5v5h-5zM78,9002h5v5h-5zM60,9008h17v5h-17z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="9067" class="section">BITMAP_Ready (bitmap, 7 bytes, [7])</text>
+<text x="32" y="9087" class="meta">source: App/bitmaps.c; element width: 7</text>
+<text x="48" y="9132" class="sub">byte offset +0x0000</text>
+<rect x="48" y="9139" width="42" height="48" fill="url(#cell-grid-6)"/>
+<path d="M84,9145h5v5h-5zM78,9151h5v5h-5zM48,9157h5v5h-5zM72,9157h5v5h-5zM54,9163h5v5h-5zM66,9163h5v5h-5zM60,9169h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="9234" class="section">BITMAP_NotReady (bitmap, 7 bytes, [7])</text>
+<text x="32" y="9254" class="meta">source: App/bitmaps.c; element width: 7</text>
+<text x="48" y="9299" class="sub">byte offset +0x0000</text>
+<rect x="48" y="9306" width="42" height="48" fill="url(#cell-grid-6)"/>
+<path d="M54,9312h5v5h-5zM78,9312h5v5h-5zM60,9318h5v5h-5zM72,9318h5v5h-5zM66,9324h5v5h-5zM66,9330h5v5h-5zM60,9336h5v5h-5zM72,9336h5v5h-5zM54,9342h5v5h-5zM78,9342h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="9401" class="section">BITMAP_PowerUser (bitmap, 3 bytes, [3])</text>
+<text x="32" y="9421" class="meta">source: App/bitmaps.c; element width: 3</text>
+<text x="48" y="9466" class="sub">byte offset +0x0000</text>
+<rect x="48" y="9473" width="18" height="48" fill="url(#cell-grid-6)"/>
+<path d="M48,9479h5v5h-5zM48,9485h11v5h-11zM48,9491h17v5h-17zM48,9497h11v5h-11zM48,9503h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="9568" class="section">BITMAP_NOAA (bitmap, 12 bytes, [12])</text>
+<text x="32" y="9588" class="meta">source: App/bitmaps.c; element width: 12</text>
+<text x="48" y="9633" class="sub">byte offset +0x0000</text>
+<rect x="48" y="9640" width="72" height="48" fill="url(#cell-grid-6)"/>
+<path d="M54,9640h5v5h-5zM78,9640h5v5h-5zM90,9640h5v5h-5zM114,9640h5v5h-5zM54,9646h5v5h-5zM78,9646h5v5h-5zM90,9646h5v5h-5zM114,9646h5v5h-5zM54,9652h5v5h-5zM78,9652h5v5h-5zM96,9652h5v5h-5zM108,9652h5v5h-5zM54,9658h5v5h-5zM66,9658h5v5h-5zM78,9658h5v5h-5zM102,9658h5v5h-5zM54,9664h5v5h-5zM66,9664h5v5h-5zM78,9664h5v5h-5zM96,9664h5v5h-5zM108,9664h5v5h-5zM54,9670h11v5h-11zM72,9670h11v5h-11zM90,9670h5v5h-5zM114,9670h5v5h-5zM54,9676h5v5h-5zM78,9676h5v5h-5zM90,9676h5v5h-5zM114,9676h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="9735" class="section">BITMAP_FoxHuntSignal (bitmap, 10 bytes, [10])</text>
+<text x="32" y="9755" class="meta">source: App/bitmaps.c; element width: 10</text>
+<text x="48" y="9800" class="sub">byte offset +0x0000</text>
+<rect x="48" y="9807" width="60" height="48" fill="url(#cell-grid-6)"/>
+<path d="M90,9807h5v5h-5zM78,9813h5v5h-5zM96,9813h5v5h-5zM54,9819h11v5h-11zM84,9819h5v5h-5zM102,9819h5v5h-5zM48,9825h23v5h-23zM84,9825h5v5h-5zM102,9825h5v5h-5zM54,9831h11v5h-11zM84,9831h5v5h-5zM102,9831h5v5h-5zM78,9837h5v5h-5zM96,9837h5v5h-5zM90,9843h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="9902" class="section">BITMAP_FoxHuntSpeaker (bitmap, 10 bytes, [10])</text>
+<text x="32" y="9922" class="meta">source: App/bitmaps.c; element width: 10</text>
+<text x="48" y="9967" class="sub">byte offset +0x0000</text>
+<rect x="48" y="9974" width="60" height="48" fill="url(#cell-grid-6)"/>
+<path d="M66,9974h5v5h-5zM90,9974h5v5h-5zM60,9980h11v5h-11zM78,9980h5v5h-5zM96,9980h5v5h-5zM48,9986h23v5h-23zM84,9986h5v5h-5zM102,9986h5v5h-5zM48,9992h23v5h-23zM84,9992h5v5h-5zM102,9992h5v5h-5zM48,9998h23v5h-23zM84,9998h5v5h-5zM102,9998h5v5h-5zM60,10004h11v5h-11zM78,10004h5v5h-5zM96,10004h5v5h-5zM66,10010h5v5h-5zM90,10010h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="10069" class="section">BITMAP_FoxHuntUp (bitmap, 11 bytes, [11])</text>
+<text x="32" y="10089" class="meta">source: App/bitmaps.c; element width: 11</text>
+<text x="48" y="10134" class="sub">byte offset +0x0000</text>
+<rect x="48" y="10141" width="66" height="48" fill="url(#cell-grid-6)"/>
+<path d="M78,10141h5v5h-5zM72,10147h17v5h-17zM66,10153h29v5h-29zM60,10159h41v5h-41zM54,10165h53v5h-53zM48,10171h65v5h-65z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="10236" class="section">BITMAP_FoxHuntDown (bitmap, 11 bytes, [11])</text>
+<text x="32" y="10256" class="meta">source: App/bitmaps.c; element width: 11</text>
+<text x="48" y="10301" class="sub">byte offset +0x0000</text>
+<rect x="48" y="10308" width="66" height="48" fill="url(#cell-grid-6)"/>
+<path d="M48,10308h65v5h-65zM54,10314h53v5h-53zM60,10320h41v5h-41zM66,10326h29v5h-29zM72,10332h17v5h-17zM78,10338h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="10403" class="section">BITMAP_FoxHuntFlat (bitmap, 11 bytes, [11])</text>
+<text x="32" y="10423" class="meta">source: App/bitmaps.c; element width: 11</text>
+<text x="48" y="10468" class="sub">byte offset +0x0000</text>
+<rect x="48" y="10475" width="66" height="48" fill="url(#cell-grid-6)"/>
+<path d="M48,10481h65v5h-65zM48,10499h65v5h-65z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="10570" class="section">BITMAP_FoxHuntBars (bitmap, 11 bytes, [11])</text>
+<text x="32" y="10590" class="meta">source: App/bitmaps.c; element width: 11</text>
+<text x="48" y="10635" class="sub">byte offset +0x0000</text>
+<rect x="48" y="10642" width="66" height="48" fill="url(#cell-grid-6)"/>
+<path d="M102,10642h11v5h-11zM102,10648h11v5h-11zM84,10654h11v5h-11zM102,10654h11v5h-11zM84,10660h11v5h-11zM102,10660h11v5h-11zM66,10666h11v5h-11zM84,10666h11v5h-11zM102,10666h11v5h-11zM66,10672h11v5h-11zM84,10672h11v5h-11zM102,10672h11v5h-11zM48,10678h11v5h-11zM66,10678h11v5h-11zM84,10678h11v5h-11zM102,10678h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="10737" class="section">BITMAP_FoxHuntGraph (bitmap, 15 bytes, [15])</text>
+<text x="32" y="10757" class="meta">source: App/bitmaps.c; element width: 15</text>
+<text x="48" y="10802" class="sub">byte offset +0x0000</text>
+<rect x="48" y="10809" width="90" height="48" fill="url(#cell-grid-6)"/>
+<path d="M60,10815h5v5h-5zM108,10815h5v5h-5zM54,10821h5v5h-5zM66,10821h5v5h-5zM102,10821h5v5h-5zM114,10821h5v5h-5zM48,10827h5v5h-5zM72,10827h5v5h-5zM96,10827h5v5h-5zM120,10827h5v5h-5zM78,10833h5v5h-5zM90,10833h5v5h-5zM126,10833h5v5h-5zM84,10839h5v5h-5zM132,10839h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="10904" class="section">BITMAP_FoxHuntTx (bitmap, 16 bytes, [16])</text>
+<text x="32" y="10924" class="meta">source: App/bitmaps.c; element width: 16</text>
+<text x="48" y="10969" class="sub">byte offset +0x0000</text>
+<rect x="48" y="10976" width="96" height="48" fill="url(#cell-grid-6)"/>
+<path d="M60,10976h5v5h-5zM126,10976h5v5h-5zM54,10982h5v5h-5zM72,10982h5v5h-5zM114,10982h5v5h-5zM132,10982h5v5h-5zM48,10988h5v5h-5zM66,10988h5v5h-5zM90,10988h11v5h-11zM120,10988h5v5h-5zM138,10988h5v5h-5zM48,10994h5v5h-5zM66,10994h5v5h-5zM84,10994h23v5h-23zM120,10994h5v5h-5zM138,10994h5v5h-5zM48,11000h5v5h-5zM66,11000h5v5h-5zM90,11000h11v5h-11zM120,11000h5v5h-5zM138,11000h5v5h-5zM54,11006h5v5h-5zM72,11006h5v5h-5zM114,11006h5v5h-5zM132,11006h5v5h-5zM60,11012h5v5h-5zM126,11012h5v5h-5z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="11071" class="section">BITMAP_CurrentIndicator (bitmap, 8 bytes, [8])</text>
+<text x="32" y="11091" class="meta">source: App/bitmaps.c; element width: 8</text>
+<text x="48" y="11136" class="sub">byte offset +0x0000</text>
+<rect x="48" y="11143" width="48" height="48" fill="url(#cell-grid-6)"/>
+<path d="M48,11143h11v5h-11zM48,11149h23v5h-23zM48,11155h35v5h-35zM48,11161h47v5h-47zM48,11167h47v5h-47zM48,11173h35v5h-35zM48,11179h23v5h-23zM48,11185h11v5h-11z" fill="#111111" shape-rendering="crispEdges"/>
+<text x="32" y="11243" class="meta">arrays: 44; generated offline from C sources</text>
 </svg>

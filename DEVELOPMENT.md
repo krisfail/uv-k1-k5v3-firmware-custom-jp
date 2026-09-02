@@ -5,8 +5,9 @@
 ## 開発を始める前に
 
 - 利用者向けの概要と書き込み手順は[README.md](README.md)または[README.ja.md](README.ja.md)を読む．
-- 追加受信機能，外部フラッシュ，フォント，未検証範囲は[docs/FEATURES_TECHNICAL.ja.md](docs/FEATURES_TECHNICAL.ja.md)を正とする．上流v5.9.0からの受信向け取り込み範囲は[docs/UPSTREAM_INTEGRATION.ja.md](docs/UPSTREAM_INTEGRATION.ja.md)に分けて記録する．
+- 追加受信機能，外部フラッシュ，フォント，未検証範囲は[docs/FEATURES_TECHNICAL.ja.md](docs/FEATURES_TECHNICAL.ja.md)を正とする．チャンネルリストの列定義と保存規則は[docs/CHANNEL_LIST_FORMAT.ja.md](docs/CHANNEL_LIST_FORMAT.ja.md)に分けて記録する．上流からの受信向け取り込み範囲は[docs/UPSTREAM_INTEGRATION.ja.md](docs/UPSTREAM_INTEGRATION.ja.md)に記録する．
 - フォントやビットマップを追加する前に，[docs/FONT_BITMAP_ANNOTATIONS.ja.md](docs/FONT_BITMAP_ANNOTATIONS.ja.md)とatlas inventoryを確認する．
+- LCDの配置を画像で確認するときは，[LCDエミュレータ](docs/LCD_EMULATOR.ja.md)を使う．
 - 移行用CHIRP互換アダプタの機種プロファイルとcalibration境界は[tools/chirp/README.ja.md](tools/chirp/README.ja.md)を読む．
 
 ## ビルドとホストテスト
@@ -21,15 +22,19 @@ cmake --build --preset JpRxOnly -j2
 cmake --build --preset JpRxOnly --target font-quality
 python tools/build_chirp_module.py --check
 python -m unittest discover -s tests -p "test_*.py" -v
+python tools/lcd_emulator.py --screen categories --out tmp/lcd-categories.png
+python tools/lcd_emulator.py --screen menu --out tmp/lcd-menu.png
 ```
 
 生成物は`build/JpRxOnly`以下の`wrx-jp.bin`，`wrx-jp.hex`，`wrx-jp.elf`です．UVTools2で書き込む対象はパック前の`build/JpRxOnly/wrx-jp.bin`です．このリポジトリのCMakeビルドはpacked imageを自動生成しないため，配布用イメージは署名・リリース手順で別途扱います．`JpRxOnly`が唯一のサポート対象プリセットです．
 
-変更後は少なくともホストテスト，ビルド，`git diff --check`を実行します．テストはソース構造や境界を確認するもので，RF性能，LCDの見え方，実機書き込みの成功を保証しません．
+変更後は少なくともホストテスト，ビルド，`git diff --check`を実行します．`test_lcd_emulator.py`とLCDエミュレータはフレームバッファのbit順と主要な静的画面を確認します．RF性能，実機LCDの見え方，実機書き込みの成功は保証しません．
 
 ## 外部日本語フォント
 
 段階AのK1／K5 V3チャンネル名は，外部Flash上の固定フォントデータと1024件のUTF-8名前テーブルを使います。ここでの1024件はチャンネル／名前slot数であり，fontの収録glyph数や評価文字数ではありません。フォントデータの入力，SHA-256，生成形式は[外部日本語フォントREADME](docs/fonts/README.ja.md)と生成manifestに記録します。正規host toolには1024件チャンネル一覧のTSV読出し・編集・書込みもあり，UART処理はworker threadで実行します。保存形式とUART境界は[機能の技術詳細](docs/FEATURES_TECHNICAL.ja.md)，host toolの操作は[専用host toolの説明](tools/host/README.ja.md)を参照します。
+
+チャンネル一覧のTSV列定義，v1互換，ASCII別名の保存規則は[チャンネルリスト形式](docs/CHANNEL_LIST_FORMAT.ja.md)に集約します。
 
 確認済みBDFから派生物を再生成する場合は，リポジトリルートで次を実行します。
 
@@ -43,9 +48,9 @@ CHIRPの互換経路には，フォントとmanifestを内蔵した`tools/chirp/
 
 生成物が最新かどうかは`python tools/build_chirp_module.py --check`で確認できます。CHIRPの外部モジュール読み込みはこの単一ファイルを対象にし、フォントファイルの相対パスに依存させません。
 
-### 主フォント
+### 主フォントと主画面の表示
 
-日本語フォント生成器は、Izumi 16の16×16 BDFから固定bitmapを生成する`tools/generate_japanese_font.py`です。16×16 native geometry、1字32 byte、外部Flash map、host転送形式を使用します。BIZ／Noto、14×14縮小、アウトラインの実行時ラスタライズは使用しません。
+日本語フォント生成器は，Izumi 16の16×16 BDFから固定bitmapを生成する`tools/generate_japanese_font.py`です。16×16 native geometry，1字32 byte，外部Flash map，host転送形式を使用します。主操作画面のチャンネル名はメニューの「主画面チャンネル名」で，16×16，既存16×16字形のfirmware内8×8縮小，ASCII別名のいずれかを選べます。8×8縮小は2×2のnearest-neighborで，メニューの描画方式や外部fontの保存形式は変更しません。デュアルVFOでは4ページの表示領域に収めるため，設定にかかわらずチャンネル名と周波数を小字形へ切り替えます。ASCII表示は外部字形を使わず，単一VFOでは収まる限り大字形，デュアルVFOでは小字形で表示します。
 
 ### 全字形の実機LCD確認
 
@@ -70,7 +75,7 @@ CHIRPの互換経路には，フォントとmanifestを内蔵した`tools/chirp/
 | `App/driver/` | BK4829，BK1080，外部フラッシュなどのドライバ |
 | `App/app/` | スキャン，受信拡張，メニュー操作，アプリケーション状態 |
 | `App/ui/` | メイン画面，メニュー，起動画面，フォント表示 |
-| `App/font.c` / `App/japanese_font.c` / `App/bitmaps.c` | 文字グリフと画面ビットマップ |
+| `App/font.c` / `App/bitmaps.c` | 内蔵ASCIIグリフと画面ビットマップ |
 | `tests/` | ホスト側の回帰テスト |
 | `tools/chirp/` | K1／K5 V3用RX-only CHIRP互換アダプタと境界説明 |
 | `tools/host/` | 専用Windows GUI，通信契約，RX-safe設定モデル |
@@ -87,9 +92,9 @@ CHIRPの互換経路には，フォントとmanifestを内蔵した`tools/chirp/
 
 ### 文字コードと再構成方針
 
-正規の文字対応は[フォント割り当て台帳](docs/FONT_BITMAP_ANNOTATIONS.ja.md)に従います．`0x21`–`0x7E`はASCII，`0xA1`–`0xDF`はJIS X 0201半角カタカナです．`0x80`–`0xA0`と`0xE0`–`0xFF`はJIS文字ではなく，プロジェクト固有の拡張領域または予約領域です．`0x5C`と`0x7E`の扱いは，JIS X 0201へ再解釈せず，現行ASCIIフォントの実装を維持します．
+内蔵フォントの正規範囲は`0x21`–`0x7E`のASCIIです．メニュー，警告，操作選択は，フォントを書き込んでいない状態でも読めるようASCII表記を基本とします．UTF-8のチャンネル名だけは，外部フラッシュへ書き込んだIzumi 16×16フォントで描画できます．
 
-大字形と小字形は別配列で管理するため，異なる配列のバイト列をそのまま移植せず，コードポイントごとに対応を確認してください．段階Bの固定UIは既存の内部1-byte字形と短いASCII技術表記を使い，別のmedium字形は追加しません．
+大字形と小字形は別配列で管理するため，異なる配列のバイト列をそのまま移植せず，配列ごとのコード範囲と幅を確認してください．K1の固定UIでは新しい日本語内蔵字形やmedium字形を追加せず，表示領域に応じてASCII大字形・小字形を使い分けます．
 
 フォントの意味・用途・コードポイントは`tools/font_inventory.json`で管理し，C配列はビルド入力です．編集用の完全スナップショットJSONはC配列から生成し，基準バイト列との一致を検証してからCへ戻します．追跡済みatlasとinventoryを更新するには，次を実行します．この処理はファームウェアの通常ビルドには含めていません．
 
@@ -106,9 +111,9 @@ python -X utf8 tools/render_bitmap_atlas.py `
   --markdown-out tmp/uv-k1-bitmap-atlas/font_inventory.generated.ja.md
 ```
 
-新しい文字は既存コードや字形の重複を確認してから追加します．コードポイント，意味，元バイト列は台帳とソースコメントの両方に残してください．K1はK5よりフラッシュに余裕がありますが，表示幅とRAM使用量を確認してから拡張します．
+内蔵ASCII字形を変更するときは，表示幅，空き要素，RAM使用量を確認します．外部フォントの文字追加・再生成は，入力フォントのライセンスと生成手順を[外部日本語フォントREADME](docs/fonts/README.ja.md)で確認します．
 
-大字形は欧文・日本語とも16行の固定セルですが，固定の上下空白は前提にしません．字形ごとに実際の点灯範囲が異なるため，編集画面の動的な上／字形／下区分と「点灯範囲」を確認し，atlasを再生成してください．描画側に日本語専用の位置補正を追加してはいけません．
+大字形は16行の固定セルで，固定の上下空白は前提にしません．字形ごとに実際の点灯範囲が異なるため，編集画面の動的な上／字形／下区分と「点灯範囲」を確認し，atlasを再生成してください．描画側に文字種専用の位置補正を追加してはいけません．
 
 ### C配列とJSONの安全な往復
 
@@ -116,11 +121,11 @@ python -X utf8 tools/render_bitmap_atlas.py `
 
 ```powershell
 python -X utf8 tools/font_source_json.py extract `
-  --source App\japanese_font.c --array gFontBigJapanese `
-  --output tmp/gFontBigJapanese.source.json
+  --source App\font.c --array gFontSmall --start-code 0x21 `
+  --output tmp/gFontSmall.source.json
 python -X utf8 tools/font_source_json.py apply `
-  --source App\japanese_font.c --input tmp/gFontBigJapanese.source.json `
-  --output tmp/japanese_font.c
+  --source App\font.c --input tmp/gFontSmall.source.json `
+  --output tmp/font.c
 ```
 
 一時Cファイルのatlas，`git diff --no-index`，ビルドを確認してから，必要な場合だけ`--in-place`で反映します．既存の`wrx-jp-font-patch-v1`は簡易UIパッチであり，完全スナップショットより検証情報が少ないため，適用時は`--legacy-patch`を明示します．
@@ -130,7 +135,7 @@ python -X utf8 tools/font_source_json.py apply `
 
 `tools/font_editor.html`をブラウザで開き，`docs/assets/font-atlas/bitmap_atlas_inventory.json`を読み込むと，字形のドットを編集できます．左ドラッグは連続点灯／消灯，右ドラッグは消去，描画モードでは点灯・消灯を固定できます．マウス移動が速くてもセル間を補間し，1回のドラッグを1回のUndo単位として扱います．Space/Enterによるキーボード編集，注釈の編集，C初期化子のコピーに対応します．字形を切り替えても編集内容と注釈は保持され，最後に全字形・Bitmapの変更を1つのJSONパッチとしてコピー／保存できます．HTTP経由で標準台帳を自動読込する場合は，リポジトリルートで次を実行してから表示します．
 
-「文字列プレビュー」に文字列を入力すると，選択中の配列に登録された字形を入力順に横並びで確認できます．表示幅に応じて自動改行し，各字形は配列本来のセル幅のまま描画します．現在編集中の字形は編集内容を即時反映し，未登録の文字は赤枠で示します．「日本語例」では，配列に関係なくJIS X 0201相当の句読点・カタカナ・濁点・半濁点を設定します．「例を入れる」は配列に応じた短い確認用文字列です．JSONパッチは台帳を読み込んだ後，「JSONパッチ」から選択して読み込めます．
+「文字列プレビュー」に文字列を入力すると，選択中の配列に登録された字形を入力順に横並びで確認できます．表示幅に応じて自動改行し，各字形は配列本来のセル幅のまま描画します．現在編集中の字形は編集内容を即時反映し，未登録の文字は赤枠で示します．「例を入れる」は配列に応じた短いASCII確認用文字列です．JSONパッチは台帳を読み込んだ後，「JSONパッチ」から選択して読み込めます．
 
 ```powershell
 python -m http.server 8765
@@ -146,7 +151,7 @@ WebUIのJSONパッチは編集内容の確認・受け渡し用です．C配列�
 python tools/prepare_github_pages.py --source docs --destination .pages-source
 ```
 
-リポジトリのSettings → PagesでSourceを`GitHub Actions`に設定してください．`.pages-source/`と`_site/`は生成物であり，コミットしません．
+リポジトリのSettings → PagesでSourceを`GitHub Actions`に設定してください．`.pages-source/`と`_site/`はサイト公開用の生成物です．
 
 ## コミット，署名，実機確認
 

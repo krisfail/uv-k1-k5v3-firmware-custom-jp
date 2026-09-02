@@ -14,9 +14,9 @@ The firmware is provided **as is**, without warranty. The maintainers are not re
 
 The local Japanese build is `JpRxOnly`:
 
-- Japanese menu labels and large/small Japanese glyph paths.
-- Expanded Japanese LCD labels, including large-font long-vowel and restored katakana glyphs.
-- The `専` and `用` glyphs, including the receive-only welcome display, are independently reduced from the public-domain [Izumi 16](https://unifoundry.com/japanese/) bitmap font; see [font provenance](docs/FONT_SOURCES.ja.md).
+- Readable ASCII labels for menus, warnings, and receive-only operation without requiring a font upload.
+- Optional external 16x16 Unicode glyphs for stored channel names, with ASCII-name and channel-number fallbacks.
+- The external channel-name font is generated from the public-domain [Izumi 16](https://unifoundry.com/japanese/) bitmap font; see [font provenance](docs/FONT_SOURCES.ja.md).
 - TX paths and TX-related menus disabled.
 - PTT assigned to monitor operation.
 - `MAIN ONLY`, `DUAL RX`, and `SINGLE` receive modes.
@@ -26,7 +26,7 @@ The local Japanese build is `JpRxOnly`:
 - The `RXExt` radio menu item enables or disables those added receive features as a group; it defaults to enabled.
 - Domestic FM broadcast reception limited to `76.0–95.0 MHz`.
 
-The receive-only UI omits TX power labels such as `LOW` and `HIGH`. Normal PTT operation is monitor control; only an unexpected request reaching the final TX guard shows the Japanese `受信専用` safety label (`TX DISABLE` is the internal state name). Unsupported receive actions show a short reason such as `RXExt OFF`, `VFO ONLY`, `SCAN ACTIVE`, or `FM ONLY`.
+The receive-only UI omits TX power labels such as `LOW` and `HIGH`. Normal PTT operation is monitor control; only an unexpected request reaching the final TX guard shows the `RX ONLY` safety label (`TX DISABLE` is the internal state name). Unsupported receive actions show a short reason such as `RXExt OFF`, `VFO ONLY`, `SCAN ACTIVE`, or `FM ONLY`.
 
 `JpRxOnly` is the only supported CMake preset and produces the Japanese, domestic receive-only firmware.
 

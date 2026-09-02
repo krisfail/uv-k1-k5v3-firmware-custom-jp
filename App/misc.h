@@ -181,6 +181,15 @@ extern enum BacklightOnRxTx_t gSetting_backlight_on_tx_rx;
 #endif
 
 #ifdef ENABLE_FEAT_F4HWN
+    #ifdef ENABLE_JAPANESE
+        enum JapaneseMainFontMode_t {
+            JAPANESE_MAIN_FONT_16X16 = 0,
+            JAPANESE_MAIN_FONT_8X8,
+            JAPANESE_MAIN_FONT_ASCII,
+            JAPANESE_MAIN_FONT_MODE_LEN
+        };
+    #endif
+
     // Keypad lock scope. Values are BOTH a bitmask (ACTIONS/PTT bits tested
     // individually) AND a contiguous 0..3 menu index: the order must stay
     // aligned with gSubMenu_SET_LCK[] and any new entry must keep the range
@@ -213,6 +222,9 @@ extern enum BacklightOnRxTx_t gSetting_backlight_on_tx_rx;
     extern uint8_t            gSetting_set_lck;
     extern bool               gSetting_set_met;
     extern bool               gSetting_set_gui;
+    #ifdef ENABLE_JAPANESE
+        extern uint8_t         gSetting_japanese_main_font;
+    #endif
     #ifdef ENABLE_FEAT_F4HWN_AUDIO
         extern uint8_t            gSetting_set_audio_fm;
         extern uint8_t            gSetting_set_audio_am;

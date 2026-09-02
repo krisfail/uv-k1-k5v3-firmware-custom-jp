@@ -506,6 +506,11 @@ gEeprom.FreqChannel[1]   = IS_FREQ_CHANNEL(Data16[5]) ? Data16[5] : (FREQ_CHANNE
         gSetting_set_lck = (Data[2] < SET_LCK_LEN) ? Data[2] : SET_LCK_KEYS;
         gSetting_set_met = (tmp >> 2) & 0x01;
         gSetting_set_gui = (tmp >> 3) & 0x01;
+#ifdef ENABLE_JAPANESE
+        gSetting_japanese_main_font =
+            ((Data[3] & 0x03u) < JAPANESE_MAIN_FONT_MODE_LEN) ?
+            (Data[3] & 0x03u) : JAPANESE_MAIN_FONT_16X16;
+#endif
 
 #ifdef ENABLE_FEAT_F4HWN_CTR
         int ctr_value = Data[5] & 0x0F;
@@ -1146,6 +1151,10 @@ void SETTINGS_SaveSettings(void)
             (gSetting_set_gui << 3);
 
     State[2] = gSetting_set_lck;
+#ifdef ENABLE_JAPANESE
+    State[3] = (State[3] & (uint8_t)~0x03u) |
+               (gSetting_japanese_main_font & 0x03u);
+#endif
     State[5] = ((tmp << 4) | (gSetting_set_ctr & 0x0F));
     State[6] = ((gSetting_set_tot << 4) | (gSetting_set_eot & 0x0F));
     uint8_t set_ptt_scn_sav = gSetting_set_ptt & 0x01;

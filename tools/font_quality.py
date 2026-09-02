@@ -3,8 +3,8 @@
 
 This checker deliberately evaluates the inventory contract, not visual taste.
 An empty glyph is an error unless the manifest explicitly records that code
-point as a reserved slot.  This keeps sparse Japanese tables useful while
-catching accidental deletion and stale occupancy metadata.
+point as a reserved slot.  The current K1 inventory is ASCII-based; the same
+check also protects any explicitly reserved bitmap element from drift.
 """
 
 from __future__ import annotations

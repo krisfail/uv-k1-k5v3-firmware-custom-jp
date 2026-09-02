@@ -32,7 +32,7 @@ class FontQualityTests(unittest.TestCase):
         manifest = json.loads((ROOT / "tools" / "font_inventory.json").read_text(encoding="utf-8"))
         findings = self.quality.analyze_inventory(inventory, manifest)
         self.assertFalse([finding for finding in findings if finding.severity == "error"], findings)
-        self.assertTrue(any(finding.message == "意図した空きスロット" for finding in findings))
+        self.assertFalse(any(finding.message == "意図した空きスロット" for finding in findings))
 
     def test_unlisted_blank_glyph_is_an_error(self) -> None:
         document = {

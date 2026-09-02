@@ -99,9 +99,8 @@ textarea { box-sizing: border-box; width: 100%; min-height: 92px; resize: vertic
   <section class="panel">
     <div class="toolbar">
       <label for="previewText">文字列プレビュー</label>
-      <input id="previewText" type="text" value="" placeholder="例: 受信専用" disabled>
+      <input id="previewText" type="text" value="" placeholder="例: RX ONLY" disabled>
       <button id="previewSample" type="button" disabled>例を入れる</button>
-      <button id="previewJapanese" type="button" disabled>日本語例</button>
     </div>
     <div class="hint">選択中の配列に含まれる字形を，入力した文字列の順に横へ並べ，表示幅に応じて改行します．字形は圧縮せず，配列本来のセル幅で表示します．現在編集中の字形は編集内容を反映します．未登録の文字は赤枠で表示します．</div>
     <div class="string-preview"><canvas id="stringPreview" aria-label="文字列プレビュー"></canvas></div>
@@ -368,8 +367,7 @@ function renderQualitySummary() {
 
 function displayZone(row, rows) {
   if (rows !== BIG_CELL_ROWS) return "glyph-area";
-  if (state.currentArray?.name === "gFontJapaneseExtraLarge") return "glyph-area";
-  if (!['gFontBig', 'gFontBigJapanese'].includes(state.currentArray?.name)) return "glyph-area";
+  if (state.currentArray?.name !== "gFontBig") return "glyph-area";
   const bounds = visibleRowBounds();
   if (!bounds) return "glyph-area";
   if (row < bounds.min) return "top-padding";
@@ -382,13 +380,10 @@ function setEnabled(enabled) {
   for (const id of EDITABLE_CONTROL_IDS) $(id).disabled = !enabled;
 }
 
-const JIS_X0201_SAMPLE = "。「」、・ヲァィゥェォャュョッーアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワン゛゜";
-const JAPANESE_ARRAY_NAMES = new Set(["gFontBigJapanese", "gFontSmallJapanese", "gFontJapaneseExtraLarge"]);
-const EDITABLE_CONTROL_IDS = ["undo", "redo", "reset", "toolMode", "copyC", "copyPatch", "downloadPatch", "annotationInput", "previewText", "previewSample", "previewJapanese", "loadPatch"];
+const EDITABLE_CONTROL_IDS = ["undo", "redo", "reset", "toolMode", "copyC", "copyPatch", "downloadPatch", "annotationInput", "previewText", "previewSample", "loadPatch"];
 
 function previewSampleForArray() {
   const name = state.currentArray?.name || "";
-  if (JAPANESE_ARRAY_NAMES.has(name)) return JIS_X0201_SAMPLE;
   if (name === "gFontBig" || name === "gFontSmall" || name === "gFontSmallBold") return "WRX-JP";
   return state.currentTargets
     .map((target) => displayLabel(target))
@@ -404,10 +399,6 @@ function setPreviewText(value) {
 }
 
 function setPreviewSample() { setPreviewText(previewSampleForArray()); }
-
-function setPreviewJapanese() {
-  setPreviewText(JIS_X0201_SAMPLE);
-}
 
 function loadInventory(data) {
   if (!data || !Array.isArray(data.arrays)) throw new Error("arraysを含む台帳JSONではありません");
@@ -690,14 +681,11 @@ function rowRangeLabel(first, last) {
 function renderLayoutGuide() {
   const { width, pages } = selectedLayout();
   const rows = pages * 8;
-  const extraLarge = rows === BIG_CELL_ROWS && state.currentArray.name === "gFontJapaneseExtraLarge";
-  const referenceLarge = rows === BIG_CELL_ROWS && ['gFontBig', 'gFontBigJapanese'].includes(state.currentArray.name);
+  const referenceLarge = rows === BIG_CELL_ROWS && state.currentArray.name === "gFontBig";
   $("guideTop").hidden = !referenceLarge;
   $("guideGlyph").hidden = !referenceLarge;
   $("guideBottom").hidden = !referenceLarge;
-  if (extraLarge) {
-    $("layoutSummary").textContent = `${width}列×${rows}行の特大字形: 16行すべてが字形領域（固定余白なし）`;
-  } else if (referenceLarge) {
+  if (referenceLarge) {
     const bounds = visibleRowBounds();
     $("layoutSummary").textContent = `${width}列×${rows}行の通常大字形: 選択字形の実データ範囲を表示（固定の上下余白なし）`;
     $("guideTop").textContent = `${rowRangeLabel(0, bounds ? bounds.min - 1 : -1)}: 実データ上余白`;
@@ -930,7 +918,6 @@ $("arraySelect").addEventListener("change", populateGlyphs);
 $("glyphSelect").addEventListener("change", selectGlyph);
 $("previewText").addEventListener("input", () => { state.previewTextDirty = true; renderStringPreview(); });
 $("previewSample").addEventListener("click", setPreviewSample);
-$("previewJapanese").addEventListener("click", setPreviewJapanese);
 $("loadPatch").addEventListener("click", loadPatchFromFile);
 $("undo").addEventListener("click", undo);
 $("redo").addEventListener("click", redo);

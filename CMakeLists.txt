@@ -161,7 +161,6 @@ set(FONT_ATLAS_MARKDOWN "${FONT_ATLAS_DIR}/font_inventory.generated.ja.md")
 set(FONT_QUALITY_SCRIPT "${CMAKE_SOURCE_DIR}/tools/font_quality.py")
 set(FONT_ATLAS_SOURCES
     "${CMAKE_SOURCE_DIR}/App/font.c"
-    "${CMAKE_SOURCE_DIR}/App/japanese_font.c"
     "${CMAKE_SOURCE_DIR}/App/bitmaps.c"
 )
 

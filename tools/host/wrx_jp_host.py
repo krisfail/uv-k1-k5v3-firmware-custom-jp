@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import binascii
 import queue
+import re
 import sys
 import threading
 from pathlib import Path
@@ -16,6 +17,7 @@ if __package__ in (None, ""):
         JAPANESE_NAME_SIZE,
         JAPANESE_NAME_BASE,
         RadioSession,
+        ProtocolError,
         SafetyError,
         HostToolError,
     )
@@ -24,12 +26,29 @@ if __package__ in (None, ""):
     import channels  # type: ignore[no-redef]
 else:
     from .protocol import (JAPANESE_NAME_BASE, JAPANESE_NAME_SIZE,
-                           HostToolError, RadioSession, SafetyError)
+                           HostToolError, ProtocolError, RadioSession,
+                           SafetyError)
     from . import channels, resources, settings
 
 
 SETTINGS_BASE = 0xA000
 SETTINGS_SIZE = 0x170
+
+
+def _serial_port_names() -> tuple[str, ...]:
+    """接続中のシリアルポート名を取得する。"""
+    try:
+        from serial.tools import list_ports
+    except ImportError:
+        return ()
+    names = {info.device for info in list_ports.comports() if info.device}
+
+    def sort_key(name: str) -> tuple[int, str]:
+        upper = name.upper()
+        suffix = upper[3:]
+        return (int(suffix), upper) if upper.startswith("COM") and suffix.isdigit() else (0xFFFF, upper)
+
+    return tuple(sorted(names, key=sort_key))
 
 
 def _parse_integer(value: str) -> int:
@@ -50,10 +69,118 @@ def _format_hex(data: bytes) -> str:
     return " ".join("{:02X}".format(byte) for byte in data)
 
 
+def _format_validation_error(detail: str) -> str:
+    lowered = detail.lower()
+    if "hex data is invalid" in lowered:
+        return "16進数のデータを読み取れませんでした。入力内容を確認してください。"
+    if "channel image" in lowered:
+        return "チャンネル領域のサイズが正しくありません。機種と読み出し範囲を確認してください。"
+    if "japanese name table" in lowered:
+        return "日本語の名前テーブルを読み取れませんでした。外部フラッシュの内容を確認してください。"
+    if "channel list is empty" in lowered:
+        return "チャンネル一覧が空です。1件以上のチャンネルを入力してください。"
+    if "header does not match" in lowered:
+        return "チャンネル一覧の形式を判別できません。WRX-JP v1またはv2のTSVを使用してください。"
+    if "exactly 1024" in lowered:
+        return "チャンネル一覧は1024件で入力してください。"
+    if "channel rows must be numbered" in lowered:
+        return "チャンネル一覧は1〜1024の連番で入力してください。"
+    if "must be an integer" in lowered or "must be a number" in lowered:
+        return "数値を読み取れませんでした。入力内容を確認してください。"
+    if "unsupported mode" in lowered:
+        return "チャンネル一覧に対応していないモードが含まれています。"
+    if "unsupported tone_mode" in lowered:
+        return "チャンネル一覧に対応していないトーン設定が含まれています。"
+    if "invalid dtcs_polarity" in lowered:
+        return "チャンネル一覧のDTCS極性が正しくありません。"
+    if "tuning step" in lowered:
+        return "チャンネル一覧に対応していないステップ幅が含まれています。"
+    if "unsupported ctcss" in lowered or "unsupported dtcs" in lowered:
+        return "チャンネル一覧に対応していないトーン値が含まれています。"
+    if "tone is required" in lowered:
+        return "トーン設定が必要なチャンネルに値がありません。"
+    if "scan_lists" in lowered:
+        return "スキャンリストは0〜255の範囲で指定してください。"
+    if "contains a tab or newline" in lowered:
+        return "チャンネル名とASCII別名にはタブや改行を含められません。"
+    if "frequency must be positive" in lowered:
+        return "周波数は正の値で指定してください。"
+    if "outside" in lowered or "calibration" in lowered:
+        return "指定したメモリー範囲は、この操作では書き込めません。"
+    if "settings block" in lowered:
+        return "設定領域のサイズが正しくありません。機種と読み出し範囲を確認してください。"
+    if "invalid value" in lowered or "allowed range" in lowered:
+        return "設定値が正しくありません。指定された範囲から選択してください。"
+    if "backlight_min" in lowered:
+        return "バックライト最低輝度は最高輝度以下にしてください。"
+    if "ascii characters" in lowered or "ascii" in lowered and "limited" in lowered:
+        return "ロゴはASCII文字を16文字以内で入力してください。"
+    if "fm channel" in lowered:
+        return "FM周波数は76.0〜95.0 MHzの範囲で指定してください。"
+    if "programmable-key action" in lowered:
+        return "プログラマブルキーには対応する受信操作を指定してください。"
+    if "先に" in detail:
+        return detail
+    if any("ぁ" <= char <= "龯" for char in detail):
+        return detail
+    return "入力内容または操作範囲を確認してください。"
+
+
+def _format_protocol_error(error: ProtocolError) -> str:
+    detail = str(error)
+    cause = error.__cause__
+    cause_detail = str(cause) if cause is not None else ""
+    logical = re.search(r"logical memory write failed at (0x[0-9A-Fa-f]+)", detail)
+    if logical:
+        if "readback mismatch" in cause_detail:
+            reason = "書き込んだデータと、無線機から読み出したデータが一致しませんでした。"
+        else:
+            reason = "無線機から書き込み完了の応答を受信できませんでした。"
+        return (
+            "無線機のメモリー書き込みに失敗しました。\n"
+            "書き込み位置：{}\n"
+            "{}\n"
+            "無線機を通常の受信画面に戻し、COMポートと接続状態を確認してから、もう一度お試しください。"
+        ).format(logical.group(1).upper(), reason)
+
+    external = re.search(r"external resource write failed at (0x[0-9A-Fa-f]+)", detail)
+    if external:
+        return (
+            "日本語リソースの書き込みに失敗しました。\n"
+            "書き込み位置：{}\n"
+            "無線機との接続と外部フラッシュの状態を確認してから、もう一度お試しください。"
+        ).format(external.group(1).upper())
+
+    if "programming mode" in detail:
+        return "無線機が書き込みモードになっています。通常の受信画面に戻してから接続してください。"
+    if "short read" in cause_detail or "communication failed" in detail:
+        return "無線機から応答を受信できませんでした。COMポート、ケーブル、無線機の画面を確認してください。"
+    if "readback mismatch" in detail:
+        return "書き込んだデータと、無線機から読み出したデータが一致しませんでした。もう一度お試しください。"
+    return "無線機との通信を確認できませんでした。COMポートと無線機の状態を確認して、もう一度お試しください。"
+
+
+def _format_error(error: Exception) -> str:
+    if isinstance(error, ProtocolError):
+        return _format_protocol_error(error)
+    if isinstance(error, SafetyError):
+        return _format_validation_error(str(error))
+    if isinstance(error, HostToolError):
+        detail = str(error)
+        if any("ぁ" <= char <= "龯" for char in detail):
+            return detail
+        return "操作を実行できませんでした。入力内容と接続状態を確認してください。"
+    if isinstance(error, (OSError, IOError)):
+        return "COMポートとの通信に失敗しました。ポートが他のソフトウェアで使用されていないか確認してください。"
+    if isinstance(error, ValueError):
+        return _format_validation_error(str(error))
+    return "処理中に予期しないエラーが発生しました。入力内容と接続状態を確認してください。"
+
+
 class WRXJPHost(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
-        self.title("WRX-JP Host Tool")
+        self.title("JpRxOnlyホストツール")
         self.geometry("900x680")
         self.minsize(760, 560)
         self.session: RadioSession | None = None
@@ -65,8 +192,8 @@ class WRXJPHost(tk.Tk):
         self._jobs = queue.Queue()
         self._busy = False
 
-        self.port = tk.StringVar(value="COM3")
-        self.status = tk.StringVar(value="未接続")
+        self.port = tk.StringVar()
+        self.status = tk.StringVar(value="COMポートを選択してください")
         self.name_path = tk.StringVar()
         self._build_connection_bar()
         self._build_tabs()
@@ -77,10 +204,25 @@ class WRXJPHost(tk.Tk):
         bar = ttk.Frame(self, padding=8)
         bar.pack(fill="x")
         ttk.Label(bar, text="COMポート").pack(side="left")
-        ttk.Entry(bar, textvariable=self.port, width=12).pack(side="left", padx=(6, 8))
+        self.port_combo = ttk.Combobox(
+            bar, textvariable=self.port, width=12, state="readonly")
+        self.port_combo.pack(side="left", padx=(6, 4))
+        ttk.Button(bar, text="再検出", command=self._refresh_ports).pack(
+            side="left", padx=(0, 8))
         ttk.Button(bar, text="接続", command=self._connect).pack(side="left")
         ttk.Button(bar, text="切断", command=self._disconnect).pack(side="left", padx=4)
         ttk.Label(bar, textvariable=self.status).pack(side="left", padx=12)
+        self._refresh_ports()
+
+    def _refresh_ports(self) -> None:
+        ports = _serial_port_names()
+        self.port_combo["values"] = ports
+        if self.port.get() not in ports:
+            self.port.set(ports[0] if ports else "")
+        if self.session is None:
+            self.status.set(
+                "COMポートを選択してください" if ports else
+                "COMポートが見つかりません")
 
     def _build_tabs(self) -> None:
         notebook = ttk.Notebook(self)
@@ -93,21 +235,21 @@ class WRXJPHost(tk.Tk):
     def _build_memory_tab(self, notebook: ttk.Notebook) -> None:
         tab = ttk.Frame(notebook, padding=8)
         notebook.add(tab, text="メモリー")
-        ttk.Label(tab, text="論理offset").grid(row=0, column=0, sticky="w")
+        ttk.Label(tab, text="論理アドレス").grid(row=0, column=0, sticky="w")
         self.memory_offset = tk.StringVar(value="0x0000")
         ttk.Entry(tab, textvariable=self.memory_offset, width=12).grid(
             row=0, column=1, sticky="w", padx=6)
-        ttk.Label(tab, text="読出し長（byte）").grid(row=0, column=2, sticky="w")
+        ttk.Label(tab, text="読み出す長さ（byte）").grid(row=0, column=2, sticky="w")
         self.memory_length = tk.StringVar(value="0x80")
         ttk.Entry(tab, textvariable=self.memory_length, width=12).grid(
             row=0, column=3, sticky="w", padx=6)
-        ttk.Button(tab, text="読出し", command=self._read_memory).grid(
+        ttk.Button(tab, text="読み出し", command=self._read_memory).grid(
             row=0, column=4, padx=4)
-        ttk.Button(tab, text="書込み", command=self._write_memory).grid(
+        ttk.Button(tab, text="書き込み", command=self._write_memory).grid(
             row=0, column=5, padx=4)
         ttk.Label(
             tab,
-            text="calibration（0xB000–0xB1FF）は読出しのみ。書込みは常に拒否する。",
+            text="calibration（0xB000〜0xB1FF）は読み出し専用です。書き込みはできません。",
             foreground="#9a3412",
         ).grid(row=1, column=0, columnspan=6, sticky="w", pady=(8, 4))
         self.memory_text = self._text_box(tab, 2)
@@ -117,24 +259,24 @@ class WRXJPHost(tk.Tk):
         notebook.add(tab, text="チャンネル一覧")
         ttk.Label(
             tab,
-            text="1024件の通常チャンネルをTSVで読出し・編集・書込みする。",
+            text="1024件の通常チャンネルをTSVで読み出し、編集、書き込みできます。",
         ).grid(row=0, column=0, columnspan=6, sticky="w")
         ttk.Label(
             tab,
-            text="周波数・mode・tone・step・scan list・名前を扱う。RX-onlyのため送信周波数は保持しない。",
+            text="周波数、モード、トーン、ステップ、スキャンリスト、表示名、ASCII別名を扱います。受信専用のため、送信周波数は保持しません。",
             foreground="#9a3412",
         ).grid(row=1, column=0, columnspan=6, sticky="w", pady=(6, 8))
-        ttk.Button(tab, text="無線機から読出し", command=self._read_channels).grid(
+        ttk.Button(tab, text="無線機から読み出し", command=self._read_channels).grid(
             row=2, column=0, sticky="w")
-        ttk.Button(tab, text="書込み", command=self._write_channels).grid(
+        ttk.Button(tab, text="書き込み", command=self._write_channels).grid(
             row=2, column=1, sticky="w", padx=4)
-        ttk.Button(tab, text="TSVを読込", command=self._load_channels).grid(
+        ttk.Button(tab, text="TSVを読み込む", command=self._load_channels).grid(
             row=2, column=2, sticky="w", padx=4)
-        ttk.Button(tab, text="TSVを保存", command=self._save_channels).grid(
+        ttk.Button(tab, text="TSVを保存する", command=self._save_channels).grid(
             row=2, column=3, sticky="w", padx=4)
         ttk.Label(
             tab,
-            text="fontは「日本語リソース」タブで先に書込む。calibrationはこの操作の対象外。",
+            text="フォントは「日本語リソース」タブで先に書き込んでください。calibrationはこの操作の対象外です。",
             foreground="#9a3412",
         ).grid(row=3, column=0, columnspan=6, sticky="w", pady=(8, 4))
         self.channel_text = self._text_box(tab, 4)
@@ -144,16 +286,16 @@ class WRXJPHost(tk.Tk):
         notebook.add(tab, text="設定")
         ttk.Label(
             tab,
-            text="確認済みのRX-safe設定／FM領域 0xA000–0xA16F。F4HWN互換の項目名で編集する。",
+            text="確認済みの受信専用設定とFM領域（0xA000〜0xA16F）を編集できます。項目名はF4HWN互換です。",
         ).grid(row=0, column=0, columnspan=4, sticky="w")
         ttk.Label(
             tab,
-            text="未知byteは保持し、既知のBasic／Display／Keys／Scan／F4HWN／Logo／FM項目だけを更新する。",
+            text="未定義のバイトは保持し、対応するBasic、Display、Keys、Scan、F4HWN、Logo、FM項目だけを更新します。",
             foreground="#9a3412",
         ).grid(row=1, column=0, columnspan=4, sticky="w", pady=(6, 8))
-        ttk.Button(tab, text="読出し", command=self._read_settings).grid(
+        ttk.Button(tab, text="読み出し", command=self._read_settings).grid(
             row=2, column=0, sticky="w", pady=(0, 6))
-        ttk.Button(tab, text="書込み", command=self._write_settings).grid(
+        ttk.Button(tab, text="書き込み", command=self._write_settings).grid(
             row=2, column=1, sticky="w", padx=4, pady=(0, 6))
         groups = []
         for field in settings.fields():
@@ -206,11 +348,11 @@ class WRXJPHost(tk.Tk):
         notebook.add(tab, text="日本語リソース")
         ttk.Label(
             tab,
-            text="固定同梱のIzumi 16 fontと1024件のUTF-8名前テーブルを一つの操作で書き込む。",
+            text="固定で同梱しているIzumi 16×16フォントと、1024件のUTF-8名前テーブルを一括で書き込みます。",
         ).grid(row=0, column=0, columnspan=3, sticky="w")
         ttk.Label(
             tab,
-            text="任意BDFのアップロードは行わない。31 UTF-8 byte、文字集合、表示幅を事前検査する。",
+            text="任意のBDFはアップロードしません。31 UTF-8 byte、文字集合、表示幅を事前に検査します。",
             foreground="#9a3412",
         ).grid(row=1, column=0, columnspan=3, sticky="w", pady=(6, 12))
         ttk.Label(tab, text="名前ファイル（UTF-8、1024行）").grid(
@@ -219,9 +361,9 @@ class WRXJPHost(tk.Tk):
             row=2, column=1, sticky="ew", padx=6)
         ttk.Button(tab, text="参照", command=self._choose_names).grid(
             row=2, column=2, sticky="w")
-        ttk.Button(tab, text="日本語リソースを書込み", command=self._write_japanese).grid(
+        ttk.Button(tab, text="日本語リソースを書き込む", command=self._write_japanese).grid(
             row=3, column=0, sticky="w", pady=12)
-        ttk.Button(tab, text="名前テーブルを読出し", command=self._read_japanese_names).grid(
+        ttk.Button(tab, text="名前テーブルを読み出す", command=self._read_japanese_names).grid(
             row=3, column=1, sticky="w", padx=6, pady=12)
         ttk.Label(
             tab,
@@ -244,15 +386,15 @@ class WRXJPHost(tk.Tk):
 
     def _require_session(self) -> RadioSession:
         if self.session is None:
-            raise HostToolError("先にJpRxOnly無線機へ接続する")
+            raise HostToolError("先にJpRxOnly無線機へ接続してください。")
         return self.session
 
     def _submit(self, label, operation, on_success, error_title) -> None:
         if self._busy:
-            self._log("別の通信処理が実行中")
+            self._log("別の通信処理を実行中です。完了するまでお待ちください。")
             return
         self._busy = True
-        self._log("{}中…".format(label))
+        self._log("{}中です…".format(label))
 
         def runner():
             try:
@@ -271,12 +413,12 @@ class WRXJPHost(tk.Tk):
                 _label, result, error, on_success, error_title = self._jobs.get_nowait()
                 self._busy = False
                 if error is not None:
-                    messagebox.showerror(error_title, str(error))
+                    messagebox.showerror(error_title, _format_error(error))
                     continue
                 try:
                     on_success(result)
                 except Exception as exc:
-                    messagebox.showerror(error_title, str(exc))
+                    messagebox.showerror(error_title, _format_error(exc))
         except queue.Empty:
             pass
         self.after(50, self._drain_jobs)
@@ -284,24 +426,24 @@ class WRXJPHost(tk.Tk):
     def _finish_memory_read(self, data: bytes) -> None:
         self.memory_text.delete("1.0", "end")
         self.memory_text.insert("1.0", _format_hex(data))
-        self._log("メモリー読出し完了")
+        self._log("メモリーを読み出しました。")
 
     def _finish_settings_read(self, data: bytes) -> None:
         values = settings.read_settings(data)
         for key, (_field, variable) in self.settings_vars.items():
             variable.set(values[key])
         self.settings_raw = data
-        self._log("設定領域読出し完了")
+        self._log("設定領域を読み出しました。")
 
     def _finish_settings_write(self, data: bytes) -> None:
         self.settings_raw = data
-        self._log("設定書込み・readback完了")
+        self._log("設定を書き込み、内容を確認しました。")
 
     def _read_channels(self) -> None:
         try:
             session = self._require_session()
         except Exception as exc:
-            messagebox.showerror("チャンネル読出しエラー", str(exc))
+            messagebox.showerror("チャンネル一覧を読み出せません", _format_error(exc))
             return
 
         def work():
@@ -310,8 +452,8 @@ class WRXJPHost(tk.Tk):
             rows = channels.decode_channel_list(image, name_table)
             return image, name_table, channels.format_channel_list(rows)
 
-        self._submit("チャンネル一覧読出し", work,
-                     self._finish_channels_read, "チャンネル読出しエラー")
+        self._submit("チャンネル一覧の読み出し", work,
+                     self._finish_channels_read, "チャンネル一覧を読み出せません")
 
     def _finish_channels_read(self, result) -> None:
         image, name_table, text = result
@@ -319,12 +461,12 @@ class WRXJPHost(tk.Tk):
         self.channel_names_raw = name_table
         self.channel_text.delete("1.0", "end")
         self.channel_text.insert("1.0", text)
-        self._log("1024件のチャンネル一覧読出し完了")
+        self._log("1024件のチャンネル一覧を読み出しました。")
 
     def _write_channels(self) -> None:
         try:
             if self.channel_image_raw is None or self.channel_names_raw is None:
-                raise SafetyError("先にチャンネル一覧を読出す")
+                raise SafetyError("先にチャンネル一覧を読み出してください。")
             rows = channels.parse_channel_list(self.channel_text.get("1.0", "end"))
             old_image = self.channel_image_raw
             old_names = self.channel_names_raw
@@ -332,7 +474,7 @@ class WRXJPHost(tk.Tk):
                 rows, old_image, old_names)
             session = self._require_session()
         except Exception as exc:
-            messagebox.showerror("チャンネル書込みエラー", str(exc))
+            messagebox.showerror("チャンネル一覧を書き込めません", _format_error(exc))
             return
 
         def work():
@@ -341,18 +483,18 @@ class WRXJPHost(tk.Tk):
                 JAPANESE_NAME_BASE, old_names, name_table)
             return image, name_table
 
-        self._submit("チャンネル一覧書込み", work,
+        self._submit("チャンネル一覧の書き込み", work,
                      lambda result: self._finish_channels_write(result),
-                     "チャンネル書込みエラー")
+                     "チャンネル一覧を書き込めません")
 
     def _finish_channels_write(self, result) -> None:
         self.channel_image_raw, self.channel_names_raw = result
-        self._log("チャンネル一覧書込み・readback完了")
+        self._log("チャンネル一覧を書き込み、内容を確認しました。")
 
     def _load_channels(self) -> None:
         path = filedialog.askopenfilename(
             title="WRX-JPチャンネルTSVを選択",
-            filetypes=(("TSV text", "*.tsv"), ("All files", "*.*")),
+            filetypes=(("TSVファイル", "*.tsv"), ("すべてのファイル", "*.*")),
         )
         if not path:
             return
@@ -361,9 +503,9 @@ class WRXJPHost(tk.Tk):
             channels.parse_channel_list(text)
             self.channel_text.delete("1.0", "end")
             self.channel_text.insert("1.0", text)
-            self._log("TSVを読込（書込み前に内容を確認する）")
+            self._log("TSVを読み込みました。書き込む前に内容を確認してください。")
         except Exception as exc:
-            messagebox.showerror("TSV読込エラー", str(exc))
+            messagebox.showerror("TSVを読み込めません", _format_error(exc))
 
     def _save_channels(self) -> None:
         try:
@@ -371,33 +513,32 @@ class WRXJPHost(tk.Tk):
             channels.parse_channel_list(text)
             path = filedialog.asksaveasfilename(
                 title="チャンネルTSVを保存", defaultextension=".tsv",
-                filetypes=(("TSV text", "*.tsv"), ("All files", "*.*")),
+                filetypes=(("TSVファイル", "*.tsv"), ("すべてのファイル", "*.*")),
             )
             if not path:
                 return
             Path(path).write_text(text, encoding="utf-8", newline="\n")
-            self._log("チャンネルTSVを保存")
+            self._log("チャンネルTSVを保存しました。")
         except Exception as exc:
-            messagebox.showerror("TSV保存エラー", str(exc))
+            messagebox.showerror("TSVを保存できません", _format_error(exc))
 
     def _connect(self) -> None:
         if self._busy:
-            self._log("別の通信処理が実行中")
+            self._log("別の通信処理を実行中です。完了するまでお待ちください。")
             return
         port = self.port.get().strip()
         if not port:
-            messagebox.showerror("接続エラー", "COMポートを指定する")
+            messagebox.showerror("接続できません", "COMポートを選択してください。")
             return
 
         def work():
             import serial
-            transport = serial.Serial(port, 38400, timeout=0.5)
+            transport = serial.Serial(port, 38400, timeout=2.0)
             try:
                 session = RadioSession(transport)
                 firmware = session.connect()
-                if not any(marker in firmware.lower() for marker in ("j1", "wrx", "jp")):
-                    raise HostToolError(
-                        "JpRxOnlyの確認に失敗した（応答: {!r}）".format(firmware))
+                # 応答の版表示はビルド設定で変わるため、固定文字列で判定しない。
+                # WRX-JP専用の外部Flash read commandが通ることを実装確認とする。
                 session.probe_external_japanese()
                 return transport, session, firmware
             except Exception:
@@ -409,13 +550,13 @@ class WRXJPHost(tk.Tk):
 
         def connected(result):
             self.transport, self.session, firmware = result
-            self._log("JpRxOnly／外部Flashコマンド確認: {}".format(firmware))
+            self._log("JpRxOnlyと外部フラッシュを確認しました：{}".format(firmware))
 
-        self._submit("接続", work, connected, "接続エラー")
+        self._submit("接続", work, connected, "接続できません")
 
     def _disconnect(self) -> None:
         if self._busy:
-            self._log("通信中のため切断を待機")
+            self._log("通信中です。処理が完了してから切断してください。")
             return
         if self.transport is not None:
             try:
@@ -424,7 +565,7 @@ class WRXJPHost(tk.Tk):
                 pass
         self.transport = None
         self.session = None
-        self.status.set("未接続")
+        self.status.set("未接続です")
 
     def _read_memory(self) -> None:
         try:
@@ -432,13 +573,13 @@ class WRXJPHost(tk.Tk):
             length = _parse_integer(self.memory_length.get())
             session = self._require_session()
         except Exception as exc:
-            messagebox.showerror("読出しエラー", str(exc))
+            messagebox.showerror("メモリーを読み出せません", _format_error(exc))
             return
         self._submit(
-            "メモリー読出し",
+            "メモリーの読み出し",
             lambda: session.read_memory(offset, length),
             lambda data: self._finish_memory_read(data),
-            "読出しエラー",
+            "メモリーを読み出せません",
         )
 
     def _write_memory(self) -> None:
@@ -447,50 +588,50 @@ class WRXJPHost(tk.Tk):
             data = _parse_hex(self.memory_text.get("1.0", "end"))
             session = self._require_session()
         except Exception as exc:
-            messagebox.showerror("書込みエラー", str(exc))
+            messagebox.showerror("メモリーを書き込めません", _format_error(exc))
             return
         self._submit(
-            "メモリー書込み",
+            "メモリーの書き込み",
             lambda: session.write_memory(offset, data),
-            lambda _result: self._log("メモリー書込み・readback完了"),
-            "書込みエラー",
+            lambda _result: self._log("メモリーを書き込み、内容を確認しました。"),
+            "メモリーを書き込めません",
         )
 
     def _read_settings(self) -> None:
         try:
             session = self._require_session()
         except Exception as exc:
-            messagebox.showerror("設定読出しエラー", str(exc))
+            messagebox.showerror("設定を読み出せません", _format_error(exc))
             return
         self._submit(
-            "設定読出し",
+            "設定の読み出し",
             lambda: session.read_memory(SETTINGS_BASE, SETTINGS_SIZE),
             self._finish_settings_read,
-            "設定読出しエラー",
+            "設定を読み出せません",
         )
 
     def _write_settings(self) -> None:
         try:
             if self.settings_raw is None:
-                raise SafetyError("先に設定を読出す")
+                raise SafetyError("先に設定を読み出してください。")
             values = {key: variable.get()
                       for key, (_field, variable) in self.settings_vars.items()}
             data = settings.apply_settings(self.settings_raw, values)
             session = self._require_session()
         except Exception as exc:
-            messagebox.showerror("設定書込みエラー", str(exc))
+            messagebox.showerror("設定を書き込めません", _format_error(exc))
             return
         self._submit(
-            "設定書込み",
+            "設定の書き込み",
             lambda: session.write_memory(SETTINGS_BASE, data),
             lambda _result: self._finish_settings_write(data),
-            "設定書込みエラー",
+            "設定を書き込めません",
         )
 
     def _choose_names(self) -> None:
         path = filedialog.askopenfilename(
             title="1024行のUTF-8名前ファイルを選択",
-            filetypes=(("UTF-8 text", "*.txt"), ("All files", "*.*")),
+            filetypes=(("UTF-8テキスト", "*.txt"), ("すべてのファイル", "*.*")),
         )
         if path:
             self.name_path.set(path)
@@ -499,54 +640,54 @@ class WRXJPHost(tk.Tk):
         try:
             path = Path(self.name_path.get())
             if not path.is_file():
-                raise ValueError("1024行の名前ファイルを選択する")
+                raise ValueError("1024行の名前ファイルを選択してください。")
             name_table = resources.read_name_file(path)
             font = resources.load_font()
             if len(name_table) != JAPANESE_NAME_SIZE:
                 raise SafetyError("名前テーブルのサイズが不正")
             if not messagebox.askyesno(
-                    "日本語リソース書込み",
-                    "固定fontと1024件の名前を外部Flashへ書き込む。続行する？"):
+                    "日本語リソースを書き込みます",
+                    "固定フォントと1024件の名前を外部フラッシュへ書き込みます。続行しますか？"):
                 return
             session = self._require_session()
         except Exception as exc:
-            messagebox.showerror("日本語リソース書込みエラー", str(exc))
+            messagebox.showerror("日本語リソースを書き込めません", _format_error(exc))
             return
         self._submit(
-            "日本語リソース書込み",
+            "日本語リソースを書き込み",
             lambda: session.write_japanese_resource(font, name_table),
-            lambda _result: self._log("日本語リソース書込み・readback完了"),
-            "日本語リソース書込みエラー",
+            lambda _result: self._log("日本語リソースを書き込み、内容を確認しました。"),
+            "日本語リソースを書き込めません",
         )
 
     def _read_japanese_names(self) -> None:
         try:
             session = self._require_session()
         except Exception as exc:
-            messagebox.showerror("名前読出しエラー", str(exc))
+            messagebox.showerror("名前テーブルを読み出せません", _format_error(exc))
             return
 
         def finish(data):
             path = filedialog.asksaveasfilename(
                 title="名前テーブルを保存", defaultextension=".txt",
-                filetypes=(("UTF-8 text", "*.txt"),))
+                filetypes=(("UTF-8テキスト", "*.txt"),))
             if not path:
                 return
             names = resources.unpack_name_table(data)
             with Path(path).open("w", encoding="utf-8", newline="\n") as stream:
                 stream.write("\n".join(names) + "\n")
-            self._log("1024件の名前テーブルを保存")
+            self._log("1024件の名前テーブルを保存しました。")
 
-        self._submit("名前テーブル読出し",
+        self._submit("名前テーブルの読み出し",
                      session.read_external_names,
-                     finish, "名前読出しエラー")
+                     finish, "名前テーブルを読み出せません")
 
     def _log(self, message: str) -> None:
         self.status.set(message)
 
     def _close(self) -> None:
         if self._busy:
-            self._log("通信中のため終了を待機")
+            self._log("通信中です。処理が完了してから終了してください。")
             return
         self._disconnect()
         self.destroy()

@@ -1,6 +1,6 @@
 # UV-K1 / UV-K5 V3 日本語・受信専用ファームウェア
 
-[英語版README](README.md) | [操作・ビルドcheatsheet](CHEATSHEET.ja.md) | [開発ガイド](DEVELOPMENT.md) | [CHIRP互換アダプタ](tools/chirp/README.ja.md) | [新機能の技術詳細](docs/FEATURES_TECHNICAL.ja.md) | [フォントコード表](docs/FONT_BITMAP_ANNOTATIONS.ja.md) | [機能監査](docs/FEATURE_AUDIT.ja.md) | [実機テスト計画](docs/HARDWARE_TEST_PLAN.ja.md) | [bitmap/font atlas](docs/BITMAP_ATLAS.ja.md) | [ドキュメントサイト](docs/index.md)
+[英語版README](README.md) | [操作・ビルドcheatsheet](CHEATSHEET.ja.md) | [開発ガイド](DEVELOPMENT.md) | [チャンネルリスト形式](docs/CHANNEL_LIST_FORMAT.ja.md) | [CHIRP互換アダプタ](tools/chirp/README.ja.md) | [新機能の技術詳細](docs/FEATURES_TECHNICAL.ja.md) | [フォントコード表](docs/FONT_BITMAP_ANNOTATIONS.ja.md) | [機能監査](docs/FEATURE_AUDIT.ja.md) | [実機テスト計画](docs/HARDWARE_TEST_PLAN.ja.md) | [bitmap/font atlas](docs/BITMAP_ATLAS.ja.md) | [ドキュメントサイト](docs/index.md)
 
 ## このリポジトリの位置づけ
 
@@ -43,14 +43,16 @@
 - RSSI・ノイズを使う`AUTO`スケルチ
 - FM受信時の急激なゲイン変化を抑えるAGCガード
 - `RXExt`で追加受信機能をまとめてON/OFF（初期値ON）
-- RX-onlyメニューの主要項目を日本語化（受信拡張，優先，情報，反転，音声，自動，狭帯，高速など）
-- メニューをカテゴリ別に表示（`ALL`で従来の全項目表示へ戻せる）
+- RX-onlyメニューの主要項目を短いASCII表記へ整理（RXExt，優先スキャン，情報，反転，音声，自動，狭帯など）
+- Dondji風のカテゴリランチャーからメニューを分類表示（`ALL`で従来の全項目表示へ戻せる）
+- カテゴリごとの意味が分かる線画アイコンを表示し，主画面のチャンネル名は16×16／8×8縮小／ASCII別名から選択可能
 - `F`を押しながらサイドキーを長押しして，そのキーへ割り当てる受信操作を一覧から選択
 - K1のフラッシュ容量を使い，受信音声プロファイルと音声レベル履歴を有効化
-- 既存の内部1-byte字形による日本語メニュー，カテゴリ，警告，操作選択．技術用語と単位は短いASCII表記を残す
-- 起動画面の`受信専用`に使う大字形は，パブリックドメインのIzumi 16から独立変換しています．詳細は[フォントの出所と変換](docs/FONT_SOURCES.ja.md)を参照してください．
+- メニュー，カテゴリ，警告，操作選択は，フォント未書込みでも読めるASCII表記を基本とする．技術用語と単位は短い表記に整理する
+- カテゴリ，メニュー，警告のLCD配置を画像で確認できます
+- UTF-8のチャンネル名には，パブリックドメインのIzumi 16を変換した外部16×16フォントを使用できます．詳細は[フォントの出所と生成方法](docs/FONT_SOURCES.ja.md)を参照してください．
 
-メニューの`受信拡張`（従来表記`RXExt`）を`OFF`にすると，プリセット，受信モードの`SINGLE`，メモリーバンク絞り込み，`自動`スケルチ，AGCガード，一時スキップを停止します．受信専用・PTTモニター，日本語表示，FM放送の`76.0–95.0 MHz`制限は変わりません．既存の保存データは互換性のためONとして扱います．
+メニューの`受信拡張`（従来表記`RXExt`）を`OFF`にすると，プリセット，受信モードの`SINGLE`，メモリーバンク絞り込み，`自動`スケルチ，AGCガード，一時スキップを停止します．受信専用・PTTモニター，外部チャンネル名表示，FM放送の`76.0–95.0 MHz`制限は変わりません．既存の保存データは互換性のためONとして扱います．
 
 追加の受信設定は，標準の設定・チャンネル名・校正領域とは別の外部フラッシュ領域を使用します．設定領域を変更する場合も，書き込み前の校正データのバックアップは省略しないでください．CHIRP互換アダプタの校正領域保護とメモリーマップの詳細は[説明文書](tools/chirp/README.ja.md)にまとめています．
 
@@ -91,7 +93,7 @@ cmake --build --preset JpRxOnly --target font-atlas
 
 ## 専用host toolとCHIRP互換アダプタ
 
-正規の操作環境は，[小規模Windows GUIの専用host tool](tools/host/README.ja.md)です．「メモリー読書き」「1024件チャンネル一覧」「設定読書き」「日本語リソース書込み」を明示的に分け，チャンネル一覧は編集可能なUTF-8 TSVとして扱います．フォントと1024件の名前テーブルは日本語リソース操作として扱います．通信中もGUIは固まらず，変更ブロックだけをreadback付きで書き込みます．操作の詳細は専用host toolと[CHIRP互換アダプタの説明](tools/chirp/README.ja.md)を参照してください．
+正規の操作環境は，[小規模Windows GUIの専用host tool](tools/host/README.ja.md)です．「メモリー読書き」「1024件チャンネル一覧」「設定読書き」「日本語リソース書込み」を明示的に分け，チャンネル一覧は編集可能なUTF-8 TSVとして扱います．チャンネル一覧には日本語表示名と，主画面のASCII表示へ切り替えるための別名を保存できます．フォントと1024件の名前テーブルは日本語リソース操作として扱います．通信中もGUIは固まらず，変更ブロックだけをreadback付きで書き込みます．操作の詳細は専用host toolと[CHIRP互換アダプタの説明](tools/chirp/README.ja.md)を参照してください．
 
 CHIRPは互換・移行用アダプタです．使用する場合は[CHIRP互換アダプタの説明](tools/chirp/README.ja.md)を参照してください．日本語リソースの明示的な書込みには専用host toolを使用できます．
 
@@ -130,7 +132,7 @@ python -m unittest discover -s tests -p "test_*.py" -v
 
 `JpRxOnly`のPTTはモニター動作です．`JpRxOnly`に送信機能はありません．
 
-メニューカテゴリ画面では`UP/DOWN`でカテゴリを選び，`M`で項目一覧へ入ります．`EXIT`でカテゴリ一覧へ戻り，`ALL`ではカテゴリ分け前と同じ全項目を表示します．アクション選択画面では`UP/DOWN`で操作を選び，`M`で確定，`EXIT`または`F`でキャンセルします．RX専用版では送信電力やPTTを割り当てる候補は表示しません．
+メニューカテゴリ画面はDondji風のランチャーです．K1の左右キーまたは数字キー1〜9でカテゴリを切り替え，`M`でカテゴリ内の項目一覧へ入ります．10番目以降のカテゴリは左右キーで選びます．`EXIT`でランチャーへ戻り，`ALL`ではカテゴリ分け前と同じ全項目を表示します．アクション選択画面では`UP/DOWN`で操作を選び，`M`で確定，`EXIT`または`F`でキャンセルします．RX専用版では送信電力やPTTを割り当てる候補は表示しません．
 
 ## 隠しメニュー
 
@@ -139,7 +141,7 @@ python -m unittest discover -s tests -p "test_*.py" -v
 ## 表示と利用できない操作
 
 - 受信専用画面では送信出力の`LOW`／`HIGH`表示を出しません．
-- 通常の`PTT`はモニター操作です．予期しないTX要求が最終的な安全ゲートへ到達した場合だけ，ビープ音と`受信専用`を表示します（内部状態名は`TX DISABLE`）．
+- 通常の`PTT`はモニター操作です．予期しないTX要求が最終的な安全ゲートへ到達した場合だけ，ビープ音と`RX ONLY`を表示します（内部状態名は`TX DISABLE`）．
 - 受信拡張の条件が合わない操作は，ビープ音だけでなく`RXExt OFF`，`VFO ONLY`，`SCAN ACTIVE`，`FM ONLY`など短い理由を表示します．
 - 起動画面の`MESSAGE`／`ALL`は，この版の受信専用メッセージを表示します．`LOGO+MSG`では画像と用途表示を続けて確認できます．
 
@@ -157,4 +159,6 @@ python -m unittest discover -s tests -p "test_*.py" -v
 ## 謝辞
 
 上流プロジェクトのほか，受信専用・広帯域受信機化の設計検討では`UV-K5-RX-JP`の機能の一部を参考にしました．実装・ライセンス・配布物の権利関係はそれぞれの原著作物に従います．
+
+メニューランチャーの構成は，[Dondji](https://github.com/EthanYan6/Dondji)の公開実装を参考にしました．Dondjiのソースコードや画像資産は取り込まず，K1向けに独自実装しています．
 

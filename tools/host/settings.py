@@ -111,6 +111,8 @@ def fields() -> tuple[Field, ...]:
         _bool_field("invert_display", "表示反転", "表示・操作"),
         _choice_field("meter_style", "Sメーター表示", "表示・操作", ("TINY", "CLASSIC")),
         _bool_field("gui_style", "GUI表示", "表示・操作"),
+        _choice_field("japanese_main_font", "主画面チャンネル名", "表示・操作",
+                      ("16×16日本語", "8×8縮小", "ASCII")),
         _choice_field("menu_lock_mode", "メニューロック範囲", "表示・操作", menu_lock),
         _choice_field("sleep_timer", "スリープタイマー", "表示・操作",
                       tuple(["OFF"] + ["{}分".format(i) for i in range(1, 121)])),
@@ -186,6 +188,8 @@ def read_settings(data: bytes) -> dict[str, object]:
         "invert_display": bool(f4[5] & 0x10),
         "meter_style": "CLASSIC" if f4[5] & 0x40 else "TINY",
         "gui_style": bool(f4[5] & 0x80),
+        "japanese_main_font": _safe_choice(
+            choices["japanese_main_font"], f4[3] & 0x03),
         "menu_lock_mode": _safe_choice(choices["menu_lock_mode"], f4[2]),
         "sleep_timer": _safe_choice(choices["sleep_timer"], f4[4] >> 1, 60),
         "beep_control": bool(actions[0] & 0x01),
@@ -310,6 +314,7 @@ def apply_settings(data: bytes, values: dict[str, object]) -> bytes:
         f4[5] |= 0x40
     else:
         f4[5] &= ~0x40
+    f4[3] = (f4[3] & ~0x03) | choice("japanese_main_font", f4[3] & 0x03)
     f4[2] = choice("menu_lock_mode", f4[2])
     f4[4] = (f4[4] & 0x01) | (choice("sleep_timer", min(f4[4] >> 1, 120)) << 1)
 

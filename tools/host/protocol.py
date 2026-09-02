@@ -152,7 +152,7 @@ def _read_exact(transport: BinaryIO, length: int) -> bytes:
 class RadioSession:
     """Synchronous session over a pyserial-compatible transport."""
 
-    def __init__(self, transport: BinaryIO, timeout: float = 0.5):
+    def __init__(self, transport: BinaryIO, timeout: float = 2.0):
         self.transport = transport
         if hasattr(transport, "timeout"):
             transport.timeout = timeout

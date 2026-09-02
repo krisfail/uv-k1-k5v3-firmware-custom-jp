@@ -49,10 +49,11 @@ DTCS_CODES = (
 )
 MODES = ("FM", "NFM", "AM", "NAM", "USB")
 TONE_MODES = ("", "Tone", "TSQL", "DTCS")
-FIELDNAMES = (
+FIELDNAMES_V1 = (
     "channel", "frequency_hz", "mode", "tone_mode", "tone", "dtcs",
     "dtcs_polarity", "tuning_step_khz", "scan_lists", "name",
 )
+FIELDNAMES_V2 = FIELDNAMES_V1[:-1] + ("name", "ascii_name")
 
 
 @dataclass
@@ -67,6 +68,7 @@ class Channel:
     tuning_step_khz: float = 12.5
     scan_lists: int = 0
     name: str = ""
+    ascii_name: str = ""
 
     @property
     def empty(self) -> bool:
@@ -119,13 +121,15 @@ def decode_channel_list(image: bytes, name_table: bytes) -> list[Channel]:
         tone_mode, tone, dtcs, polarity = _decode_tone(raw)
         attr_offset = CHANNEL_ATTRIBUTE_BASE + index * CHANNEL_ATTRIBUTE_SIZE
         scan_lists = struct.unpack_from("<H", image, attr_offset)[0] >> 8
-        name = _decode_external_name(name_table, index)
-        if not name:
-            name = _decode_fixed_text(
-                image[CHANNEL_NAME_BASE + index * 16:
-                      CHANNEL_NAME_BASE + (index + 1) * 16], "ascii")
+        external_name = _decode_external_name(name_table, index)
+        stored_ascii_name = _decode_fixed_text(
+            image[CHANNEL_NAME_BASE + index * 16:
+                  CHANNEL_NAME_BASE + (index + 1) * 16], "ascii")
+        name = external_name or stored_ascii_name
+        ascii_name = stored_ascii_name if external_name else ""
         if frequency is None:
             name = ""
+            ascii_name = ""
         step_index = raw[14]
         step = STEPS[step_index] if step_index < len(STEPS) else 12.5
         result.append(Channel(
@@ -139,6 +143,7 @@ def decode_channel_list(image: bytes, name_table: bytes) -> list[Channel]:
             tuning_step_khz=step,
             scan_lists=scan_lists,
             name=name,
+            ascii_name=ascii_name,
         ))
     return result
 
@@ -196,31 +201,46 @@ def _parse_row(row: dict[str, str], expected_channel: int) -> Channel:
     name = row.get("name", "")
     if "\t" in name or "\r" in name or "\n" in name:
         raise ValueError("channel {} name contains a tab or newline".format(channel))
+    ascii_name = row.get("ascii_name", "")
+    if "\t" in ascii_name or "\r" in ascii_name or "\n" in ascii_name:
+        raise ValueError("channel {} ascii_name contains a tab or newline".format(channel))
     return Channel(channel, frequency, mode, tone_mode, tone, dtcs, polarity,
-                   step, scan_lists, name)
+                   step, scan_lists, name, ascii_name)
 
 
 def parse_channel_list(text: str) -> list[Channel]:
-    """Parse the editable UTF-8 TSV representation."""
+    """編集用UTF-8 TSVを解析する。
+
+    既存のv1出力を読み込める。v2では主画面のcompact表示用ASCII別名を
+    任意で指定できる。
+    """
     lines = [line for line in text.splitlines()
              if line.strip() and not line.lstrip().startswith("#")]
     if not lines:
         raise ValueError("channel list is empty")
     reader = csv.DictReader(lines, delimiter="\t")
-    if tuple(reader.fieldnames or ()) != FIELDNAMES:
-        raise ValueError("channel list header does not match WRX-JP v1")
+    fieldnames = tuple(reader.fieldnames or ())
+    if fieldnames not in (FIELDNAMES_V1, FIELDNAMES_V2):
+        raise ValueError("channel list header does not match WRX-JP v1 or v2")
     rows = list(reader)
     if len(rows) != CHANNEL_COUNT:
         raise ValueError("channel list must contain exactly 1024 rows")
-    return [_parse_row(row, index) for index, row in enumerate(rows, 1)]
+    parsed = []
+    for index, row in enumerate(rows, 1):
+        if fieldnames == FIELDNAMES_V1:
+            row = dict(row)
+            primary_name = row.get("name", "")
+            row["ascii_name"] = primary_name if primary_name.isascii() else ""
+        parsed.append(_parse_row(row, index))
+    return parsed
 
 
 def format_channel_list(channels: list[Channel]) -> str:
     if len(channels) != CHANNEL_COUNT:
         raise ValueError("channel list must contain exactly 1024 rows")
     output = io.StringIO(newline="")
-    output.write("# WRX-JP channel list v1\n")
-    writer = csv.DictWriter(output, fieldnames=FIELDNAMES, delimiter="\t",
+    output.write("# WRX-JP channel list v2\n")
+    writer = csv.DictWriter(output, fieldnames=FIELDNAMES_V2, delimiter="\t",
                             lineterminator="\n", extrasaction="raise")
     writer.writeheader()
     for channel in channels:
@@ -235,6 +255,7 @@ def format_channel_list(channels: list[Channel]) -> str:
             "tuning_step_khz": "{:g}".format(channel.tuning_step_khz),
             "scan_lists": channel.scan_lists,
             "name": channel.name,
+            "ascii_name": channel.ascii_name,
         })
     return output.getvalue()
 
@@ -306,10 +327,27 @@ def encode_channel_list(channels: list[Channel], image: bytes,
 
         encoded_name = resources.validate_name(channel.name, codepoints)
         if any(ord(character) > 0x7E for character in channel.name):
-            updated[name_offset:name_offset + 16] = b"\x00" * 16
+            try:
+                ascii_alias = channel.ascii_name.encode("ascii")
+            except UnicodeEncodeError as exc:
+                raise ValueError(
+                    "channel {} ascii_name must contain ASCII characters".format(
+                        channel.channel)) from exc
+            if len(ascii_alias) > 10:
+                raise ValueError(
+                    "channel {} ascii_name exceeds 10 bytes".format(channel.channel))
+            if any(not 0x20 <= value <= 0x7E for value in ascii_alias):
+                raise ValueError(
+                    "channel {} ascii_name contains a non-printable character".format(
+                        channel.channel))
+            updated[name_offset:name_offset + 16] = ascii_alias.ljust(16, b"\x00")
             updated_names[external_offset:external_offset + 32] = \
                 encoded_name.ljust(32, b"\x00")
         else:
+            if channel.ascii_name and channel.ascii_name != channel.name:
+                raise ValueError(
+                    "channel {} ascii_name is only separate for a Japanese name".format(
+                        channel.channel))
             if len(encoded_name) > 10:
                 raise ValueError("channel {} ASCII name exceeds 10 bytes".format(channel.channel))
             updated[name_offset:name_offset + 16] = encoded_name.ljust(16, b"\x00")

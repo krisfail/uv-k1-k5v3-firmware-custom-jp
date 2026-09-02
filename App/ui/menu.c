@@ -222,6 +222,9 @@ const t_menu_item MenuList[] =
     {WRX_MENU_LABEL_SET_MENU_LOCK, MENU_SET_LCK},
     {WRX_MENU_LABEL_SET_METER, MENU_SET_MET},
     {WRX_MENU_LABEL_SET_GUI, MENU_SET_GUI},
+#ifdef ENABLE_JAPANESE
+    {WRX_MENU_LABEL_SET_MAIN_FONT, MENU_SET_MAIN_FONT},
+#endif
 #ifdef ENABLE_FEAT_F4HWN_AUDIO    
     {WRX_MENU_LABEL_SET_AUDIO, MENU_SET_AUD},
 #endif
@@ -325,11 +328,7 @@ const char* const gSubMenu_RX_BANK[] =
 
 const char* const gSubMenu_RX_BANK_SET[] =
 {
-#ifdef ENABLE_JAPANESE
-    "\x97", "B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8"
-#else
     "NONE", "B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8"
-#endif
 };
 #endif
 
@@ -344,7 +343,7 @@ const char* gSubMenu_NA = "N/A";
 const char* const gSubMenu_RXMode[] =
 {
 #ifdef ENABLE_RX_ONLY
-    "\x80\x81",
+    "MAIN ONLY",
     "DUAL RX",
     "SINGLE",
 #else
@@ -366,17 +365,10 @@ const char* const gSubMenu_RXMode[] =
 
 const char* const gSubMenu_MDF[] =
 {
-#ifdef ENABLE_JAPANESE
-    "\xF2\xF3\xF4",
-    "CH",
-    "\x8A",
-    "\x8A\n+\n\xF2\xF3\xF4"
-#else
     "FREQ",
     "CHANNEL\nNUMBER",
     "NAME",
     "NAME\n+\nFREQ"
-#endif
 };
 
 #ifdef ENABLE_ALARM
@@ -444,11 +436,7 @@ const char* const gSubMenu_ROGER[] =
 const char* const gSubMenu_RESET[] =
 {
     "VFO",
-#ifdef ENABLE_JAPANESE
-    "\xF8\xF9\xFA"
-#else
     "ALL"
-#endif
 };
 
 const char* const gSubMenu_F_LOCK[] =
@@ -482,15 +470,9 @@ const char* const gSubMenu_RX_TX[] =
 
 const char* const gSubMenu_BAT_TXT[] =
 {
-#ifdef ENABLE_JAPANESE
-    "\x97",
-    "\x8F\x92",
-    "%"
-#else
     "NONE",
     "VOLTAGE",
     "PERCENT"
-#endif
 };
 
 const char* const gSubMenu_BATTYP[] =
@@ -553,17 +535,10 @@ const char* const gSubMenu_SCRAMBLER[] =
 
     const char* const gSubMenu_SET_LCK[] =
     {
-#ifdef ENABLE_JAPANESE
-        "\xB7\xE0",
-        "\xB7\xE0\nACT",
-        "\xB7\xE0\nPTT",
-        "\xB7\xE0\nACT\nPTT"
-#else
         "KEYS",
         "KEYS\nACTIONS",
         "KEYS\nPTT",
         "KEYS\nACTIONS\nPTT"
-#endif
     };
 
     const char* const gSubMenu_SET_MET[] =
@@ -571,6 +546,15 @@ const char* const gSubMenu_SCRAMBLER[] =
         "TINY",
         "CLASSIC"
     };
+
+#ifdef ENABLE_JAPANESE
+    const char* const gSubMenu_SET_MAIN_FONT[] =
+    {
+        "16x16\nJP",
+        "8x8\nJP",
+        "ASCII"
+    };
+#endif
 
     #ifdef ENABLE_FEAT_F4HWN_SCAN_FASTER
         const char* const gSubMenu_SET_SCN[] =
@@ -601,13 +585,8 @@ const char* const gSubMenu_SCRAMBLER[] =
     #ifdef ENABLE_FEAT_F4HWN_NARROWER
         const char* const gSubMenu_SET_NFM[] =
         {
-#ifdef ENABLE_JAPANESE
-            "\xED\xEE",
-            "\xED\xEE+"
-#else
             "NARROW",
             "NARROWER"
-#endif
         };
     #endif
 
@@ -776,7 +755,11 @@ static const uint8_t CatPower[]   = {
     MENU_SET_SAV,
 #endif
 };
-static const uint8_t CatDisplay[] = { MENU_MDF, MENU_PONMSG, MENU_ABR, MENU_ABR_MIN, MENU_ABR_MAX, MENU_ABR_ON_TX_RX, MENU_SET_CTR, MENU_SET_INV, MENU_SET_MET, MENU_SET_GUI, MENU_VOL };
+static const uint8_t CatDisplay[] = { MENU_MDF, MENU_PONMSG, MENU_ABR, MENU_ABR_MIN, MENU_ABR_MAX, MENU_ABR_ON_TX_RX, MENU_SET_CTR, MENU_SET_INV, MENU_SET_MET, MENU_SET_GUI,
+#ifdef ENABLE_JAPANESE
+    MENU_SET_MAIN_FONT,
+#endif
+    MENU_VOL };
 static const uint8_t CatTimers[]  = { MENU_TOT, MENU_SET_TOT, MENU_SET_EOT, MENU_SET_TMR };
 static const uint8_t CatAudio[]   = {
     MENU_MIC, MENU_MIC_BAR, MENU_BEEP,
@@ -861,38 +844,183 @@ void UI_MENU_BuildCategoryScreen(void)
     }
 }
 
-// Rendu de l'ecran des categories (niveau 1).
+static void UI_MENU_DrawCategoryRing(const int16_t cx, const int16_t cy,
+                                     const int16_t outer_radius,
+                                     const int16_t inner_radius)
+{
+    for (int16_t y = -outer_radius; y <= outer_radius; y++)
+    {
+        for (int16_t x = -outer_radius; x <= outer_radius; x++)
+        {
+            const int16_t distance = (int16_t)(x * x + y * y);
+            if (distance <= outer_radius * outer_radius &&
+                distance >= inner_radius * inner_radius)
+            {
+                PutPixel((uint8_t)(cx + x), (uint8_t)(cy + y), true);
+            }
+        }
+    }
+}
+
+static void UI_MENU_DrawCategoryChevron(const bool right)
+{
+    const int16_t x = right ? 113 : 15;
+    const int16_t direction = right ? 1 : -1;
+
+    UI_DrawLineBuffer(gFrameBuffer, x, 22, x + direction * 8, 30, true);
+    UI_DrawLineBuffer(gFrameBuffer, x, 22, x + direction * 8, 14, true);
+}
+
+/* カテゴリを一目で区別できるよう、LCD上で崩れにくい線画を直接描く。 */
+static void UI_MENU_DrawCategoryIcon(const uint8_t category,
+                                     const uint8_t x,
+                                     const uint8_t y)
+{
+    switch (category)
+    {
+        case CAT_CHANNELS:
+            UI_DrawRectangleBuffer(gFrameBuffer, x + 8, y + 11, x + 38, y + 34, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 18, y + 11, x + 23, y + 2, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 23, y + 2, x + 28, y + 11, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 14, y + 17, x + 32, y + 17, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 14, y + 23, x + 26, y + 23, true);
+            break;
+
+        case CAT_SCAN:
+            UI_MENU_DrawCategoryRing((int16_t)x + 22, (int16_t)y + 17, 12, 9);
+            UI_DrawLineBuffer(gFrameBuffer, x + 31, y + 26, x + 42, y + 36, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 39, y + 36, x + 42, y + 33, true);
+            break;
+
+        case CAT_KEYS:
+            for (uint8_t row = 0; row < 3; row++)
+            {
+                for (uint8_t column = 0; column < 3; column++)
+                {
+                    const uint8_t left = (uint8_t)(x + 8u + column * 11u);
+                    const uint8_t top = (uint8_t)(y + 7u + row * 10u);
+                    UI_DrawRectangleBuffer(gFrameBuffer, left, top,
+                                           (int16_t)left + 7, (int16_t)top + 6, true);
+                }
+            }
+            UI_DrawRectangleBuffer(gFrameBuffer, x + 19, y + 37, x + 27, y + 39, true);
+            break;
+
+        case CAT_POWER:
+            UI_DrawLineBuffer(gFrameBuffer, x + 23, y + 2, x + 23, y + 21, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 15, y + 8, x + 10, y + 14, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 10, y + 14, x + 10, y + 24, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 10, y + 24, x + 16, y + 33, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 16, y + 33, x + 23, y + 37, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 23, y + 37, x + 30, y + 33, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 30, y + 33, x + 36, y + 24, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 36, y + 24, x + 36, y + 14, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 36, y + 14, x + 31, y + 8, true);
+            break;
+
+        case CAT_DISPLAY:
+            UI_DrawRectangleBuffer(gFrameBuffer, x + 6, y + 9, x + 40, y + 31, true);
+            UI_DrawRectangleBuffer(gFrameBuffer, x + 12, y + 14, x + 34, y + 26, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 18, y + 36, x + 29, y + 36, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 23, y + 31, x + 23, y + 36, true);
+            break;
+
+        case CAT_TIMERS:
+            UI_MENU_DrawCategoryRing((int16_t)x + 23, (int16_t)y + 20, 16, 13);
+            UI_DrawLineBuffer(gFrameBuffer, x + 23, y + 20, x + 23, y + 10, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 23, y + 20, x + 31, y + 25, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 18, y + 2, x + 28, y + 2, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 18, y + 2, x + 15, y + 6, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 28, y + 2, x + 31, y + 6, true);
+            break;
+
+        case CAT_AUDIO:
+            UI_DrawLineBuffer(gFrameBuffer, x + 8, y + 17, x + 16, y + 17, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 16, y + 17, x + 27, y + 8, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 27, y + 8, x + 27, y + 32, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 27, y + 32, x + 16, y + 23, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 16, y + 23, x + 8, y + 23, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 35, y + 14, x + 40, y + 19, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 40, y + 19, x + 35, y + 25, true);
+            break;
+
+        case CAT_RADIO:
+            UI_DrawLineBuffer(gFrameBuffer, x + 23, y + 8, x + 23, y + 35, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 23, y + 8, x + 17, y + 2, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 23, y + 8, x + 29, y + 2, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 9, y + 37, x + 37, y + 37, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 14, y + 32, x + 32, y + 32, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 17, y + 27, x + 29, y + 27, true);
+            break;
+
+        case CAT_DTMF:
+            for (uint8_t row = 0; row < 4; row++)
+            {
+                for (uint8_t column = 0; column < 3; column++)
+                {
+                    const uint8_t left = (uint8_t)(x + 8u + column * 11u);
+                    const uint8_t top = (uint8_t)(y + 3u + row * 9u);
+                    UI_DrawRectangleBuffer(gFrameBuffer, left, top,
+                                           (int16_t)left + 7, (int16_t)top + 6, true);
+                }
+            }
+            break;
+
+        case CAT_SERVICE:
+            UI_MENU_DrawCategoryRing((int16_t)x + 23, (int16_t)y + 20, 15, 7);
+            UI_DrawLineBuffer(gFrameBuffer, x + 3, y + 20, x + 8, y + 20, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 38, y + 20, x + 43, y + 20, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 23, y + 0, x + 23, y + 5, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 23, y + 35, x + 23, y + 40, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 9, y + 6, x + 13, y + 10, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 33, y + 30, x + 37, y + 34, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 33, y + 10, x + 37, y + 6, true);
+            UI_DrawLineBuffer(gFrameBuffer, x + 9, y + 34, x + 13, y + 30, true);
+            break;
+
+        case CAT_ALL:
+            for (uint8_t row = 0; row < 4; row++)
+            {
+                const uint8_t top = (uint8_t)(y + 6u + row * 9u);
+                UI_DrawLineBuffer(gFrameBuffer, x + 8, top, x + 12, top, true);
+                UI_DrawLineBuffer(gFrameBuffer, x + 17, top, x + 40, top, true);
+            }
+            break;
+
+        default:
+            UI_DrawRectangleBuffer(gFrameBuffer, x + 8, y + 8, x + 38, y + 32, true);
+            break;
+    }
+}
+
+// Dondji風のカテゴリランチャー。カテゴリ数や分類はF4HWN側の定義を使う。
 static void UI_MENU_DrawCategories(void)
 {
     char str[16];
-    const unsigned int sep = 64;          // separateur decale a droite : noms longs (ex. "Channels")
-    const unsigned int x1  = sep + 2;
-    const unsigned int x2  = LCD_WIDTH - 1;
+    const uint8_t count = gMenuListCount;
 
     UI_DisplayClear();
+    UI_DrawLineBuffer(gFrameBuffer, 0, 0, LCD_WIDTH - 1, 0, true);
 
-    UI_DrawLineBuffer(gFrameBuffer, sep, 0, sep, 55, 1);
-    for (uint8_t i = 0; i < sep; i += 2)
-        gFrameBuffer[5][i] = 0x40;
+    if (count == 0u)
+    {
+        ST7565_BlitFullScreen();
+        return;
+    }
 
-    const int count = gMenuListCount;
-    const int cur   = gMenuCursor;
-
-    int prev = cur - 1; if (prev < 0)      prev = count - 1;
-    int next = cur + 1; if (next >= count) next = 0;
-
-    if (count > 1)
-        UI_PrintStringSmallNormal(CategoryNames[gCatOrder[prev]], 0, 0, 1);
-    UI_MENU_PrintString(CategoryNames[gCatOrder[cur]], 0, 0, 2, 8);
-    if (count > 1)
-        UI_PrintStringSmallNormal(CategoryNames[gCatOrder[next]], 0, 0, 4);
-
-    sprintf(str, "%02u/%02u", 1 + cur, count);
-    UI_PrintStringSmallNormal(str, 6, 0, 6);
+    const uint8_t cur = (gMenuCursor < count) ? gMenuCursor : 0u;
+    UI_MENU_DrawCategoryChevron(false);
+    UI_MENU_DrawCategoryChevron(true);
+    UI_MENU_DrawCategoryIcon(gCatOrder[cur], 40, 3);
+    /* アイコンの下に小さくカテゴリ名を置き、件数表示と重ねない。 */
+    UI_PrintStringSmallNormal(CategoryNames[gCatOrder[cur]], 0,
+                              LCD_WIDTH - 1, 6);
 
     sprintf(str, "%02u", UI_MENU_CategoryItemCount(gCatOrder[cur]));
-    UI_MENU_PrintString(str, x1, x2, 1, 8);
-    UI_PrintStringSmallNormal(WRX_UI_TEXT_ITEMS, x1, x2, 5);
+    UI_PrintStringSmallNormal(str, 2, 0, 7);
+    UI_PrintStringSmallNormal(WRX_UI_TEXT_ITEMS, 18, 0, 7);
+    sprintf(str, "%02u/%02u", (unsigned int)(cur + 1u), (unsigned int)count);
+    UI_PrintStringSmallNormal(str, 92, 0, 7);
 
     ST7565_BlitFullScreen();
 }
@@ -1199,14 +1327,7 @@ void UI_DisplayMenu(void)
         case MENU_SQL:
 #ifdef ENABLE_RX_ONLY
             if (gSubMenuSelection == 10)
- #ifdef ENABLE_JAPANESE
-            {
-                const char auto_name[] = {0xEB, 0xEC, 0}; // 自動
-                strcpy(String, auto_name);
-            }
- #else
                 strcpy(String, "AUTO");
- #endif
             else
                 sprintf(String, "%d", gSubMenuSelection);
 #else
@@ -1708,14 +1829,7 @@ void UI_DisplayMenu(void)
             if (page == p++) {
                 char val[16];
 
- #ifdef ENABLE_JAPANESE
-                {
-                    const char battery_name[] = {0x8F, 0xF7, 0}; // 電池
-                    strcpy(top_right_badge, battery_name);
-                }
- #else
                 strcpy(top_right_badge, "BATTERY");
- #endif
 
                 sprintf(val, "%u.%02uV %u%%",
                     gBatteryVoltageAverage / 100, gBatteryVoltageAverage % 100,
@@ -1883,6 +1997,11 @@ void UI_DisplayMenu(void)
         case MENU_SET_GUI:
             strcpy(String, gSubMenu_SET_MET[gSubMenuSelection]); // Same as SET_MET
             break;
+#ifdef ENABLE_JAPANESE
+        case MENU_SET_MAIN_FONT:
+            strcpy(String, gSubMenu_SET_MAIN_FONT[gSubMenuSelection]);
+            break;
+#endif
 
         #ifdef ENABLE_FEAT_F4HWN_SCAN_FASTER
             case MENU_SET_SCN:

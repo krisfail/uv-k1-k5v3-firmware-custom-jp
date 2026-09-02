@@ -27,17 +27,16 @@ class FontSourceJsonTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.tool = load_module()
-        cls.source = ROOT / "App" / "japanese_font.c"
+        cls.source = ROOT / "App" / "font.c"
 
     def test_extract_is_complete_and_anchored(self) -> None:
-        document = self.tool.extract_document(self.source, "gFontBigJapanese", 1)
+        document = self.tool.extract_document(self.source, "gFontSmall", 1, 0x21)
         self.assertEqual(document["format"], "wrx-jp-font-source-v1")
-        self.assertEqual(document["element_width"], 14)
+        self.assertEqual(document["element_width"], 6)
         codes = [item["code"] for item in document["elements"]]
-        self.assertIn("0x80", codes)
-        self.assertIn("0x98", codes)
-        self.assertIn("0xDF", codes)
-        self.assertIn("0xFF", codes)
+        self.assertIn("0x21", codes)
+        self.assertIn("0x41", codes)
+        self.assertIn("0x7E", codes)
 
     def test_unannotated_contiguous_font_can_be_explicitly_anchored(self) -> None:
         document = self.tool.extract_document(ROOT / "App" / "font.c", "gFontSmall", 1, 0x21)
@@ -46,41 +45,41 @@ class FontSourceJsonTests(unittest.TestCase):
         self.assertEqual(document["index_base"], "0x21")
 
     def test_noop_round_trip_is_byte_identical(self) -> None:
-        document = self.tool.extract_document(self.source, "gFontBigJapanese", 1)
+        document = self.tool.extract_document(self.source, "gFontSmall", 1, 0x21)
         with tempfile.TemporaryDirectory() as directory:
-            output = Path(directory) / "japanese_font.c"
+            output = Path(directory) / "font.c"
             self.tool.apply_document(self.source, document, output)
             self.assertEqual(output.read_bytes(), self.source.read_bytes())
 
     def test_only_edited_codepoint_is_spliced(self) -> None:
-        document = self.tool.extract_document(self.source, "gFontBigJapanese", 1)
+        document = self.tool.extract_document(self.source, "gFontSmall", 1, 0x21)
         edited = copy.deepcopy(document)
-        target = next(item for item in edited["elements"] if item["code"] == "0xA1")
+        target = next(item for item in edited["elements"] if item["code"] == "0x41")
         values = target["bytes_hex"].split()
         values[0] = "01" if values[0] != "01" else "00"
         target["bytes_hex"] = " ".join(values)
         with tempfile.TemporaryDirectory() as directory:
-            output = Path(directory) / "japanese_font.c"
+            output = Path(directory) / "font.c"
             self.assertEqual(self.tool.apply_document(self.source, edited, output), 1)
-            old_array = self.tool.parse_array(self.source.read_text(encoding="utf-8"), "gFontBigJapanese")
-            new_array = self.tool.parse_array(output.read_text(encoding="utf-8"), "gFontBigJapanese")
+            old_array = self.tool.parse_array(self.source.read_text(encoding="utf-8"), "gFontSmall", start_code=0x21)
+            new_array = self.tool.parse_array(output.read_text(encoding="utf-8"), "gFontSmall", start_code=0x21)
             old = {entry.code: entry.values for entry in old_array.entries}
             new = {entry.code: entry.values for entry in new_array.entries}
-            self.assertNotEqual(old[0xA1], new[0xA1])
-            self.assertEqual(old[0x98], new[0x98])
-            self.assertEqual(old[0xBA], new[0xBA])
-            self.assertEqual(old[0xC6], new[0xC6])
+            self.assertNotEqual(old[0x41], new[0x41])
+            self.assertEqual(old[0x21], new[0x21])
+            self.assertEqual(old[0x5A], new[0x5A])
+            self.assertEqual(old[0x7E], new[0x7E])
             for code in old:
-                if code != 0xA1:
+                if code != 0x41:
                     self.assertEqual(old[code], new[code], f"unexpected change at 0x{code:02X}")
 
     def test_stale_base_bytes_are_rejected(self) -> None:
-        document = self.tool.extract_document(self.source, "gFontBigJapanese", 1)
-        target = next(item for item in document["elements"] if item["code"] == "0xA1")
-        target["base_bytes_hex"] = "00 " * 13 + "00"
+        document = self.tool.extract_document(self.source, "gFontSmall", 1, 0x21)
+        target = next(item for item in document["elements"] if item["code"] == "0x41")
+        target["base_bytes_hex"] = "00 " * 5 + "00"
         with tempfile.TemporaryDirectory() as directory:
             with self.assertRaises(ValueError):
-                self.tool.apply_document(self.source, document, Path(directory) / "japanese_font.c")
+                self.tool.apply_document(self.source, document, Path(directory) / "font.c")
 
 
 if __name__ == "__main__":
