@@ -186,6 +186,7 @@ extern enum BacklightOnRxTx_t gSetting_backlight_on_tx_rx;
             JAPANESE_MAIN_FONT_16X16 = 0,
             JAPANESE_MAIN_FONT_8X8,
             JAPANESE_MAIN_FONT_ASCII,
+            JAPANESE_MAIN_FONT_14X14,
             JAPANESE_MAIN_FONT_MODE_LEN
         };
     #endif

@@ -1,5 +1,5 @@
 {
-  "format": "wrx-jp-external-font-v1",
+  "format": "wrx-jp-external-font-v2",
   "source": {
     "name": "Izumi Gothic-Medium 16dot",
     "url": "https://unifoundry.com/japanese/izmg16-2004-1.bdf.gz",
@@ -11,15 +11,50 @@
     "height": 16,
     "row_bytes": 2
   },
+  "geometry14": {
+    "width": 14,
+    "height": 14,
+    "row_bytes": 2
+  },
+  "geometry8": {
+    "width": 8,
+    "height": 8,
+    "row_bytes": 1
+  },
   "glyph_count": 3489,
   "index_bytes": 13956,
   "bitmap_bytes": 111648,
-  "total_bytes": 125604,
+  "bitmap14_offset": 125604,
+  "bitmap14_bytes": 97692,
+  "glyph14_bytes": 28,
+  "bitmap8_offset": 223296,
+  "bitmap8_bytes": 27912,
+  "glyph8_bytes": 8,
+  "native8_glyph_count": 3489,
+  "native14_glyph_count": 3405,
+  "fallback14_glyph_count": 84,
+  "total_bytes": 251208,
   "flash_base": 131072,
-  "name_table_base": 262144,
+  "name_table_base": 393216,
   "name_record_size": 32,
   "name_payload_max": 31,
   "ascii_fallback": "firmware-legacy-gFontBig",
+  "small_source": {
+    "name": "WenQuanYi Bitmap Song 10.5pt",
+    "repository": "https://github.com/EthanYan6/Dondji",
+    "sha256": "926AE3E16560F1719C34217E5A9FFAFC81DF18ED1732A5302313DA8359294226",
+    "license": "GPL v2 with font embedding exception (as stated in the source BDF)",
+    "native_glyphs": 3405,
+    "fallback": "Izumi 16 build-time area-average for source gaps"
+  },
+  "compact_source": {
+    "name": "Misaki Gothic 8dot",
+    "copyright": "Copyright (C) 2002-2021 Num Kadoma",
+    "url": "https://littlelimit.net/misaki.htm",
+    "sha256": "28A8745552C844F7C73F11BDF4470225F5E08645A98C5404B2E25BB326A5CABD",
+    "license": "Free software; unlimited permission as stated by the source",
+    "native_glyphs": 3489
+  },
   "codepoints": [
     162,
     163,

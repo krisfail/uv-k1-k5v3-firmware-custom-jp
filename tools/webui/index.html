@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="WRX-JP UV-K1 / UV-K5 V3 WebSerial host tool">
+  <title>WRX-JP host tool</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">WRX</span>
+      <div>
+        <h1>WRX-JP host tool</h1>
+        <p>UV-K1 / UV-K5 V3　メモリー・設定・チャンネル管理</p>
+      </div>
+    </div>
+    <div class="connection-panel" aria-label="無線機接続">
+      <span id="browser-support" class="support-note">WebSerialを確認中…</span>
+      <select id="granted-ports" aria-label="許可済みポート">
+        <option value="">許可済みポートを選択</option>
+      </select>
+      <button id="choose-port" class="button secondary">ポートを選ぶ</button>
+      <button id="connect" class="button primary">接続</button>
+      <button id="disconnect" class="button secondary" disabled>切断</button>
+    </div>
+  </header>
+
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="機能一覧">
+      <nav class="side-nav">
+        <button class="nav-item active" data-view="memory"><span>01</span>メモリー編集</button>
+        <button class="nav-item" data-view="channels"><span>02</span>チャンネル一覧</button>
+        <button class="nav-item" data-view="settings"><span>03</span>設定</button>
+        <button class="nav-item" data-view="resources"><span>04</span>日本語リソース</button>
+      </nav>
+      <section class="safety-card">
+        <h2>安全範囲</h2>
+        <p>calibration（<code>0xB000–0xB1FF</code>）は読み出し専用です。任意アドレスへの外部Flash書き込みはできません。</p>
+      </section>
+      <a class="docs-link" href="../README.ja.html">使い方・仕様書</a>
+    </aside>
+
+    <main class="main-content">
+      <div id="connection-state" class="connection-banner" role="status" aria-live="polite">
+        <span class="status-dot"></span><span id="connection-text">無線機を接続してください</span>
+      </div>
+
+      <section class="view active" data-view-panel="memory">
+        <div class="view-heading">
+          <div><p class="eyebrow">RAW MEMORY</p><h2>メモリー編集</h2><p>読み出した領域を確認し、変更ブロックだけをreadback付きで書き込みます。</p></div>
+          <div class="heading-actions"><button id="memory-import" class="button secondary">ファイルを読み込む</button><input id="memory-file" type="file" accept=".bin,.hex,.txt" hidden><button id="memory-export" class="button secondary" disabled>保存</button></div>
+        </div>
+        <div class="card toolbar-grid">
+          <label>プリセット<select id="memory-preset"></select></label>
+          <label>開始アドレス<input id="memory-offset" value="0x0000" inputmode="text"></label>
+          <label>長さ（byte）<input id="memory-length" value="0x8870" inputmode="text"></label>
+          <div class="toolbar-actions"><button id="memory-read" class="button primary">読み出し</button><button id="memory-write" class="button danger" disabled>変更を書き込む</button></div>
+          <p id="memory-range-help" class="field-help full-width">チャンネル領域。通常メモリーの許可範囲です。</p>
+        </div>
+        <div class="summary-grid">
+          <div class="metric"><span>読出し状態</span><strong id="memory-state">未読出し</strong></div>
+          <div class="metric"><span>変更 byte</span><strong id="memory-diff-bytes">0</strong></div>
+          <div class="metric"><span>変更 block</span><strong id="memory-diff-blocks">0</strong></div>
+          <div class="metric"><span>検査</span><strong id="memory-check">未実行</strong></div>
+        </div>
+        <div class="card editor-card"><div class="editor-toolbar"><label for="memory-editor">16進数（空白・改行区切り）</label><span id="memory-editor-count">0 byte</span></div><textarea id="memory-editor" spellcheck="false" aria-label="メモリー16進数エディター" placeholder="読み出し後に16進数が表示されます"></textarea></div>
+      </section>
+
+      <section class="view" data-view-panel="channels" hidden>
+        <div class="view-heading"><div><p class="eyebrow">CHANNELS</p><h2>チャンネル一覧</h2><p>1024件を表形式で編集し、TSVまたは無線機へ保存します。</p></div><div class="heading-actions"><button id="channels-import" class="button secondary">TSVを読み込む</button><input id="channels-file" type="file" accept=".tsv,.txt" hidden><button id="channels-export" class="button secondary" disabled>TSVを保存</button></div></div>
+        <div class="card toolbar-grid channels-toolbar"><button id="channels-read" class="button primary">無線機から読み出し</button><button id="channels-write" class="button danger" disabled>変更を書き込む</button><label class="search-field">絞り込み<input id="channels-filter" placeholder="番号・周波数・名前"></label><span id="channels-count" class="table-count">0 / 1024件</span></div>
+        <div class="notice">日本語名は外部名前テーブル、ASCII別名は通常チャンネル領域へ保存します。送信周波数はRX-only規則により書き込み時に消去します。</div>
+        <div class="card table-card"><div class="table-scroll"><table><thead><tr><th>CH</th><th>周波数 Hz</th><th>モード</th><th>トーン</th><th>step kHz</th><th>scan</th><th>日本語／表示名</th><th>ASCII別名</th></tr></thead><tbody id="channels-body"></tbody></table></div></div>
+      </section>
+
+      <section class="view" data-view-panel="settings" hidden>
+        <div class="view-heading"><div><p class="eyebrow">SETTINGS</p><h2>設定</h2><p>既知の設定項目だけを編集し、未定義 byte は保持します。</p></div></div>
+        <div class="card toolbar-grid settings-toolbar"><button id="settings-read" class="button primary">無線機から読み出し</button><button id="settings-write" class="button danger" disabled>変更を書き込む</button><span id="settings-state" class="field-help">未読出し</span></div>
+        <div id="settings-form" class="settings-groups"><div class="empty-state">先に設定領域を読み出してください。</div></div>
+        <div class="card editor-card compact-editor"><div class="editor-toolbar"><label for="settings-editor">設定領域のraw（0xA000–0xA16F）</label><span>未定義 byte の確認用（読み取り専用）</span></div><textarea id="settings-editor" readonly spellcheck="false" aria-label="設定領域16進数表示"></textarea></div>
+      </section>
+
+      <section class="view" data-view-panel="resources" hidden>
+        <div class="view-heading"><div><p class="eyebrow">JAPANESE RESOURCES</p><h2>日本語リソース</h2><p>フォントと1024件の名前テーブルは別操作です。対象を取り違えないよう、書き込み前に明示します。</p></div></div>
+        <div class="resource-grid">
+          <article class="card resource-card"><div class="resource-icon">A</div><h3>固定フォント</h3><p>Izumi 16、専用14px、美咲8×8を含む同梱font binaryを使用します。</p><button id="font-write" class="button danger">フォントを書き込む</button><span id="font-status" class="field-help">同梱ファイルを自動取得します。</span></article>
+          <article class="card resource-card"><div class="resource-icon">名</div><h3>名前テーブル</h3><p>UTF-8の1024行。1件31 byte以内、フォント収録文字のみ使用できます。</p><div class="resource-actions"><button id="names-read" class="button secondary">無線機から読み出し</button><button id="names-write" class="button danger">ファイルを書き込む</button><input id="names-file" type="file" accept=".txt,.tsv" hidden></div><span id="names-status" class="field-help">未選択</span></article>
+        </div>
+        <div class="card resource-log"><h3>書き込み方針</h3><ul><li>接続時にWRX-JPの外部Flashコマンドを確認します。</li><li>変更blockのみ転送し、各blockをreadback検証します。</li><li>失敗時は自動再試行します。電源断が起きない状態で実行してください。</li></ul></div>
+      </section>
+
+      <section class="activity card"><div class="activity-heading"><h2>操作履歴</h2><button id="clear-log" class="text-button">消去</button></div><ol id="activity-log" aria-live="polite"><li>WebUIを起動しました。</li></ol></section>
+    </main>
+  </div>
+
+  <dialog id="confirm-dialog"><form method="dialog"><h2 id="confirm-title">確認</h2><p id="confirm-message"></p><div class="dialog-actions"><button value="cancel" class="button secondary">キャンセル</button><button id="confirm-ok" value="ok" class="button danger">実行する</button></div></form></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="./app.mjs"></script>
+</body>
+</html>

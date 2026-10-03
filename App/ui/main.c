@@ -27,6 +27,9 @@
     #include "app/rx_feature_state.h"
 #endif
 #include "app/dtmf.h"
+#ifdef ENABLE_LCD_DEBUG
+    #include "app/lcd_debug.h"
+#endif
 
 #ifdef ENABLE_FEAT_F4HWN_BEAM
     #include "app/beam.h"
@@ -687,6 +690,46 @@ static bool UI_DrawScanProgress(void)
 
     return true;
 }
+
+#ifdef ENABLE_LCD_DEBUG
+void UI_MAIN_DebugRenderScanProgress(uint8_t event)
+{
+    const bool dual = event == LCD_DEBUG_EVENT_SCAN_DUAL;
+    const uint8_t line = dual ? 3u : 5u;
+
+    UI_DisplayClear();
+    gEeprom.DUAL_WATCH = dual ? DUAL_WATCH_CHAN_A : DUAL_WATCH_OFF;
+
+    if (event == LCD_DEBUG_EVENT_SCAN_LIST_NAME)
+    {
+        UI_MAIN_DrawCenterBoldLine("SCAN LIST ALL", 0u);
+        ST7565_BlitFullScreen();
+        return;
+    }
+
+    const bool range = event == LCD_DEBUG_EVENT_SCAN_RANGE;
+    const bool priority = event == LCD_DEBUG_EVENT_SCAN_MEMORY;
+    const uint32_t current = range ? 37u : 7u;
+    const uint32_t total = range ? 200u : 50u;
+    const uint8_t width = range ? 3u : 2u;
+    const uint8_t text_y = dual ? 25u : 41u;
+    const char *text = range ? "037/200" : "07/50";
+
+    GUI_DisplaySmallest(text, 2u, text_y, false, true);
+    if (priority)
+    {
+        const uint8_t priority_x = (uint8_t)(width * 8u + 11u);
+        for (uint8_t x = 0u; x < 7u; x++)
+            for (uint8_t y = 0u; y < 6u; y++)
+                PutPixel((uint8_t)(priority_x + x), (uint8_t)(text_y + y), false);
+        GUI_DisplaySmallest("P1", priority_x, text_y, false, true);
+    }
+
+    ScanProgress_DrawGaugeLine(line, current, total, width, false, false,
+                               priority ? 11u : 0u);
+    ST7565_BlitFullScreen();
+}
+#endif
 #endif
 
 // ----------------------------------------
@@ -860,18 +903,42 @@ void UI_DisplayAudioBar(void)
 #define SCOPE_FLOOR_DROP_SHR 3u   // floor drop IIR shift: drop by (floor-min) >> N per frame (~160ms to halve)
 #define SCOPE_VOLUME_MIN     200u // let's assume that the sound level in silence is 200
 
+static uint16_t g_scope_buf[SCOPE_SAMPLES];
+static uint8_t  g_scope_write;
+static uint16_t g_scope_floor = SCOPE_VOLUME_MIN;
+static uint8_t  g_scope_ready;
+static bool     s_was_tx;
+static bool     s_was_rx;
+
+#ifdef ENABLE_LCD_DEBUG
+static bool     g_scope_debug_input;
+static uint16_t g_scope_debug_amplitude;
+
+void UI_MAIN_DebugSetAudioScopeAmplitude(const uint16_t amplitude)
+{
+    g_scope_debug_input = true;
+    g_scope_debug_amplitude = amplitude;
+}
+
+void UI_MAIN_DebugResetAudioScope(void)
+{
+    for (uint8_t i = 0u; i < SCOPE_SAMPLES; i++)
+        g_scope_buf[i] = SCOPE_VOLUME_MIN;
+    g_scope_write = 0u;
+    g_scope_floor = SCOPE_VOLUME_MIN;
+    g_scope_ready = 0u;
+    s_was_tx = false;
+    s_was_rx = false;
+    g_scope_debug_input = false;
+    g_scope_debug_amplitude = SCOPE_VOLUME_MIN;
+}
+#endif
+
 void UI_DisplayAudioScope(void)
 {
-    static uint16_t g_scope_buf[SCOPE_SAMPLES];
-    static uint8_t  g_scope_write      = 0;
-    static uint16_t g_scope_floor      = SCOPE_VOLUME_MIN;     // persistent floor: snaps down fast, rises slowly
-    static uint8_t  g_scope_ready      = 0;                    // number of valid samples since TX entry
-
     /* REG_64 is treated here as an amplitude envelope.  This intentionally
      * draws activity history, not an FFT: the BK4829 does not expose a usable
      * audio sample stream to the application. */
-    static bool s_was_tx = false;
-    static bool s_was_rx = false;
     const bool rxScope =
 #ifdef ENABLE_RX_ONLY
         RX_FEATURE_STATE_IsEnabled() && FUNCTION_IsRx() && gScanStateDir == SCAN_OFF;
@@ -907,7 +974,11 @@ void UI_DisplayAudioScope(void)
             g_scope_ready = 0u;
             s_was_rx = true;
         }
-        g_scope_buf[g_scope_write] = BK4819_GetVoiceAmplitudeOut();
+        g_scope_buf[g_scope_write] =
+#ifdef ENABLE_LCD_DEBUG
+            g_scope_debug_input ? g_scope_debug_amplitude :
+#endif
+            BK4819_GetVoiceAmplitudeOut();
         if (g_scope_buf[g_scope_write] == 0)
             g_scope_buf[g_scope_write] = SCOPE_VOLUME_MIN;
     }
@@ -927,7 +998,11 @@ void UI_DisplayAudioScope(void)
     if (txScope) {
         // Discard the first few unstable TX readings.
         if (g_scope_ready >= 7)
-            g_scope_buf[g_scope_write] = BK4819_GetVoiceAmplitudeOut();
+            g_scope_buf[g_scope_write] =
+#ifdef ENABLE_LCD_DEBUG
+                g_scope_debug_input ? g_scope_debug_amplitude :
+#endif
+                BK4819_GetVoiceAmplitudeOut();
         else
             g_scope_ready++;
 
@@ -957,7 +1032,9 @@ void UI_DisplayAudioScope(void)
 #ifdef ENABLE_FEAT_F4HWN
     RxBlinkLed = 0;
     RxBlinkLedCounter = 0;
+#ifndef ENABLE_LCD_DEBUG
     BK4819_ToggleGpioOut(BK4819_GPIO6_PIN2_GREEN, false);
+#endif
     const unsigned int line = isMainOnly() ? 5 : 3;
 #else
     const unsigned int line = 3;
@@ -1103,6 +1180,14 @@ void DisplayRSSIBar(const bool now)
 #endif
 
 #ifdef ENABLE_FEAT_F4HWN
+#ifdef ENABLE_LCD_DEBUG
+    /* デバッグ版は無線を初期化しないため、BK4819を読まずに
+     * メーターの配置だけを固定値で描画する。 */
+    const int16_t display_rssi_dBm = -73;
+    const uint8_t s_level = 6;
+    const uint8_t overS9dBm = 0;
+    const uint8_t overS9Bars = 0;
+#else
     int16_t rssi_dBm =
         BK4819_GetRSSI_dBm()
 #ifdef ENABLE_AM_FIX
@@ -1140,6 +1225,7 @@ void DisplayRSSIBar(const bool now)
         overS9Bars = overS9dBm / 10;
     }
     const int16_t display_rssi_dBm = (rssi_dBm > -53) ? -53 : rssi_dBm;
+#endif
 #else
     const int16_t s0_dBm   = -gEeprom.S0_LEVEL;                  // S0 .. base level
     const int16_t rssi_dBm =
@@ -1365,17 +1451,67 @@ static void UI_PrintScanRangeCss(char *String, uint8_t LabelX, uint8_t ValueX, u
 #ifdef ENABLE_FEAT_F4HWN_ACTION_PICKER
 static void UI_PrintActionPickerLabel(uint8_t index, uint8_t line, bool big)
 {
-    char label[20];
-    strcpy(label, gSubMenu_SIDEFUNCTIONS[index].name);
+    char label[64];
+    strcpy(label, gSubMenu_SIDEFUNCTIONS[index].name.primary);
 
     char *newline = strchr(label, '\n');
     if (newline != NULL)
         *newline = ' ';
 
+#ifdef ENABLE_JAPANESE
+    if (big && UI_PrintStringJapaneseExternal(label, 0, LCD_WIDTH, line))
+        return;
+    if (UI_PrintStringJapaneseExternalSmall(label, 0, LCD_WIDTH, line))
+        return;
+#endif
+
+    const char *fallback = gSubMenu_SIDEFUNCTIONS[index].name.fallback != NULL
+        ? gSubMenu_SIDEFUNCTIONS[index].name.fallback
+        : gSubMenu_SIDEFUNCTIONS[index].name.primary;
     if (big)
-        UI_PrintString(label, 0, LCD_WIDTH, line, 8);
+        UI_PrintString(fallback, 0, LCD_WIDTH, line, 8);
     else
-        UI_PrintStringSmallNormal(label, 0, LCD_WIDTH, line);
+        UI_PrintStringSmallNormal(fallback, 0, LCD_WIDTH, line);
+}
+#endif
+
+#ifdef ENABLE_RX_ONLY
+static void UI_MAIN_DrawStatusTokens(const char *modulation,
+                                     const char *code_type,
+                                     const char *code_text,
+                                     const char *bandwidth_text,
+                                     const char *squelch_text,
+                                     const uint8_t line,
+                                     const uint8_t end)
+{
+    const char *tokens[5];
+    uint8_t token_count = 0u;
+    uint8_t x = 2u;
+    const uint8_t right = end == 0u ? (LCD_WIDTH - 1u) : end;
+
+    if (modulation != NULL && modulation[0] != '\0')
+        tokens[token_count++] = modulation;
+    if (code_type != NULL && code_type[0] != '\0')
+        tokens[token_count++] = code_type;
+    if (code_text != NULL && code_text[0] != '\0')
+        tokens[token_count++] = code_text;
+    if (bandwidth_text != NULL && bandwidth_text[0] != '\0')
+        tokens[token_count++] = bandwidth_text;
+    if (squelch_text != NULL && squelch_text[0] != '\0')
+        tokens[token_count++] = squelch_text;
+
+    /* The scan-list badge owns the right edge. Keep the ASCII glyph pitch
+       unchanged and reduce only the gap between status tokens. */
+    for (uint8_t i = 0u; i < token_count; i++)
+    {
+        const uint16_t token_width = (uint16_t)strlen(tokens[i]) * 7u;
+        if (x <= right)
+            UI_PrintStringSmallNormalClippedOffset(tokens[i], x, end, line, 1u);
+
+        x = (uint8_t)(x + token_width);
+        if (i + 1u < token_count)
+            x = (uint8_t)(x + 4u);
+    }
 }
 #endif
 
@@ -1515,8 +1651,8 @@ void UI_DisplayMain(void)
                         UI_PrintScanRangeCss(String, 6, 48, line + 2);
 #endif
 
-                    if (!isMainOnly())
-                        continue;
+                    /* 範囲表示は2行を使うため、通常の状態行を重ねない。 */
+                    continue;
                 }
                 else
                 {
@@ -1613,6 +1749,9 @@ void UI_DisplayMain(void)
         }
 
         uint32_t frequency = gEeprom.VfoInfo[vfo_num].pRX->Frequency;
+#ifdef ENABLE_RX_ONLY
+        bool channel_list_badge = false;
+#endif
 
         if (gCurrentFunction == FUNCTION_TRANSMIT)
         {   // transmitting
@@ -1874,7 +2013,16 @@ void UI_DisplayMain(void)
                 }
 
 #ifdef ENABLE_FEAT_F4HWN
-                GUI_DisplaySmallestInverse(displayStr, xStart + 2, line, false, true, 127);  
+                #ifdef ENABLE_RX_ONLY
+                channel_list_badge = true;
+                const uint8_t status_line = isMainOnly() ? 4u :
+                    (line == 0u ? 2u : 6u);
+                /* 上段の周波数・チャンネル名とは分離し、状態行の右端に置く。 */
+                GUI_DisplaySmallestInverse(displayStr, xStart + 2u,
+                                           status_line, false, true, 127u);
+                #else
+                GUI_DisplaySmallestInverse(displayStr, xStart + 2, line, false, true, 127);
+                #endif
 #else
                 GUI_DisplaySmallest(displayStr, xStart + 2, line == 0 ? 1 : 33, false, true);
 
@@ -1934,15 +2082,30 @@ void UI_DisplayMain(void)
                         const bool compactName =
                             !isMainOnly() ||
                             gSetting_japanese_main_font == JAPANESE_MAIN_FONT_8X8;
+                        const bool separateCompactNameFrequency =
+                            !isMainOnly() &&
+                            gEeprom.CHANNEL_DISPLAY_MODE == MDF_NAME_FREQ &&
+                            !asciiName;
                         #else
                         const bool asciiName = false;
                         const bool compactName = false;
+                        const bool separateCompactNameFrequency = false;
                         #endif
                         bool hasExternalName = false;
 
 #if defined(ENABLE_JAPANESE) && defined(ENABLE_FEAT_F4HWN)
                         if (!asciiName && compactName)
-                            hasExternalName = UI_PrintJapaneseChannelNameCompact(
+                            hasExternalName = separateCompactNameFrequency
+                                ? UI_PrintJapaneseChannelNameCompactSeparated(
+                                      gEeprom.ScreenChannel[vfo_num], 33, 127,
+                                      line)
+                                : UI_PrintJapaneseChannelNameCompact(
+                                      gEeprom.ScreenChannel[vfo_num], 33, 127,
+                                      line,
+                                      gEeprom.CHANNEL_DISPLAY_MODE == MDF_NAME);
+                        else if (!asciiName &&
+                                 gSetting_japanese_main_font == JAPANESE_MAIN_FONT_14X14)
+                            hasExternalName = UI_PrintJapaneseChannelName14(
                                 gEeprom.ScreenChannel[vfo_num], 33, 127, line);
                         else if (!asciiName)
                             hasExternalName = UI_PrintJapaneseChannelName(
@@ -1989,7 +2152,12 @@ void UI_DisplayMain(void)
                                 {
                                     sprintf(String, "%03u.%05u", frequency / 100000,
                                             frequency % 100000);
-                                    UI_PrintStringSmallNormal(String, 32 + 4, 0, line + 1);
+                                    if (!isMainOnly())
+                                        UI_PrintStringSmallNormalOffset(
+                                            String, 32 + 4, 0, line + 1, 1u);
+                                    else
+                                        UI_PrintStringSmallNormal(
+                                            String, 32 + 4, 0, line + 1);
                                 }
                             }
                         }
@@ -2201,7 +2369,16 @@ void UI_DisplayMain(void)
             break;
 
             default:
-            sprintf(String, "%d.%02uK", vfoInfo->StepFrequency / 100, vfoInfo->StepFrequency % 100);
+            {
+                const uint16_t step_khz = vfoInfo->StepFrequency / 100u;
+                const uint16_t step_remainder = vfoInfo->StepFrequency % 100u;
+                if (step_remainder == 0u)
+                    sprintf(String, "%uK", step_khz);
+                else if ((step_remainder % 10u) == 0u)
+                    sprintf(String, "%u.%uK", step_khz, step_remainder / 10u);
+                else
+                    sprintf(String, "%u.%02uK", step_khz, step_remainder);
+            }
 #ifndef ENABLE_RX_ONLY
             shift = -10;
 #endif
@@ -2502,30 +2679,9 @@ void UI_DisplayMain(void)
 
 #ifdef ENABLE_RX_ONLY
         {
-            char status_text[22];
-            if (t[0] != '\0' && s[0] != '\0')
-            {
-                if (squelch_text[0] != '\0')
-                    sprintf(status_text, "%s %s %s %s %s", t, s, code_text,
-                            bandwidth_text, squelch_text);
-                else
-                    sprintf(status_text, "%s %s %s %s", t, s, code_text,
-                            bandwidth_text);
-            }
-            else if (t[0] != '\0')
-            {
-                if (squelch_text[0] != '\0')
-                    sprintf(status_text, "%s %s %s %s", t, code_text,
-                            bandwidth_text, squelch_text);
-                else
-                    sprintf(status_text, "%s %s %s", t, code_text,
-                            bandwidth_text);
-            }
-            else
-            {
-                sprintf(status_text, "%s %s", code_text, bandwidth_text);
-            }
-            UI_PrintStringSmallNormal(status_text, 2, 0, status_page);
+            const uint8_t status_end = channel_list_badge ? 110u : 0u;
+            UI_MAIN_DrawStatusTokens(t, s, code_text, bandwidth_text,
+                                     squelch_text, status_page, status_end);
         }
 #endif
 #endif

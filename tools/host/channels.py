@@ -195,7 +195,11 @@ def _parse_row(row: dict[str, str], expected_channel: int) -> Channel:
         step = 12.5
     if not any(abs(step - candidate) < 1e-6 for candidate in STEPS):
         raise ValueError("channel {} has an unsupported tuning step".format(channel))
-    scan_lists = int(row.get("scan_lists", "0") or "0", 10)
+    try:
+        scan_lists = int(row.get("scan_lists", "0") or "0", 10)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(
+            "channel {} scan_lists must be an integer".format(channel)) from exc
     if not 0 <= scan_lists <= 0xFF:
         raise ValueError("channel {} scan_lists must be 0..255".format(channel))
     name = row.get("name", "")
@@ -214,6 +218,8 @@ def parse_channel_list(text: str) -> list[Channel]:
     既存のv1出力を読み込める。v2では主画面のcompact表示用ASCII別名を
     任意で指定できる。
     """
+    # Excel等が付けるUTF-8 BOMはヘッダーの一部ではない。
+    text = text.lstrip("\ufeff")
     lines = [line for line in text.splitlines()
              if line.strip() and not line.lstrip().startswith("#")]
     if not lines:
@@ -227,6 +233,11 @@ def parse_channel_list(text: str) -> list[Channel]:
         raise ValueError("channel list must contain exactly 1024 rows")
     parsed = []
     for index, row in enumerate(rows, 1):
+        if (None in row or
+                any(row.get(fieldname) is None for fieldname in fieldnames)):
+            raise ValueError(
+                "channel list row {} has an incorrect number of fields".format(
+                    index))
         if fieldnames == FIELDNAMES_V1:
             row = dict(row)
             primary_name = row.get("name", "")

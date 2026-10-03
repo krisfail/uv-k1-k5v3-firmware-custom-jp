@@ -14,6 +14,9 @@ set(CMAKE_PROJECT_NAME wrx-jp)
 option(ENABLE_FONT_GLYPH_TEST
     "Build the test-only external Japanese glyph LCD browser" OFF)
 
+option(ENABLE_LCD_DEBUG
+    "Build the LCD debug firmware that streams rendered frames over UART" OFF)
+
 # Enable compile command to ease indexing with e.g. clangd
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
@@ -22,10 +25,21 @@ message("Build type: " ${CMAKE_BUILD_TYPE})
 
 enable_language(C ASM)
 
-# This repository distributes one firmware profile: Japanese, receive-only.
-# Force the policy at the CMake boundary so an inherited cache or an ad-hoc
-# -D option cannot re-enable RF transmit sources.
+# このリポジトリが配布するファームウェアは、日本語・受信専用の1系統とする。
+# 継承したキャッシュや個別の-D指定で送信系ソースを再有効化できないよう、
+# CMakeの境界で方針を強制する。
 set(ENABLE_RX_ONLY ON CACHE BOOL "Build the receive-only Japanese profile" FORCE)
+
+if(ENABLE_LCD_DEBUG)
+    # デバッグ版は基板とUARTの初期化直後に専用ループへ入る。
+    # 無線アプリケーションを起動せず、プログラミングケーブルの
+    # ハードウェアUARTだけを使用するため、USB/VCPも無効にする。
+    set(ENABLE_UART ON CACHE BOOL "LCD debug transport" FORCE)
+    set(ENABLE_USB OFF CACHE BOOL "LCD debug transport" FORCE)
+    set(ENABLE_FONT_GLYPH_TEST OFF CACHE BOOL "LCD debug entry point" FORCE)
+    set(ENABLE_CUSTOM_MENU_LAYOUT ON CACHE BOOL "LCD debug menu layout" FORCE)
+    set(ENABLE_FEAT_F4HWN_SCAN_PROGRESS ON CACHE BOOL "LCD debug scan screen" FORCE)
+endif()
 foreach(_rx_only_disabled_feature IN ITEMS
     ENABLE_AIRCOPY
     ENABLE_ALARM
@@ -93,7 +107,7 @@ if(ENABLE_FEAT_F4HWN)
         set(VERSION_STRING_1 "v0.22")
     endif()
     if(NOT VERSION_STRING_2)
-        set(VERSION_STRING_2 "v5.9.0J1")
+        set(VERSION_STRING_2 "v5.9.0J3")
     endif()
     if(NOT EDITION_STRING)
         set(EDITION_STRING "JP-RX-Only")
@@ -113,7 +127,9 @@ else()
     endif()
 endif()
 
-if(TARGET)
+if(ENABLE_LCD_DEBUG AND NOT TARGET)
+    set(EXE_NAME "wrx-jp-lcd-debug")
+elseif(TARGET)
     set(EXE_NAME ${TARGET})
 else()
     set(EXE_NAME "wrx-jp")

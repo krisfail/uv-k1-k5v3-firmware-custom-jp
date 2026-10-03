@@ -185,7 +185,9 @@ void BOARD_Init(void)
     PY25Q16_Init();
     ST7565_Init();
 #ifdef ENABLE_FMRADIO
+#ifndef ENABLE_LCD_DEBUG
     BK1080_Init0();
+#endif
 #endif
 
 #if defined(ENABLE_UART) || defined(ENABLED_AIRCOPY)

@@ -29,16 +29,45 @@ void UI_PrintStringClipped(const char *pString, uint8_t Start, uint8_t End, uint
 // Try the uploaded 16x16 bitmap font for an external Unicode UI string.
 // Returns false when the string cannot be mapped, loaded, or fitted.
 bool UI_PrintStringJapaneseExternal(const char *pString, uint8_t Start, uint8_t End, uint8_t Line);
+// Draw a mixed Japanese/ASCII string with native Misaki 8x8 and F4HWN small ASCII glyphs.
+bool UI_PrintStringJapaneseExternalSmall(const char *pString, uint8_t Start, uint8_t End, uint8_t Line);
+// Draw a mixed Japanese/ASCII string with an explicit vertical offset.
+// The caller can keep the glyphs inside a page-sized layout cell by using 0.
+bool UI_PrintStringJapaneseExternalSmallOffset(const char *pString,
+                                               uint8_t Start, uint8_t End,
+                                               uint8_t Line,
+                                               uint8_t vertical_offset);
+// Draw the same mixed string centered vertically in a 16px menu cell.
+bool UI_PrintStringJapaneseExternalSmallCentered(const char *pString,
+                                                 uint8_t Start, uint8_t End,
+                                                 uint8_t Line);
 // Draw one external UTF-8 channel name using the fixed 16x16 bitmap font.
 // Returns false when no valid external name is stored for the channel.
 bool UI_PrintJapaneseChannelName(uint16_t channel, uint8_t Start, uint8_t End, uint8_t Line);
-// 外部FlashのUTF-8チャンネル名を8×8 nearest-neighborで描画する。
-// 対象は主操作画面だけとする。
-bool UI_PrintJapaneseChannelNameCompact(uint16_t channel, uint8_t Start, uint8_t End, uint8_t Line);
+// 外部FlashのUTF-8チャンネル名を、和文は美咲8×8で描画する。
+// center_in_16px_cellがtrueなら、名前だけの16px枠の中央へ配置する。
+// ASCII keeps the F4HWN font and is vertically centered in its cell.
+bool UI_PrintJapaneseChannelNameCompact(uint16_t channel, uint8_t Start,
+                                        uint8_t End, uint8_t Line,
+                                        bool center_in_16px_cell);
+// デュアルの名前＋周波数表示用に、名前を後続行と分離して描画する。
+bool UI_PrintJapaneseChannelNameCompactSeparated(uint16_t channel,
+                                                 uint8_t Start, uint8_t End,
+                                                 uint8_t Line);
+// 外部Flashの専用14×14字形を、主画面のチャンネル名として描画する。
+bool UI_PrintJapaneseChannelName14(uint16_t channel, uint8_t Start, uint8_t End, uint8_t Line);
 #endif
 void UI_PrintStringSmallNormal(const char *pString, uint8_t Start, uint8_t End, uint8_t Line);
+// Draw small normal text with an explicit vertical offset inside its cell.
+void UI_PrintStringSmallNormalOffset(const char *pString, uint8_t Start,
+                                     uint8_t End, uint8_t Line,
+                                     uint8_t vertical_offset);
 // Draw small normal text left-aligned and clipped to the inclusive [Start, End] range.
 void UI_PrintStringSmallNormalClipped(const char *pString, uint8_t Start, uint8_t End, uint8_t Line);
+// Draw the same text with an explicit vertical offset inside its 8px cell.
+void UI_PrintStringSmallNormalClippedOffset(const char *pString, uint8_t Start,
+                                            uint8_t End, uint8_t Line,
+                                            uint8_t vertical_offset);
 void UI_PrintStringSmallNormalInverse(const char *pString, uint8_t Start, uint8_t End, uint8_t Line);
 void UI_PrintStringSmallBold(const char *pString, uint8_t Start, uint8_t End, uint8_t Line);
 void UI_PrintStringSmallBufferNormal(const char *pString, uint8_t *buffer);

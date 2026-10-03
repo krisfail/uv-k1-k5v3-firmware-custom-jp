@@ -6,7 +6,7 @@
 
 #include "driver/keyboard.h"
 
-enum { RX_BAND_PRESET_COUNT = 16 };
+enum { RX_BAND_PRESET_COUNT = 15 };
 
 typedef struct {
     const char *name;

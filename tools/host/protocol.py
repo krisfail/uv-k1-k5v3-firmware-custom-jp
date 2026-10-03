@@ -24,9 +24,9 @@ CALIBRATION_FLASH_SECTOR_BASE = 0x010000
 CALIBRATION_FLASH_SECTOR_END = 0x011000
 
 JAPANESE_FONT_BASE = 0x020000
-JAPANESE_FONT_SIZE = 125604
+JAPANESE_FONT_SIZE = 251208
 JAPANESE_FONT_END = JAPANESE_FONT_BASE + JAPANESE_FONT_SIZE
-JAPANESE_NAME_BASE = 0x040000
+JAPANESE_NAME_BASE = 0x060000
 JAPANESE_NAME_RECORD_SIZE = 32
 JAPANESE_NAME_COUNT = 1024
 JAPANESE_NAME_SIZE = JAPANESE_NAME_RECORD_SIZE * JAPANESE_NAME_COUNT
@@ -192,6 +192,9 @@ class RadioSession:
     def read_external_names(self) -> bytes:
         return self.read_external(JAPANESE_NAME_BASE, JAPANESE_NAME_SIZE)
 
+    def read_external_font(self) -> bytes:
+        return self.read_external(JAPANESE_FONT_BASE, JAPANESE_FONT_SIZE)
+
     def read_memory(self, offset: int, length: int) -> bytes:
         validate_logical_read(offset, length)
         result = bytearray()
@@ -349,23 +352,33 @@ class RadioSession:
                     "external resource write failed at 0x{:06X}".format(current)
                 ) from last_error
 
-    def write_japanese_resource(self, font_data: bytes,
-                                name_table: bytes) -> None:
+    def write_japanese_font(self, font_data: bytes,
+                            verify: bool = True) -> None:
+        """同梱フォントだけを外部Flashへ書き込む。"""
         if len(font_data) != JAPANESE_FONT_SIZE:
             raise SafetyError("Japanese font has an unexpected size")
+        validate_external_resource_range(JAPANESE_FONT_BASE, len(font_data))
+        current = self.read_external_font()
+        if current != font_data:
+            self.write_external_changed(
+                JAPANESE_FONT_BASE, current, font_data, verify=verify)
+
+    def write_japanese_names(self, name_table: bytes,
+                             verify: bool = True) -> None:
+        """名前テーブルだけを外部Flashへ書き込む。"""
         if len(name_table) != JAPANESE_NAME_SIZE:
             raise SafetyError("Japanese name table must contain 1024 records")
-        # Validate both complete ranges before the first write.  The operation
-        # is presented as one GUI action, but the two fixed ranges are checked
-        # and transferred independently.
-        validate_external_resource_range(JAPANESE_FONT_BASE, len(font_data))
         validate_external_resource_range(JAPANESE_NAME_BASE, len(name_table))
-        current_font = self.read_external(JAPANESE_FONT_BASE, len(font_data))
-        if current_font != font_data:
-            self.write_external_changed(JAPANESE_FONT_BASE, current_font, font_data)
-        current_names = self.read_external(JAPANESE_NAME_BASE, len(name_table))
-        if current_names != name_table:
-            self.write_external_changed(JAPANESE_NAME_BASE, current_names, name_table)
+        current = self.read_external_names()
+        if current != name_table:
+            self.write_external_changed(
+                JAPANESE_NAME_BASE, current, name_table, verify=verify)
+
+    def write_japanese_resource(self, font_data: bytes,
+                                name_table: bytes) -> None:
+        """フォントと名前テーブルを続けて書き込む互換用API。"""
+        self.write_japanese_font(font_data)
+        self.write_japanese_names(name_table)
 
     def reset(self) -> None:
         try:

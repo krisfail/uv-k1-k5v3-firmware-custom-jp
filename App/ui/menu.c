@@ -44,32 +44,204 @@
 #include "jp_text.h"
 #include "inputbox.h"
 #include "menu.h"
+#include "menu_icons.h"
 #include "menu_text.h"
 #include "ui.h"
 #include "welcome.h"
 
 #ifdef ENABLE_JAPANESE
+static const char *UI_MENU_LocalizeValue(const char *text)
+{
+    if (text == NULL)
+        return text;
+
+    if (!strcmp(text, "OFF"))             return WRX_MENU_VALUE_OFF;
+    if (!strcmp(text, "ON"))              return WRX_MENU_VALUE_ON;
+    if (!strcmp(text, "AUTO"))            return WRX_MENU_VALUE_AUTO;
+    if (!strcmp(text, "ALL"))             return WRX_MENU_VALUE_ALL;
+    if (!strcmp(text, "NONE"))            return WRX_MENU_VALUE_NONE;
+    if (!strcmp(text, "N/A"))             return WRX_MENU_VALUE_NA;
+    if (!strcmp(text, "WIDE"))            return WRX_MENU_VALUE_WIDE;
+    if (!strcmp(text, "NARROW"))          return WRX_MENU_VALUE_NARROW;
+    if (!strcmp(text, "MAIN ONLY"))       return WRX_MENU_VALUE_MAIN_ONLY;
+    if (!strcmp(text, "DUAL RX"))         return WRX_MENU_VALUE_DUAL_RX;
+    if (!strcmp(text, "SINGLE"))          return WRX_MENU_VALUE_SINGLE;
+    if (!strcmp(text, "FREQ"))            return WRX_MENU_VALUE_FREQ;
+    if (!strcmp(text, "CHANNEL"))         return WRX_MENU_VALUE_CHANNEL;
+    if (!strcmp(text, "NUMBER"))          return WRX_MENU_VALUE_NUMBER;
+    if (!strcmp(text, "NAME"))            return WRX_MENU_VALUE_NAME;
+    if (!strcmp(text, "USER"))            return WRX_MENU_VALUE_USER;
+    if (!strcmp(text, "DO"))              return WRX_MENU_VALUE_DO;
+    if (!strcmp(text, "NOTHING"))         return WRX_MENU_VALUE_NOTHING;
+    if (!strcmp(text, "RING"))            return WRX_MENU_VALUE_RING;
+    if (!strcmp(text, "REPLY"))           return WRX_MENU_VALUE_REPLY;
+    if (!strcmp(text, "BOTH"))            return WRX_MENU_VALUE_BOTH;
+    if (!strcmp(text, "FULL"))            return WRX_MENU_VALUE_FULL;
+    if (!strcmp(text, "MESSAGE"))         return WRX_MENU_VALUE_MESSAGE;
+    if (!strcmp(text, "VOLTAGE"))         return WRX_MENU_VALUE_VOLTAGE;
+    if (!strcmp(text, "LOGO"))            return WRX_MENU_VALUE_LOGO;
+    if (!strcmp(text, "LOGO+MSG"))        return WRX_MENU_VALUE_LOGO_MESSAGE;
+    if (!strcmp(text, "LOGO+ALL"))        return WRX_MENU_VALUE_LOGO_ALL;
+    if (!strcmp(text, "SOUND"))           return WRX_MENU_VALUE_SOUND;
+    if (!strcmp(text, "VISUAL"))          return WRX_MENU_VALUE_VISUAL;
+    if (!strcmp(text, "SITE"))            return WRX_MENU_VALUE_SITE;
+    if (!strcmp(text, "TONE"))            return WRX_MENU_VALUE_TONE;
+    if (!strcmp(text, "KEYS"))            return WRX_MENU_VALUE_KEYS;
+    if (!strcmp(text, "ACTIONS"))         return WRX_MENU_VALUE_ACTIONS;
+    if (!strcmp(text, "UP CODE"))         return WRX_MENU_VALUE_UP_CODE;
+    if (!strcmp(text, "DOWN CODE"))       return WRX_MENU_VALUE_DOWN_CODE;
+    if (!strcmp(text, "UP+DOWN"))         return WRX_MENU_VALUE_UP_DOWN;
+    if (!strcmp(text, "CODE"))            return WRX_MENU_VALUE_CODE;
+    if (!strcmp(text, "CLASSIC"))         return WRX_MENU_VALUE_CLASSIC;
+    if (!strcmp(text, "ONEPUSH"))         return WRX_MENU_VALUE_ONEPUSH;
+    if (!strcmp(text, "NORMAL"))          return WRX_MENU_VALUE_NORMAL;
+    if (!strcmp(text, "FAST"))            return WRX_MENU_VALUE_FAST;
+    if (!strcmp(text, "FLAT"))            return WRX_MENU_VALUE_FLAT;
+    if (!strcmp(text, "CLEAN"))           return WRX_MENU_VALUE_CLEAN;
+    if (!strcmp(text, "MID"))             return WRX_MENU_VALUE_MID;
+    if (!strcmp(text, "BOOST"))           return WRX_MENU_VALUE_BOOST;
+    if (!strcmp(text, "MAX"))             return WRX_MENU_VALUE_MAX;
+    if (!strcmp(text, "SHARP"))           return WRX_MENU_VALUE_SHARP;
+    if (!strcmp(text, "STOCK"))           return WRX_MENU_VALUE_STOCK;
+    if (!strcmp(text, "OPEN"))            return WRX_MENU_VALUE_OPEN;
+    if (!strcmp(text, "NARROWER"))        return WRX_MENU_VALUE_NARROWER;
+    if (!strcmp(text, "TINY"))            return WRX_MENU_VALUE_TINY;
+    if (!strcmp(text, "KEY_MENU"))        return WRX_MENU_VALUE_KEY_MENU;
+    if (!strcmp(text, "KEY_UP"))          return WRX_MENU_VALUE_KEY_UP;
+    if (!strcmp(text, "KEY_DOWN"))        return WRX_MENU_VALUE_KEY_DOWN;
+    if (!strcmp(text, "KEY_EXIT"))        return WRX_MENU_VALUE_KEY_EXIT;
+    if (!strcmp(text, "MATRIX"))          return WRX_MENU_VALUE_MATRIX;
+    if (!strcmp(text, "READ"))            return WRX_MENU_VALUE_READ;
+    if (!strcmp(text, "MANUAL"))          return WRX_MENU_VALUE_MANUAL;
+    if (!strcmp(text, "NULL"))            return WRX_MENU_VALUE_NULL;
+    if (!strcmp(text, "DISABLE"))         return WRX_MENU_VALUE_DISABLE;
+    if (!strcmp(text, "UNLOCK"))          return WRX_MENU_VALUE_UNLOCK;
+    if (!strcmp(text, "LEFT"))            return WRX_MENU_VALUE_LEFT;
+    if (!strcmp(text, "RIGHT"))           return WRX_MENU_VALUE_RIGHT;
+    if (!strcmp(text, "UP"))              return WRX_MENU_VALUE_KEY_UP;
+    if (!strcmp(text, "DOWN"))            return WRX_MENU_VALUE_KEY_DOWN;
+    if (!strcmp(text, "ROGER"))           return WRX_MENU_VALUE_ROGER;
+
+    return text;
+}
+
 static void UI_MENU_PrintString(const char *text, uint8_t start, uint8_t end,
                                 uint8_t line, uint8_t width)
 {
-    if (!UI_PrintStringJapaneseExternal(text, start, end, line))
-        UI_PrintString(text, start, end, line, width);
+    const char *localized = UI_MENU_LocalizeValue(text);
+
+    if (UI_PrintStringJapaneseExternal(localized, start, end, line))
+        return;
+    if (localized != text && UI_PrintStringJapaneseExternal(text, start, end, line))
+        return;
+    UI_PrintString(text, start, end, line, width);
 }
 
-#ifdef ENABLE_CUSTOM_MENU_LAYOUT
-static void UI_MENU_PrintStringClipped(const char *text, uint8_t start,
-                                       uint8_t end, uint8_t line, uint8_t width)
+static void UI_MENU_PrintSmallString(const char *text, uint8_t start,
+                                     uint8_t end, uint8_t line)
 {
-    if (!UI_PrintStringJapaneseExternal(text, start, end, line))
-        UI_PrintStringClipped(text, start, end, line, width);
+    const char *localized = UI_MENU_LocalizeValue(text);
+
+    if (UI_PrintStringJapaneseExternalSmall(localized, start, end, line))
+        return;
+    if (localized != text && UI_PrintStringJapaneseExternalSmall(text, start, end, line))
+        return;
+    UI_PrintStringSmallNormal(text, start, end, line);
 }
-#endif
+
 #else
 #define UI_MENU_PrintString UI_PrintString
-#ifdef ENABLE_CUSTOM_MENU_LAYOUT
-#define UI_MENU_PrintStringClipped UI_PrintStringClipped
+#define UI_MENU_PrintSmallString UI_PrintStringSmallNormal
 #endif
+
+static const char *UI_MENU_GetFallbackLabel(const uint8_t index)
+{
+    const char *fallback = MenuList[index].name.fallback;
+    return fallback != NULL ? fallback : MenuList[index].name.primary;
+}
+
+static void UI_MENU_PrintFallbackLabelSmall(const uint8_t index,
+                                            const uint8_t start,
+                                            const uint8_t end,
+                                            const uint8_t line,
+                                            const uint8_t vertical_offset)
+{
+    const char *text = UI_MENU_GetFallbackLabel(index);
+
+    if (end == 0u)
+    {
+        UI_PrintStringSmallNormalOffset(text, start, end, line,
+                                        vertical_offset);
+        return;
+    }
+
+    const uint16_t available = (uint16_t)end - start + 1u;
+    const uint16_t used = (uint16_t)(strlen(text) *
+                                     (ARRAY_SIZE(gFontSmall[0]) + 1u));
+    const uint8_t centered = used < available
+        ? (uint8_t)(start + (available - used) / 2u)
+        : start;
+
+    UI_PrintStringSmallNormalClippedOffset(text, centered, end, line,
+                                           vertical_offset);
+}
+
+static void UI_MENU_PrintLabelSmall(const uint8_t index, const uint8_t start,
+                                    const uint8_t end, const uint8_t line,
+                                    const uint8_t vertical_offset)
+{
+#ifdef ENABLE_JAPANESE
+    if (UI_PrintStringJapaneseExternalSmallOffset(
+            MenuList[index].name.primary, start, end, line, vertical_offset))
+        return;
 #endif
+
+    UI_MENU_PrintFallbackLabelSmall(index, start, end, line, vertical_offset);
+}
+
+static bool UI_MENU_PrintLabelLarge(const uint8_t index, const uint8_t start,
+                                    const uint8_t end, const uint8_t line,
+                                    const bool center_small)
+{
+#ifdef ENABLE_JAPANESE
+    if (UI_PrintStringJapaneseExternal(MenuList[index].name.primary,
+                                       start, end, line))
+        return true;
+
+    /* 16×16で収まらない長い日本語ラベルは、英語へ戻さず美咲8×8で描く。 */
+    if ((center_small
+            ? UI_PrintStringJapaneseExternalSmallCentered(
+                  MenuList[index].name.primary, start, end, line)
+            : UI_PrintStringJapaneseExternalSmall(
+                  MenuList[index].name.primary, start, end, line)))
+        return false;
+#endif
+
+    if (end == 0u)
+        UI_PrintString(UI_MENU_GetFallbackLabel(index), start, end, line, 8u);
+    else
+        UI_PrintStringClipped(UI_MENU_GetFallbackLabel(index), start, end, line, 8u);
+    return true;
+}
+
+static void UI_MENU_InvertSelectedSmallLabel(void)
+{
+    /* 選択帯を15pxにして、8px字形の上下に4pxずつ余白を確保する。 */
+    for (uint8_t x = 0u; x < 48u; x++)
+    {
+        gFrameBuffer[2u][x] ^= 0xFFu;
+        gFrameBuffer[3u][x] ^= 0x7Fu;
+    }
+}
+
+static void UI_MENU_InvertSelectedLargeLabel(void)
+{
+    for (uint8_t x = 0u; x < 48u; x++)
+    {
+        gFrameBuffer[2u][x] ^= 0xFFu;
+        gFrameBuffer[3u][x] ^= 0xFFu;
+    }
+}
 
 
 const t_menu_item MenuList[] =
@@ -277,7 +449,7 @@ const t_menu_item MenuList[] =
     {WRX_MENU_LABEL_SET_NAV, MENU_SET_NAV},
     {WRX_MENU_LABEL_RESET, MENU_RESET},
 
-    {"",                              0xff               }  // end of list - DO NOT delete or move this this
+    {{"", NULL},                       0xff               }  // end of list - DO NOT delete or move this this
 };
 
 #ifdef ENABLE_RX_ONLY
@@ -552,7 +724,8 @@ const char* const gSubMenu_SCRAMBLER[] =
     {
         "16x16\nJP",
         "8x8\nJP",
-        "ASCII"
+        "ASCII",
+        "14x14\nJP"
     };
 #endif
 
@@ -606,55 +779,55 @@ const t_sidefunction gSubMenu_SIDEFUNCTIONS[] =
 {
     {WRX_ACTION_NONE,            ACTION_OPT_NONE},
 #ifdef ENABLE_FLASHLIGHT
-    {WRX_ACTION_FLASHLIGHT,    ACTION_OPT_FLASHLIGHT},
+    {WRX_ACTION_FLASHLIGHT,       ACTION_OPT_FLASHLIGHT},
 #endif
 #ifndef ENABLE_RX_ONLY
-    {"POWER",           ACTION_OPT_POWER},
+    {WRX_ACTION_POWER,             ACTION_OPT_POWER},
 #endif
     {WRX_ACTION_MONITOR,         ACTION_OPT_MONITOR},
     {WRX_ACTION_SCAN,            ACTION_OPT_SCAN},
 #ifdef ENABLE_VOX
-    {"VOX",             ACTION_OPT_VOX},
+    {WRX_ACTION_VOX,              ACTION_OPT_VOX},
 #endif
 #ifdef ENABLE_ALARM
-    {"ALARM",           ACTION_OPT_ALARM},
+    {WRX_ACTION_ALARM,            ACTION_OPT_ALARM},
 #endif
 #ifdef ENABLE_FMRADIO
-    {WRX_ACTION_FM,        ACTION_OPT_FM},
+    {WRX_ACTION_FM,               ACTION_OPT_FM},
 #endif
 #ifdef ENABLE_TX1750
-    {"1750Hz",          ACTION_OPT_1750},
+    {WRX_ACTION_1750,             ACTION_OPT_1750},
 #endif
     {WRX_ACTION_LOCK_KEYPAD,    ACTION_OPT_KEYLOCK},
     {WRX_ACTION_VFO_A_B,    ACTION_OPT_A_B},
     {WRX_ACTION_VFO_MEM,        ACTION_OPT_VFO_MR},
     {WRX_ACTION_MODE,            ACTION_OPT_SWITCH_DEMODUL},
 #ifdef ENABLE_BLMIN_TMP_OFF
-    {"BLMIN\nTMP OFF",  ACTION_OPT_BLMIN_TMP_OFF},      //BackLight Minimum Temporary OFF
+    {WRX_ACTION_BLMIN_TMP_OFF,     ACTION_OPT_BLMIN_TMP_OFF},
 #endif
 #ifdef ENABLE_FEAT_F4HWN
     {WRX_ACTION_RX_MODE,         ACTION_OPT_RXMODE},
     {WRX_ACTION_MAIN_ONLY,       ACTION_OPT_MAINONLY},
 #ifndef ENABLE_RX_ONLY
-    {"PTT",             ACTION_OPT_PTT},
+    {WRX_ACTION_PTT,              ACTION_OPT_PTT},
 #endif
     {WRX_ACTION_WIDE_NARROW,    ACTION_OPT_WN},
     {WRX_ACTION_MUTE,            ACTION_OPT_MUTE},
     #ifdef ENABLE_FEAT_F4HWN_AUDIO
-        {"RxA",            ACTION_OPT_RXA},
+        {WRX_ACTION_RXA,          ACTION_OPT_RXA},
     #endif
     #ifdef ENABLE_FEAT_F4HWN_RESCUE_OPS
-        {"POWER\nHIGH",    ACTION_OPT_POWER_HIGH},
-        {"REMOVE\nOFFSET",  ACTION_OPT_REMOVE_OFFSET},
+        {WRX_ACTION_POWER_HIGH,   ACTION_OPT_POWER_HIGH},
+        {WRX_ACTION_REMOVE_OFFSET, ACTION_OPT_REMOVE_OFFSET},
     #endif
     #ifdef ENABLE_FEAT_F4HWN_BEAM
-        {"BEAM",            ACTION_OPT_BEAM},
+        {WRX_ACTION_BEAM,         ACTION_OPT_BEAM},
     #endif
     #ifdef ENABLE_FEAT_F4HWN_RXTX_LOG
-        {"RF LOG",          ACTION_OPT_RXTX_LOG},
+        {WRX_ACTION_RF_LOG,       ACTION_OPT_RXTX_LOG},
     #endif
     #ifdef ENABLE_FEAT_F4HWN_FOXHUNT
-        {"FOX HUNT\nBEACON", ACTION_OPT_FOXHUNT},
+        {WRX_ACTION_FOXHUNT,      ACTION_OPT_FOXHUNT},
     #endif
 #endif
 };
@@ -712,6 +885,20 @@ const char *const CategoryNames[CAT_COUNT] = {
     [CAT_DTMF]     = WRX_MENU_CATEGORY_DTMF,
     [CAT_SERVICE]  = WRX_MENU_CATEGORY_SERVICE,
     [CAT_ALL]      = WRX_MENU_CATEGORY_ALL,
+};
+
+const char *const CategoryNamesAscii[CAT_COUNT] = {
+    [CAT_CHANNELS] = "CHANNELS",
+    [CAT_SCAN]     = "SCAN",
+    [CAT_KEYS]     = "KEYS",
+    [CAT_POWER]    = "POWER",
+    [CAT_DISPLAY]  = "DISPLAY",
+    [CAT_TIMERS]   = "TIMERS",
+    [CAT_AUDIO]    = "AUDIO",
+    [CAT_RADIO]    = "RADIO",
+    [CAT_DTMF]     = "DTMF",
+    [CAT_SERVICE]  = "SERVICE",
+    [CAT_ALL]      = "ALL",
 };
 
 // Les menu_id de sous-features optionnelles sont gardes exactement comme dans
@@ -795,7 +982,7 @@ uint8_t gMenuCategory = CAT_ALL;
 // Index de 'id' dans MenuList, ou 0xFF si absent (item non compile).
 static uint8_t menu_find_idx(uint8_t id)
 {
-    for (uint8_t i = 0; MenuList[i].name[0] != '\0'; i++)
+    for (uint8_t i = 0; MenuList[i].name.primary[0] != '\0'; i++)
         if (MenuList[i].menu_id == id)
             return i;
     return 0xFF;
@@ -813,7 +1000,7 @@ uint8_t UI_MENU_CategoryItemCount(uint8_t cat)
 
     if (cat == CAT_ALL)
     {
-        for (uint8_t i = 0; MenuList[i].name[0] != '\0'; i++)
+        for (uint8_t i = 0; MenuList[i].name.primary[0] != '\0'; i++)
         {
             if (!gF_LOCK && MenuList[i].menu_id == FIRST_HIDDEN_MENU_ITEM)
                 break;
@@ -844,24 +1031,6 @@ void UI_MENU_BuildCategoryScreen(void)
     }
 }
 
-static void UI_MENU_DrawCategoryRing(const int16_t cx, const int16_t cy,
-                                     const int16_t outer_radius,
-                                     const int16_t inner_radius)
-{
-    for (int16_t y = -outer_radius; y <= outer_radius; y++)
-    {
-        for (int16_t x = -outer_radius; x <= outer_radius; x++)
-        {
-            const int16_t distance = (int16_t)(x * x + y * y);
-            if (distance <= outer_radius * outer_radius &&
-                distance >= inner_radius * inner_radius)
-            {
-                PutPixel((uint8_t)(cx + x), (uint8_t)(cy + y), true);
-            }
-        }
-    }
-}
-
 static void UI_MENU_DrawCategoryChevron(const bool right)
 {
     const int16_t x = right ? 113 : 15;
@@ -871,125 +1040,37 @@ static void UI_MENU_DrawCategoryChevron(const bool right)
     UI_DrawLineBuffer(gFrameBuffer, x, 22, x + direction * 8, 14, true);
 }
 
-/* カテゴリを一目で区別できるよう、LCD上で崩れにくい線画を直接描く。 */
+/* 共通の1bit領域へ、カテゴリごとに調整済みの画像を描く。 */
 static void UI_MENU_DrawCategoryIcon(const uint8_t category,
                                      const uint8_t x,
                                      const uint8_t y)
 {
+    const uint8_t (*bitmap)[UI_MENU_ICON_ROW_BYTES];
+
     switch (category)
     {
-        case CAT_CHANNELS:
-            UI_DrawRectangleBuffer(gFrameBuffer, x + 8, y + 11, x + 38, y + 34, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 18, y + 11, x + 23, y + 2, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 23, y + 2, x + 28, y + 11, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 14, y + 17, x + 32, y + 17, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 14, y + 23, x + 26, y + 23, true);
-            break;
+        case CAT_CHANNELS: bitmap = UI_MENU_ICON_CHANNELS; break;
+        case CAT_SCAN:     bitmap = UI_MENU_ICON_SCAN;     break;
+        case CAT_KEYS:     bitmap = UI_MENU_ICON_KEYS;     break;
+        case CAT_POWER:    bitmap = UI_MENU_ICON_POWER;    break;
+        case CAT_DISPLAY:  bitmap = UI_MENU_ICON_DISPLAY;  break;
+        case CAT_TIMERS:   bitmap = UI_MENU_ICON_TIMERS;   break;
+        case CAT_AUDIO:    bitmap = UI_MENU_ICON_AUDIO;    break;
+        case CAT_RADIO:    bitmap = UI_MENU_ICON_RADIO;    break;
+        case CAT_DTMF:     bitmap = UI_MENU_ICON_DTMF;     break;
+        case CAT_SERVICE:  bitmap = UI_MENU_ICON_SERVICE;  break;
+        case CAT_ALL:      bitmap = UI_MENU_ICON_ALL;      break;
+        default:           bitmap = UI_MENU_ICON_ALL;      break;
+    }
 
-        case CAT_SCAN:
-            UI_MENU_DrawCategoryRing((int16_t)x + 22, (int16_t)y + 17, 12, 9);
-            UI_DrawLineBuffer(gFrameBuffer, x + 31, y + 26, x + 42, y + 36, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 39, y + 36, x + 42, y + 33, true);
-            break;
-
-        case CAT_KEYS:
-            for (uint8_t row = 0; row < 3; row++)
-            {
-                for (uint8_t column = 0; column < 3; column++)
-                {
-                    const uint8_t left = (uint8_t)(x + 8u + column * 11u);
-                    const uint8_t top = (uint8_t)(y + 7u + row * 10u);
-                    UI_DrawRectangleBuffer(gFrameBuffer, left, top,
-                                           (int16_t)left + 7, (int16_t)top + 6, true);
-                }
-            }
-            UI_DrawRectangleBuffer(gFrameBuffer, x + 19, y + 37, x + 27, y + 39, true);
-            break;
-
-        case CAT_POWER:
-            UI_DrawLineBuffer(gFrameBuffer, x + 23, y + 2, x + 23, y + 21, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 15, y + 8, x + 10, y + 14, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 10, y + 14, x + 10, y + 24, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 10, y + 24, x + 16, y + 33, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 16, y + 33, x + 23, y + 37, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 23, y + 37, x + 30, y + 33, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 30, y + 33, x + 36, y + 24, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 36, y + 24, x + 36, y + 14, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 36, y + 14, x + 31, y + 8, true);
-            break;
-
-        case CAT_DISPLAY:
-            UI_DrawRectangleBuffer(gFrameBuffer, x + 6, y + 9, x + 40, y + 31, true);
-            UI_DrawRectangleBuffer(gFrameBuffer, x + 12, y + 14, x + 34, y + 26, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 18, y + 36, x + 29, y + 36, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 23, y + 31, x + 23, y + 36, true);
-            break;
-
-        case CAT_TIMERS:
-            UI_MENU_DrawCategoryRing((int16_t)x + 23, (int16_t)y + 20, 16, 13);
-            UI_DrawLineBuffer(gFrameBuffer, x + 23, y + 20, x + 23, y + 10, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 23, y + 20, x + 31, y + 25, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 18, y + 2, x + 28, y + 2, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 18, y + 2, x + 15, y + 6, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 28, y + 2, x + 31, y + 6, true);
-            break;
-
-        case CAT_AUDIO:
-            UI_DrawLineBuffer(gFrameBuffer, x + 8, y + 17, x + 16, y + 17, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 16, y + 17, x + 27, y + 8, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 27, y + 8, x + 27, y + 32, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 27, y + 32, x + 16, y + 23, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 16, y + 23, x + 8, y + 23, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 35, y + 14, x + 40, y + 19, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 40, y + 19, x + 35, y + 25, true);
-            break;
-
-        case CAT_RADIO:
-            UI_DrawLineBuffer(gFrameBuffer, x + 23, y + 8, x + 23, y + 35, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 23, y + 8, x + 17, y + 2, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 23, y + 8, x + 29, y + 2, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 9, y + 37, x + 37, y + 37, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 14, y + 32, x + 32, y + 32, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 17, y + 27, x + 29, y + 27, true);
-            break;
-
-        case CAT_DTMF:
-            for (uint8_t row = 0; row < 4; row++)
-            {
-                for (uint8_t column = 0; column < 3; column++)
-                {
-                    const uint8_t left = (uint8_t)(x + 8u + column * 11u);
-                    const uint8_t top = (uint8_t)(y + 3u + row * 9u);
-                    UI_DrawRectangleBuffer(gFrameBuffer, left, top,
-                                           (int16_t)left + 7, (int16_t)top + 6, true);
-                }
-            }
-            break;
-
-        case CAT_SERVICE:
-            UI_MENU_DrawCategoryRing((int16_t)x + 23, (int16_t)y + 20, 15, 7);
-            UI_DrawLineBuffer(gFrameBuffer, x + 3, y + 20, x + 8, y + 20, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 38, y + 20, x + 43, y + 20, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 23, y + 0, x + 23, y + 5, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 23, y + 35, x + 23, y + 40, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 9, y + 6, x + 13, y + 10, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 33, y + 30, x + 37, y + 34, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 33, y + 10, x + 37, y + 6, true);
-            UI_DrawLineBuffer(gFrameBuffer, x + 9, y + 34, x + 13, y + 30, true);
-            break;
-
-        case CAT_ALL:
-            for (uint8_t row = 0; row < 4; row++)
-            {
-                const uint8_t top = (uint8_t)(y + 6u + row * 9u);
-                UI_DrawLineBuffer(gFrameBuffer, x + 8, top, x + 12, top, true);
-                UI_DrawLineBuffer(gFrameBuffer, x + 17, top, x + 40, top, true);
-            }
-            break;
-
-        default:
-            UI_DrawRectangleBuffer(gFrameBuffer, x + 8, y + 8, x + 38, y + 32, true);
-            break;
+    for (uint8_t row = 0u; row < UI_MENU_ICON_HEIGHT; row++)
+    {
+        for (uint8_t column = 0u; column < UI_MENU_ICON_WIDTH; column++)
+        {
+            if ((bitmap[row][column / 8u] &
+                 (uint8_t)(0x80u >> (column % 8u))) != 0u)
+                PutPixel((uint8_t)(x + column), (uint8_t)(y + row), true);
+        }
     }
 }
 
@@ -1011,16 +1092,21 @@ static void UI_MENU_DrawCategories(void)
     const uint8_t cur = (gMenuCursor < count) ? gMenuCursor : 0u;
     UI_MENU_DrawCategoryChevron(false);
     UI_MENU_DrawCategoryChevron(true);
-    UI_MENU_DrawCategoryIcon(gCatOrder[cur], 40, 3);
-    /* アイコンの下に小さくカテゴリ名を置き、件数表示と重ねない。 */
-    UI_PrintStringSmallNormal(CategoryNames[gCatOrder[cur]], 0,
-                              LCD_WIDTH - 1, 6);
+    /* 40x32の画像を中央へ置き、カテゴリ名との間に4px以上を残す。 */
+    UI_MENU_DrawCategoryIcon(gCatOrder[cur], 44, 4);
+    /* アイコンの下にカテゴリ名を置き、最下段を件数表示に使う。 */
+#ifdef ENABLE_JAPANESE
+    if (!UI_PrintStringJapaneseExternalSmall(CategoryNames[gCatOrder[cur]],
+                                             0, LCD_WIDTH - 1, 5))
+#endif
+        UI_PrintStringSmallNormal(CategoryNamesAscii[gCatOrder[cur]], 0,
+                                  LCD_WIDTH - 1, 5);
 
     sprintf(str, "%02u", UI_MENU_CategoryItemCount(gCatOrder[cur]));
-    UI_PrintStringSmallNormal(str, 2, 0, 7);
-    UI_PrintStringSmallNormal(WRX_UI_TEXT_ITEMS, 18, 0, 7);
+    UI_PrintStringSmallNormal(str, 2, 0, 6);
+    UI_PrintStringSmallNormal(WRX_UI_TEXT_ITEMS, 18, 0, 6);
     sprintf(str, "%02u/%02u", (unsigned int)(cur + 1u), (unsigned int)count);
-    UI_PrintStringSmallNormal(str, 92, 0, 7);
+    UI_PrintStringSmallNormal(str, 92, 0, 6);
 
     ST7565_BlitFullScreen();
 }
@@ -1047,7 +1133,7 @@ void UI_MENU_BuildView(void)
     }
 #endif
 
-    for (uint8_t i = 0; MenuList[i].name[0] != '\0'; i++)
+    for (uint8_t i = 0; MenuList[i].name.primary[0] != '\0'; i++)
     {
         if (!gF_LOCK && MenuList[i].menu_id == FIRST_HIDDEN_MENU_ITEM)
             break;
@@ -1081,42 +1167,71 @@ static const char *UI_MENU_GetRxHelp(const int menuId)
     }
 }
 
-#define UI_MENU_HELP_WIDTH 15u
+static const char *UI_MENU_GetRxHelpFallback(const int menuId)
+{
+    switch (menuId)
+    {
+        case MENU_SQL:         return WRX_MENU_HELP_SQL_ASCII;
+        case MENU_W_N:         return WRX_MENU_HELP_W_N_ASCII;
+        case MENU_LIST_CH:     return WRX_MENU_HELP_CHANNEL_LIST_ASCII;
+        case MENU_R_CTCS:      return WRX_MENU_HELP_CTCS_ASCII;
+#ifdef ENABLE_RX_ONLY
+        case MENU_RX_EXT:      return WRX_MENU_HELP_RX_EXT_ASCII;
+        case MENU_RX_BANK:     return WRX_MENU_HELP_RX_BANK_ASCII;
+        case MENU_RX_BANK_SET: return WRX_MENU_HELP_RX_BANK_SET_ASCII;
+#endif
+        default:               return NULL;
+    }
+}
+
+#define UI_MENU_HELP_START 50u
+#define UI_MENU_HELP_WIDTH 11u
 
 static uint8_t gMenuHelpOffset;
 
-static void UI_MENU_DrawRxHelp(const char *help)
+static void UI_MENU_DrawRxHelp(const char *help, const char *fallback)
 {
     char visible[UI_MENU_HELP_WIDTH + 1u] = {0};
-    const size_t length = strlen(help);
 
-    // The menu number occupies the left edge of this row.  Clear the rest
-    // before drawing so an old, longer help line cannot remain on screen.
-    memset(gFrameBuffer[6] + 18, 0, LCD_WIDTH - 18);
+    /* ノンブルと中央の仕切りを避け、右側の補足説明欄だけを更新する。 */
+    memset(gFrameBuffer[6] + UI_MENU_HELP_START, 0,
+           LCD_WIDTH - UI_MENU_HELP_START);
 
+#ifdef ENABLE_JAPANESE
+    /* 日本語の補助説明は、実際の字幅が収まる場合だけそのまま描く。 */
+    if (help != NULL &&
+        UI_PrintStringJapaneseExternalSmall(help, UI_MENU_HELP_START, 0, 6))
+        return;
+#endif
+
+    if (fallback == NULL)
+        fallback = help;
+    if (fallback == NULL)
+        return;
+
+    const size_t length = strlen(fallback);
     if (length > UI_MENU_HELP_WIDTH)
     {
         const size_t cycle = length + 1u; // one blank separator
         for (size_t i = 0; i < UI_MENU_HELP_WIDTH; i++)
         {
             const size_t position = (gMenuHelpOffset + i) % cycle;
-            visible[i] = (position < length) ? help[position] : ' ';
+            visible[i] = (position < length) ? fallback[position] : ' ';
         }
     }
     else
     {
-        strncpy(visible, help, UI_MENU_HELP_WIDTH);
+        strncpy(visible, fallback, UI_MENU_HELP_WIDTH);
     }
 
-    // End == 0 disables centering and keeps the 15-character window inside
-    // the 128-pixel display (18 + 15 * 7 <= 127).
-    UI_PrintStringSmallNormal(visible, 18, 0, 6);
+    /* x=50から11文字を置いても、最後の字形はLCDの右端を越えない。 */
+    UI_PrintStringSmallNormal(visible, UI_MENU_HELP_START, 0, 6);
 }
 
 void UI_MENU_TimeSlice500ms(void)
 {
-    const char *help = UI_MENU_GetRxHelp(UI_MENU_GetCurrentMenuId());
-    const size_t length = (help == NULL) ? 0u : strlen(help);
+    const char *fallback = UI_MENU_GetRxHelpFallback(UI_MENU_GetCurrentMenuId());
+    const size_t length = (fallback == NULL) ? 0u : strlen(fallback);
 
     if (gScreenToDisplay != DISPLAY_MENU || length <= UI_MENU_HELP_WIDTH)
     {
@@ -1229,8 +1344,8 @@ void UI_DisplayMenu(void)
     for (i = 0; i < 3; i++)
         if (gMenuCursor > 0 || i > 0)
             if ((gMenuListCount - 1) != gMenuCursor || i != 2)
-                UI_MENU_PrintString(MenuList[gMenuIndices[gMenuCursor + i - 1]].name,
-                                    0, 0, i * 2, 8);
+                UI_MENU_PrintLabelLarge(gMenuIndices[gMenuCursor + i - 1],
+                                        0, 0, i * 2, false);
 
     // invert the current menu list item pixels
     for (i = 0; i < (8 * menu_list_width); i++)
@@ -1266,18 +1381,22 @@ void UI_DisplayMenu(void)
                 if (prev_index < 0) {
                     prev_index = menu_count - 1;
                 }
-                UI_PrintStringSmallNormalClipped(MenuList[gMenuIndices[prev_index]].name, 0, 47, 1);
+                UI_MENU_PrintLabelSmall(gMenuIndices[prev_index], 0, 47, 1, 0u);
 
                 // current menu item - keep big n fat
-                UI_MENU_PrintStringClipped(
-                    MenuList[gMenuIndices[menu_index]].name, 0, 47, 2, 8);
+                const bool selected_label_large = UI_MENU_PrintLabelLarge(
+                    gMenuIndices[menu_index], 0, 47, 2, true);
+                if (selected_label_large)
+                    UI_MENU_InvertSelectedLargeLabel();
+                else
+                    UI_MENU_InvertSelectedSmallLabel();
 
                 // trailing menu item - small text
                 int next_index = menu_index + 1;
                 if (next_index >= menu_count) {
                     next_index = 0;
                 }
-                UI_PrintStringSmallNormalClipped(MenuList[gMenuIndices[next_index]].name, 0, 47, 4);
+                UI_MENU_PrintLabelSmall(gMenuIndices[next_index], 0, 47, 4, 0u);
 
 
                 // draw the menu index number/count
@@ -1290,8 +1409,8 @@ void UI_DisplayMenu(void)
             {   
                 // current menu item
 //              strcat(String, ":");
-                UI_MENU_PrintStringClipped(
-                    MenuList[gMenuIndices[menu_index]].name, 0, 47, 0, 8);
+                UI_MENU_PrintLabelLarge(gMenuIndices[menu_index], 0, 47, 0,
+                                        false);
 //              UI_PrintStringSmallNormal(String, 0, 0, 0);
             }
 
@@ -1314,7 +1433,9 @@ void UI_DisplayMenu(void)
        level the "next" time we enter here.I.e., when we move from one menu to another.
        It also has to be set back to max when pressing the Exit key. */
 
+#ifndef ENABLE_LCD_DEBUG
     BACKLIGHT_TurnOn();
+#endif
 
     //#if !defined(ENABLE_SPECTRUM) || !defined(ENABLE_FMRADIO)
         uint8_t gaugeLine = 0;
@@ -1934,7 +2055,7 @@ void UI_DisplayMenu(void)
         case MENU_F2SHRT:
         case MENU_F2LONG:
         case MENU_MLONG:
-            strcpy(String, gSubMenu_SIDEFUNCTIONS[gSubMenuSelection].name);
+            strcpy(String, gSubMenu_SIDEFUNCTIONS[gSubMenuSelection].name.primary);
             break;
 
 #ifdef ENABLE_FEAT_F4HWN_SLEEP
@@ -2110,7 +2231,7 @@ void UI_DisplayMenu(void)
             for (i = 0; i < len && lines > 0; lines--)
             {
                 if (small)
-                    UI_PrintStringSmallNormal(String + i, menu_item_x1, menu_item_x2, y);
+                    UI_MENU_PrintSmallString(String + i, menu_item_x1, menu_item_x2, y);
                 else
                     UI_MENU_PrintString(String + i, menu_item_x1, menu_item_x2, y, 8);
 
@@ -2179,7 +2300,7 @@ void UI_DisplayMenu(void)
 
     const char *rxHelp = UI_MENU_GetRxHelp(m);
     if (rxHelp != NULL)
-        UI_MENU_DrawRxHelp(rxHelp);
+        UI_MENU_DrawRxHelp(rxHelp, UI_MENU_GetRxHelpFallback(m));
 
     if ((m == MENU_RESET    ||
          m == MENU_MEM_CH   ||

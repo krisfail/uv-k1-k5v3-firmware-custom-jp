@@ -100,7 +100,9 @@ def pack_name_table(lines: list[str]) -> bytes:
 def read_name_file(path: Path) -> bytes:
     # newline="" preserves the contract and lets pack_name_table reject
     # embedded line endings instead of silently changing names.
-    with path.open("r", encoding="utf-8", newline="") as stream:
+    # UTF-8 BOM付きのテキストは表計算ソフトからの保存で生じるため、
+    # 先頭のBOMだけを取り除き、名前そのもののU+FEFFは受け付けない。
+    with path.open("r", encoding="utf-8-sig", newline="") as stream:
         text = stream.read()
     return pack_name_table(text.splitlines())
 

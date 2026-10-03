@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import struct
 import sys
+import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -54,6 +56,37 @@ class HostProtocolTests(unittest.TestCase):
             protocol.validate_external_resource_range(
                 protocol.JAPANESE_FONT_BASE - 1, 2)
 
+    def test_font_and_name_writes_are_independent(self):
+        session = protocol.RadioSession.__new__(protocol.RadioSession)
+        font = b"F" * protocol.JAPANESE_FONT_SIZE
+        names = b"N" * protocol.JAPANESE_NAME_SIZE
+        session.read_external_font = mock.Mock(return_value=b"0" * protocol.JAPANESE_FONT_SIZE)
+        session.read_external_names = mock.Mock(return_value=b"0" * protocol.JAPANESE_NAME_SIZE)
+        session.write_external_changed = mock.Mock()
+
+        protocol.RadioSession.write_japanese_font(session, font)
+        session.read_external_font.assert_called_once_with()
+        session.read_external_names.assert_not_called()
+        session.write_external_changed.assert_called_once_with(
+            protocol.JAPANESE_FONT_BASE,
+            b"0" * protocol.JAPANESE_FONT_SIZE,
+            font,
+            verify=True,
+        )
+
+        session.read_external_font.reset_mock()
+        session.read_external_names.reset_mock()
+        session.write_external_changed.reset_mock()
+        protocol.RadioSession.write_japanese_names(session, names)
+        session.read_external_font.assert_not_called()
+        session.read_external_names.assert_called_once_with()
+        session.write_external_changed.assert_called_once_with(
+            protocol.JAPANESE_NAME_BASE,
+            b"0" * protocol.JAPANESE_NAME_SIZE,
+            names,
+            verify=True,
+        )
+
 
 class HostUiTests(unittest.TestCase):
     def test_port_picker_and_firmware_probe_are_wired(self):
@@ -65,6 +98,15 @@ class HostUiTests(unittest.TestCase):
         self.assertNotIn('StringVar(value="COM3")', source)
         self.assertNotIn("marker in firmware.lower()", source)
 
+    def test_japanese_resource_operations_are_separate(self):
+        source = (ROOT / "tools" / "host" / "wrx_jp_host.py").read_text(
+            encoding="utf-8")
+        self.assertIn('text="フォントを書き込む"', source)
+        self.assertIn('text="名前テーブルを書き込む"', source)
+        self.assertIn("session.write_japanese_font(font)", source)
+        self.assertIn("session.write_japanese_names(name_table)", source)
+        self.assertNotIn('text="日本語リソースを書き込む"', source)
+
     def test_write_error_is_presented_in_japanese(self):
         error = protocol.ProtocolError("logical memory write failed at 0x0380")
         error.__cause__ = protocol.ProtocolError("short read from radio")
@@ -74,6 +116,10 @@ class HostUiTests(unittest.TestCase):
         self.assertNotIn("logical memory", message)
         self.assertNotIn("internal failure", wrx_jp_host._format_error(
             protocol.HostToolError("internal failure")))
+        self.assertIn("ファイルを読み書きできません", wrx_jp_host._format_error(
+            OSError("access denied")))
+        self.assertIn("UTF-8としてファイルを読み取れません", wrx_jp_host._format_error(
+            UnicodeDecodeError("utf-8", b"\xff", 0, 1, "invalid start byte")))
 
 
 class JapaneseResourceTests(unittest.TestCase):
@@ -81,6 +127,12 @@ class JapaneseResourceTests(unittest.TestCase):
         manifest = resources.load_manifest()
         self.assertEqual(int(manifest["total_bytes"]), protocol.JAPANESE_FONT_SIZE)
         self.assertEqual(len(resources.load_font()), protocol.JAPANESE_FONT_SIZE)
+        self.assertEqual(manifest["geometry8"],
+                         {"width": 8, "height": 8, "row_bytes": 1})
+        self.assertEqual(int(manifest["bitmap8_offset"]), 223296)
+        self.assertEqual(int(manifest["bitmap8_bytes"]), 27912)
+        self.assertEqual(int(manifest["native8_glyph_count"]),
+                         int(manifest["glyph_count"]))
 
     def test_name_table_is_exactly_1024_fixed_records(self):
         table = resources.pack_name_table(["日本語"] + [""] * 1023)
@@ -88,6 +140,16 @@ class JapaneseResourceTests(unittest.TestCase):
         self.assertEqual(table[:32], "日本語".encode("utf-8") + b"\x00" * 23)
         self.assertEqual(resources.unpack_name_table(table)[0], "日本語")
         self.assertEqual(len(resources.unpack_name_table(table)), 1024)
+
+    def test_name_file_accepts_utf8_bom(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "names.txt"
+            path.write_text("日本語\n" + "\n" * 1023,
+                            encoding="utf-8-sig", newline="")
+            self.assertEqual(
+                resources.read_name_file(path),
+                resources.pack_name_table(["日本語"] + [""] * 1023),
+            )
 
     def test_name_validation_rejects_unknown_long_and_wide_values(self):
         with self.assertRaises(ValueError):
@@ -129,6 +191,11 @@ class ChannelListTests(unittest.TestCase):
         self.assertEqual(decoded.name, "東京")
         self.assertEqual(decoded.ascii_name, "TOKYO")
 
+    def test_channel_tsv_accepts_utf8_bom(self):
+        rows = [channels.Channel(index + 1, None) for index in range(1024)]
+        text = channels.format_channel_list(rows)
+        self.assertEqual(len(channels.parse_channel_list("\ufeff" + text)), 1024)
+
     def test_v1_channel_tsv_remains_readable(self):
         rows = [channels.Channel(index + 1, None) for index in range(1024)]
         text = channels.format_channel_list(rows)
@@ -164,6 +231,18 @@ class ChannelListTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             channels.parse_channel_list("\n".join(broken))
 
+    def test_channel_tsv_rejects_missing_or_extra_columns(self):
+        rows = [channels.Channel(index + 1, None) for index in range(1024)]
+        text = channels.format_channel_list(rows)
+        lines = text.splitlines()
+        lines[2] = lines[2] + "\textra"
+        with self.assertRaisesRegex(ValueError, "incorrect number of fields"):
+            channels.parse_channel_list("\n".join(lines))
+        lines = text.splitlines()
+        lines[2] = "\t".join(lines[2].split("\t")[:-1])
+        with self.assertRaisesRegex(ValueError, "incorrect number of fields"):
+            channels.parse_channel_list("\n".join(lines))
+
 
 class SettingsModelTests(unittest.TestCase):
     def test_named_settings_round_trip_preserves_unknown_bytes(self):
@@ -172,13 +251,21 @@ class SettingsModelTests(unittest.TestCase):
         values = settings.read_settings(bytes(raw))
         values["squelch"] = "7"
         values["nfm_narrower"] = True
-        values["japanese_main_font"] = "8×8縮小"
+        values["japanese_main_font"] = "8×8美咲"
         updated = settings.apply_settings(bytes(raw), values)
         self.assertEqual(len(settings.fields()), 84)
         self.assertEqual(updated[0x167], 0xA5)
         self.assertEqual(updated[1], 7)
         self.assertEqual(updated[0x0E] & 0x02, 0x02)
         self.assertEqual(updated[0x15B] & 0x03, 1)
+
+    def test_japanese_main_font_14x14_uses_new_compatible_value(self):
+        raw = bytearray(0x170)
+        values = settings.read_settings(bytes(raw))
+        values["japanese_main_font"] = "14×14日本語"
+        updated = settings.apply_settings(bytes(raw), values)
+        self.assertEqual(updated[0x15B] & 0x03, 3)
+        self.assertEqual(settings.read_settings(updated)["japanese_main_font"], "14×14日本語")
 
     def test_settings_model_does_not_expose_tx_actions(self):
         action_fields = [field for field in settings.fields()

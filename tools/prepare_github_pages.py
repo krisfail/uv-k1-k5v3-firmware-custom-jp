@@ -19,6 +19,7 @@ MARKDOWN_LINK = re.compile(r"\]\(([^)\s]+)\)")
 ROOT_DOCUMENTS = ("README.md", "README.ja.md", "CHEATSHEET.ja.md", "DEVELOPMENT.md", "AGENTS.md")
 EXTRA_DOCUMENTS = ("tools/chirp/README.ja.md",)
 ROOT_STATIC_DOCUMENTS = ("NOTICE", "LICENSE", "tools/font_editor.html")
+WEBUI_ROOT = "tools/webui"
 
 
 LAYOUT = """<!doctype html>
@@ -91,7 +92,9 @@ def page_title(markdown: str, fallback: str) -> str:
     return match.group(1).strip() if match else fallback
 
 
-def prepare_markdown(source: Path, destination: Path, permalink: str, flatten_docs: bool = False) -> None:
+def prepare_markdown(source: Path, destination: Path, permalink: str,
+                     flatten_docs: bool = False,
+                     rewrite_webui: bool = False) -> None:
     text = source.read_text(encoding="utf-8")
     lines: list[str] = []
     in_fence = False
@@ -100,7 +103,13 @@ def prepare_markdown(source: Path, destination: Path, permalink: str, flatten_do
             in_fence = not in_fence
             lines.append(line)
             continue
-        lines.append(line if in_fence else rewrite_markdown_links(line, flatten_docs))
+        if in_fence:
+            lines.append(line)
+            continue
+        rewritten = rewrite_markdown_links(line, flatten_docs)
+        if rewrite_webui:
+            rewritten = rewritten.replace("](tools/webui/index.html)", "](host/index.html)")
+        lines.append(rewritten)
     prepared = add_front_matter("".join(lines), page_title(text, source.stem), permalink)
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(prepared, encoding="utf-8", newline="\n")
@@ -116,6 +125,26 @@ def copy_static_files(source_root: Path, destination_root: Path) -> None:
         shutil.copy2(source, destination)
 
 
+def copy_webui(repo_root: Path, destination_root: Path) -> None:
+    """Copy the dependency-free WebSerial host app into the Pages tree."""
+
+    source_root = repo_root / WEBUI_ROOT
+    if not source_root.is_dir():
+        return
+    target_root = destination_root / "host"
+    for source in source_root.rglob("*"):
+        if not source.is_file():
+            continue
+        relative = source.relative_to(source_root)
+        destination = target_root / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, destination)
+
+    manifest = repo_root / "tools" / "japanese_font_manifest.json"
+    if manifest.is_file():
+        shutil.copy2(manifest, target_root / "japanese_font_manifest.json")
+
+
 def prepare_pages_source(repo_root: Path, source_root: Path, destination_root: Path) -> None:
     """Create the source tree consumed by ``actions/jekyll-build-pages``."""
 
@@ -123,6 +152,7 @@ def prepare_pages_source(repo_root: Path, source_root: Path, destination_root: P
         shutil.rmtree(destination_root)
     destination_root.mkdir(parents=True)
     copy_static_files(source_root, destination_root)
+    copy_webui(repo_root, destination_root)
 
     for source in source_root.rglob("*.md"):
         relative = source.relative_to(source_root)
@@ -133,7 +163,12 @@ def prepare_pages_source(repo_root: Path, source_root: Path, destination_root: P
         source = repo_root / name
         if source.exists():
             relative = Path(name)
-            prepare_markdown(source, destination_root / relative, "/" + relative.with_suffix(".html").as_posix())
+            prepare_markdown(
+                source,
+                destination_root / relative,
+                "/" + relative.with_suffix(".html").as_posix(),
+                rewrite_webui=True,
+            )
 
     for name in ROOT_STATIC_DOCUMENTS:
         source = repo_root / name

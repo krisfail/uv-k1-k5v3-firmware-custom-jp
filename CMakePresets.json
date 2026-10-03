@@ -89,7 +89,7 @@
                 "AUTHOR_STRING_1": "EGZUMER",
                 "AUTHOR_STRING_2": "Kris",
                 "VERSION_STRING_1": "v0.22",
-                "VERSION_STRING_2": "v5.9.0J2",
+                "VERSION_STRING_2": "v5.9.0J3",
                 "EDITION_STRING": "JP-RX-Only",
                 "TARGET": "wrx-jp"
             }
@@ -103,6 +103,16 @@
                 "TARGET": "wrx-jp-font-test",
                 "EDITION_STRING": "JP-RX-Only-FONT-TEST"
             }
+        },
+        {
+            "name": "JpLcdDebug",
+            "inherits": "JpRxOnly",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": {
+                "ENABLE_LCD_DEBUG": true,
+                "TARGET": "wrx-jp-lcd-debug",
+                "EDITION_STRING": "JP-LCD-DEBUG"
+            }
         }
     ],
     "buildPresets": [
@@ -113,6 +123,10 @@
         {
             "name": "JpRxOnlyFontTest",
             "configurePreset": "JpRxOnlyFontTest"
+        },
+        {
+            "name": "JpLcdDebug",
+            "configurePreset": "JpLcdDebug"
         }
     ]
 }

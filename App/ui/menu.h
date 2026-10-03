@@ -23,9 +23,14 @@
 #include "audio.h"     // VOICE_ID_t
 #include "settings.h"
 
-typedef struct __attribute__((packed)) {
-    const char  name[7];    // menu display area only has room for 6 characters
-    uint8_t     menu_id;
+typedef struct {
+    const char *primary;     // ENABLE_JAPANESE時の主ラベル
+    const char *fallback;    // 外部フォント未書込み時のASCIIフォールバック
+} t_menu_label;
+
+typedef struct {
+    t_menu_label name;
+    uint8_t      menu_id;
 } t_menu_item;
 
 enum
@@ -195,6 +200,7 @@ enum {
 #define MENU_LEVEL_ITEMS 1
 
 extern const char *const CategoryNames[];
+extern const char *const CategoryNamesAscii[];
 extern uint8_t            gMenuCategory;
 extern uint8_t            gMenuLevel;
 extern uint8_t            gCatOrder[];
@@ -244,7 +250,7 @@ extern const char* const            gSubMenu_D_RSP[4];
     extern const char* const        gSubMenu_SET_LCK[];
     extern const char* const        gSubMenu_SET_MET[2];
     #ifdef ENABLE_JAPANESE
-        extern const char* const    gSubMenu_SET_MAIN_FONT[3];
+        extern const char* const    gSubMenu_SET_MAIN_FONT[4];
     #endif
     #ifdef ENABLE_FEAT_F4HWN_SCAN_FASTER
         extern const char* const    gSubMenu_SET_SCN[2];
@@ -288,7 +294,7 @@ extern const char* const            gSubMenu_SET_NAV[2];
 #endif
 
 typedef struct /* __attribute__((packed)) */ {
-    const char* name; 
+    t_menu_label name;
     uint8_t     id;
 } t_sidefunction;
 

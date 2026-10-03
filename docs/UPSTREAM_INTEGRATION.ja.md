@@ -51,5 +51,4 @@ FM放送スキャン中は，通常チャンネル側の着信確認と着信処
 
 関連資料：
 
-- [新機能の技術詳細](FEATURES_TECHNICAL.ja.md)
-- [機能監査](FEATURE_AUDIT.ja.md)
+- [機能の技術詳細](FEATURES_TECHNICAL.ja.md)

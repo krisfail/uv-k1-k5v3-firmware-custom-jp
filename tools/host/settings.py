@@ -112,7 +112,7 @@ def fields() -> tuple[Field, ...]:
         _choice_field("meter_style", "Sメーター表示", "表示・操作", ("TINY", "CLASSIC")),
         _bool_field("gui_style", "GUI表示", "表示・操作"),
         _choice_field("japanese_main_font", "主画面チャンネル名", "表示・操作",
-                      ("16×16日本語", "8×8縮小", "ASCII")),
+                      ("16×16日本語", "8×8美咲", "ASCII", "14×14日本語")),
         _choice_field("menu_lock_mode", "メニューロック範囲", "表示・操作", menu_lock),
         _choice_field("sleep_timer", "スリープタイマー", "表示・操作",
                       tuple(["OFF"] + ["{}分".format(i) for i in range(1, 121)])),

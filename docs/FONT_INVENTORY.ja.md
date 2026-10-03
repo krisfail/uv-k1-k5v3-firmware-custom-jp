@@ -1,6 +1,6 @@
 # フォント一覧
 
-現行の内蔵フォントと画面ビットマップの生成一覧です。詳細な元バイト列と編集可能範囲は、同じ内容を自動生成した[atlas inventory](assets/font-atlas/bitmap_atlas_inventory.json)を参照してください。
+現行の内蔵フォントと画面ビットマップの一覧です。詳細な元バイト列と編集可能範囲は，[atlas inventory](assets/font-atlas/bitmap_atlas_inventory.json)を参照してください。
 
 ## 現行配列
 
@@ -14,7 +14,7 @@
 | `gFont3x5` | 最小表示 | 3 bytes | 96 |
 | `BITMAP_*` | VFOマーカー、アイコン、状態記号 | 配列ごとに異なる | — |
 
-固定UIの文言は`gFontBig`、`gFontSmall`、`gFontSmallBold`を使い、フォント未書込みでも読めるASCII表記を基本とします。UTF-8のチャンネル名に使うIzumi 16×16フォントはC配列ではなく、外部資産`docs/fonts/japanese_font.bin`として管理します。
+固定UIのASCIIフォールバックは`gFontBig`、`gFontSmall`、`gFontSmallBold`を使います。日本語のメニュー・カテゴリとUTF-8のチャンネル名に使うIzumi 16×16、専用14×14、美咲8×8フォントはC配列ではなく、外部資産`docs/fonts/japanese_font.bin`として管理します。ASCIIの字形は既存のF4HWN系内蔵フォントを維持します。
 
 ## 生成
 

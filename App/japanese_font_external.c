@@ -97,6 +97,83 @@ bool JPFONT_ReadGlyph(uint16_t codepoint, uint8_t *glyph)
         glyph, JAPANESE_FONT_GLYPH_BYTES);
 }
 
+bool JPFONT_HasGlyph14(uint16_t codepoint)
+{
+    uint16_t glyph_index;
+    return JPFONT_FindGlyph(codepoint, &glyph_index);
+}
+
+bool JPFONT_ReadGlyph14(uint16_t codepoint, uint8_t *glyph)
+{
+    uint16_t glyph_index;
+
+    if (glyph == NULL || !JPFONT_FindGlyph(codepoint, &glyph_index))
+        return false;
+
+    return JPFONT_ReadExternal(
+        JAPANESE_FONT_FLASH_BASE + JAPANESE_FONT_BITMAP14_OFFSET +
+            ((uint32_t)glyph_index * JAPANESE_FONT_GLYPH14_BYTES),
+        glyph, JAPANESE_FONT_GLYPH14_BYTES);
+}
+
+bool JPFONT_HasGlyph8(uint16_t codepoint)
+{
+    uint16_t glyph_index;
+    return JPFONT_FindGlyph(codepoint, &glyph_index);
+}
+
+bool JPFONT_ReadGlyph8(uint16_t codepoint, uint8_t *glyph)
+{
+    uint16_t glyph_index;
+
+    if (glyph == NULL || !JPFONT_FindGlyph(codepoint, &glyph_index))
+        return false;
+
+    return JPFONT_ReadExternal(
+        JAPANESE_FONT_FLASH_BASE + JAPANESE_FONT_BITMAP8_OFFSET +
+            ((uint32_t)glyph_index * JAPANESE_FONT_GLYPH8_BYTES),
+        glyph, JAPANESE_FONT_GLYPH8_BYTES);
+}
+
+#ifdef ENABLE_LCD_DEBUG
+typedef struct
+{
+    uint16_t channel;
+    char     name[JAPANESE_NAME_RECORD_SIZE];
+} JPFONT_DebugChannelName_t;
+
+static JPFONT_DebugChannelName_t gJpfontDebugNames[2];
+static uint8_t gJpfontDebugNameCount;
+
+void JPFONT_DebugClearChannelNames(void)
+{
+    memset(gJpfontDebugNames, 0, sizeof(gJpfontDebugNames));
+    gJpfontDebugNameCount = 0u;
+}
+
+void JPFONT_DebugSetChannelName(const uint16_t channel, const char *name)
+{
+    if (name == NULL)
+        return;
+
+    uint8_t slot = 0u;
+    while (slot < gJpfontDebugNameCount &&
+           gJpfontDebugNames[slot].channel != channel)
+        slot++;
+
+    if (slot >= ARRAY_SIZE(gJpfontDebugNames))
+        return;
+    if (slot == gJpfontDebugNameCount)
+        gJpfontDebugNameCount++;
+
+    const size_t length = strlen(name) < JAPANESE_NAME_PAYLOAD_MAX
+        ? strlen(name) : JAPANESE_NAME_PAYLOAD_MAX;
+    gJpfontDebugNames[slot].channel = channel;
+    memcpy(gJpfontDebugNames[slot].name, name, length);
+    gJpfontDebugNames[slot].name[length] = '\0';
+}
+#endif
+
 uint8_t JPFONT_ReadChannelName(uint16_t channel, char *buffer, uint8_t capacity)
 {
     uint8_t record[JAPANESE_NAME_RECORD_SIZE];
@@ -106,6 +183,20 @@ uint8_t JPFONT_ReadChannelName(uint16_t channel, char *buffer, uint8_t capacity)
         return 0;
 
     memset(buffer, 0, capacity);
+#ifdef ENABLE_LCD_DEBUG
+    for (uint8_t slot = 0u; slot < gJpfontDebugNameCount; slot++)
+    {
+        if (gJpfontDebugNames[slot].channel != channel)
+            continue;
+
+        length = (uint8_t)strlen(gJpfontDebugNames[slot].name);
+        if (length >= capacity)
+            length = (uint8_t)(capacity - 1u);
+        memcpy(buffer, gJpfontDebugNames[slot].name, length);
+        buffer[length] = '\0';
+        return length;
+    }
+#endif
     if (!JPFONT_ReadExternal(
             JAPANESE_NAME_TABLE_BASE +
                 ((uint32_t)channel * JAPANESE_NAME_RECORD_SIZE),

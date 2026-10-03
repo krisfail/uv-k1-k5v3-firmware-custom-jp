@@ -154,7 +154,7 @@ def _load_japanese_font_manifest():
         return {
             "flash_base": 0x020000,
             "total_bytes": 0,
-            "name_table_base": 0x040000,
+            "name_table_base": 0x060000,
             "codepoints": [],
         }
 

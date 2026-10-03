@@ -51,6 +51,9 @@
 #ifdef ENABLE_FONT_GLYPH_TEST
     #include "app/font_glyph_test.h"
 #endif
+#ifdef ENABLE_LCD_DEBUG
+    #include "app/lcd_debug.h"
+#endif
 
 #include "driver/backlight.h"
 #include "driver/bk4819.h"
@@ -113,6 +116,9 @@ void Main(void)
 #ifdef ENABLE_UART
     UART_Init();
     UART_Send(UART_Version, strlen(UART_Version));
+#endif
+#ifdef ENABLE_LCD_DEBUG
+    LCD_DEBUG_Run();
 #endif
 #ifdef ENABLE_USB
     VCP_Init();

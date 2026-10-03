@@ -64,6 +64,14 @@ static inline void UI_MAIN_NotifyScanListChanged(void) {}
 static inline bool UI_MAIN_ShouldHoldScanResume(void) { return false; }
 #endif
 
+#ifdef ENABLE_LCD_DEBUG
+void UI_MAIN_DebugRenderScanProgress(uint8_t event);
+#ifdef ENABLE_FEAT_F4HWN_AUDIO_SCOPE
+void UI_MAIN_DebugSetAudioScopeAmplitude(uint16_t amplitude);
+void UI_MAIN_DebugResetAudioScope(void);
+#endif
+#endif
+
 #ifdef ENABLE_AGC_SHOW_DATA
 void UI_MAIN_PrintAGC(bool force);
 #endif

@@ -1,6 +1,6 @@
 # チャンネルリスト形式
 
-WRX-JP専用host toolが読み書きする，K1／K5 V3用チャンネルリストの仕様を定めます。ファイルはUTF-8のTSV（タブ区切り）で，通常チャンネル1024件を1行ずつ保持します。
+WRX-JPのWebSerial host toolとPython host toolが読み書きする，K1／K5 V3用チャンネルリストの仕様を定めます．ファイルはUTF-8のTSV（タブ区切り）で，通常チャンネル1024件を1行ずつ保持します．表計算ソフトが付けるUTF-8 BOMは許容します．
 
 ## 目的と範囲
 
@@ -64,11 +64,11 @@ channel\tfrequency_hz\tmode\ttone_mode\ttone\tdtcs\tdtcs_polarity\ttuning_step_k
 
 hostはv1を読み込めます。v1のASCII名はその行の通常表示名として扱い，日本語名にはASCII別名を自動付与しません。v1を読み込んで保存すると，v2として出力されます。
 
-CHIRP互換アダプタはCHIRPの単一`name`フィールドに合わせるため，v2の`ascii_name`を編集する機能は持ちません。日本語名とASCII別名を併用する場合は専用host toolを使用してください。
+CHIRP互換アダプタはCHIRPの単一`name`フィールドに合わせるため，v2の`ascii_name`を編集する機能は持ちません．日本語名とASCII別名を併用する場合はWebSerial host toolまたはPython host toolを使用してください．
 
 ## 検証
 
-専用host toolは，読込時と書込時に次を検査します。
+WebSerial host toolとPython host toolは，読込時と書込時に次を検査します．
 
 - 列名，列順，データ行数，チャンネル番号の連番
 - mode，tone，DCS，stepの対応値

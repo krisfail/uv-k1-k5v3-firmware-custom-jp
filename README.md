@@ -1,6 +1,6 @@
 # UV-K1 / UV-K5 V3 Japanese receive-only firmware
 
-[日本語版README](README.ja.md) | [操作・ビルドcheatsheet](CHEATSHEET.ja.md) | [Developer guide](DEVELOPMENT.md) | [CHIRP compatibility adapter](tools/chirp/README.ja.md) | [Technical feature details](docs/FEATURES_TECHNICAL.ja.md) | [Feature audit](docs/FEATURE_AUDIT.ja.md) | [Hardware test plan](docs/HARDWARE_TEST_PLAN.ja.md) | [Documentation site](docs/index.md)
+[日本語版README](README.ja.md) | [操作・ビルドcheatsheet](CHEATSHEET.ja.md) | [Developer guide](DEVELOPMENT.md) | [CHIRP compatibility adapter](tools/chirp/README.ja.md) | [Technical feature details](docs/FEATURES_TECHNICAL.ja.md) | [Hardware test plan](docs/HARDWARE_TEST_PLAN.ja.md) | [Documentation site](docs/index.md)
 
 This repository is the downstream fork [krisfail/uv-k1-k5v3-firmware-custom-jp](https://github.com/krisfail/uv-k1-k5v3-firmware-custom-jp), with [armel/uv-k1-k5v3-firmware-custom](https://github.com/armel/uv-k1-k5v3-firmware-custom) as its upstream. It adapts the F4HWN and [Egzumer custom firmware](https://github.com/egzumer/uv-k5-firmware-custom) lineage to the UV-K1 and UV-K5 V3, which use the PY32F071 MCU.
 
@@ -30,7 +30,7 @@ The receive-only UI omits TX power labels such as `LOW` and `HIGH`. Normal PTT o
 
 `JpRxOnly` is the only supported CMake preset and produces the Japanese, domestic receive-only firmware.
 
-Detailed operation notes are in [README.ja.md](README.ja.md). The quick reference is in [CHEATSHEET.ja.md](CHEATSHEET.ja.md). Technical implementation details are in [docs/FEATURES_TECHNICAL.ja.md](docs/FEATURES_TECHNICAL.ja.md); feature availability and exclusions are listed in [docs/FEATURE_AUDIT.ja.md](docs/FEATURE_AUDIT.ja.md), with the hardware checklist in [docs/HARDWARE_TEST_PLAN.ja.md](docs/HARDWARE_TEST_PLAN.ja.md). CHIRP is a migration adapter only; its legal attribution remains in `tools/chirp/NOTICE.md` and `tools/chirp/LICENSE.txt`.
+Detailed operation notes are in [README.ja.md](README.ja.md). The quick reference is in [CHEATSHEET.ja.md](CHEATSHEET.ja.md). Technical implementation details and receive-only boundaries are in [docs/FEATURES_TECHNICAL.ja.md](docs/FEATURES_TECHNICAL.ja.md), with the hardware checklist in [docs/HARDWARE_TEST_PLAN.ja.md](docs/HARDWARE_TEST_PLAN.ja.md). CHIRP is a migration adapter only; its legal attribution remains in `tools/chirp/NOTICE.md` and `tools/chirp/LICENSE.txt`.
 
 Source layout, change boundaries, atlas generation, validation, and release handling are described in [DEVELOPMENT.md](DEVELOPMENT.md).
 
@@ -53,7 +53,9 @@ The outputs are under `build/JpRxOnly`:
 
 ## Host programming tools
 
-The canonical host path is the small Windows GUI in `tools/host/wrx_jp_host.py`. It explicitly separates memory read/write, the 1024-channel TSV list, settings read/write, and Japanese-resource writing. UART work runs off the Tk UI thread, and channel updates write only changed blocks with readback.
+The canonical host path is the dependency-free [WebSerial app](tools/webui/index.html) in `tools/webui/`. Open it from GitHub Pages or another HTTPS origin in Chrome or Edge to choose a serial port without a platform-specific Python runtime. It separates memory read/write, the 1024-channel TSV list, settings read/write, and Japanese-resource writing. Changed blocks are written with readback verification.
+
+The Python GUI in `tools/host/wrx_jp_host.py` is retained as a Windows-only debug and prototype tool, not as the daily cross-platform host interface. See the [WebSerial host guide](docs/WEB_SERIAL_HOST.ja.md) for browser constraints and write boundaries.
 
 CHIRP is retained only as a frozen migration adapter. Loading `tools/chirp/wrx_jp_standalone.py` alone cannot send the font or Japanese names to stock firmware, because the external-Flash UART commands are provided by `JpRxOnly`. Read the [CHIRP compatibility guide](tools/chirp/README.ja.md) before using this provisional path.
 

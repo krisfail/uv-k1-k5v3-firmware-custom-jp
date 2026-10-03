@@ -1,5 +1,5 @@
-F4HWN Edition Fusion firmware for Quansheng UV-K1 and UV-K5 V3
-================================================================
+WRX-JP Japanese receive-only firmware for Quansheng UV-K1 and UV-K5 V3
+========================================================================
 
 This product includes software originally developed by Dual Tachyon
 for the Quansheng UV-K5 open-source firmware project:
@@ -48,6 +48,19 @@ are independently reduced from the public-domain Izumi 16 bitmap font,
 distributed by Unifoundry:
 
   https://unifoundry.com/japanese/
+
+The optional 14px Japanese channel-name bitmap includes glyphs from
+WenQuanYi Bitmap Song, distributed in the Dondji source repository under
+the GPL v2 with font embedding exception, as stated in its BDF source:
+
+  https://github.com/EthanYan6/Dondji
+
+The 8px Japanese channel-name bitmap includes glyphs from the Misaki Gothic
+8dot BDF by Num Kadoma, distributed from the official Misaki font page.
+The accompanying license permits use, copying, and redistribution with or
+without modification, commercially or noncommercially, without warranty:
+
+  https://littlelimit.net/misaki.htm
 
 The spectrum analyzer implementation includes work originally developed
 by fagci:

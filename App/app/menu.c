@@ -658,8 +658,10 @@ void MENU_AcceptSetting(void)
             if (!RX_FEATURE_STATE_IsEnabled())
             {
                 RX_BAND_PRESETS_Reset();
+#ifdef ENABLE_SCAN_RANGES
                 gScanRangeStart = 0;
                 gScanRangeStop = 0;
+#endif
             }
             RX_FEATURE_STATE_Save();
             gVfoConfigureMode = VFO_CONFIGURE_RELOAD;

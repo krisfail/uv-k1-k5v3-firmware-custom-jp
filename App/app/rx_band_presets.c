@@ -32,7 +32,6 @@ const RX_BandPreset_t gRxBandPresets[RX_BAND_PRESET_COUNT] = {
     {"24M HAM",    2489000u,  2499000u,   100u, MODULATION_USB, BANDWIDTH_WIDE},
     {"50M HAM",    5000000u,  5400000u,  2500u, MODULATION_FM, BANDWIDTH_WIDE},
     {"351 DIGI",  35125000u, 35131250u,  1250u, MODULATION_FM, BANDWIDTH_NARROW},
-    {"FM BC",      7600000u,  9500000u, 10000u, MODULATION_FM, BANDWIDTH_WIDE},
     {"118 NAV",   11800000u,  12140000u, 2500u, MODULATION_AM, BANDWIDTH_NARROW},
     {"124 NAV",   12400000u,  13000000u, 2500u, MODULATION_AM, BANDWIDTH_NARROW},
 };
@@ -210,22 +209,26 @@ bool RX_BAND_PRESETS_HandleKey(const KEY_Code_t key, const bool pressed, const b
 void RX_BAND_PRESETS_Draw(void)
 {
     const RX_BandPreset_t *preset = &gRxBandPresets[sSelection];
-    char range[22];
+    char lower[16];
+    char upper[16];
     char detail[22];
 
     UI_DisplayClear();
     UI_PrintStringSmallBold(WRX_UI_TEXT_RX_PRESET, 0, 0, 0);
-    sprintf(range, "%3u.%05u-%3u.%05u", preset->lower / 100000u, preset->lower % 100000u,
-            preset->upper / 100000u, preset->upper % 100000u);
     UI_PrintStringSmallBold(preset->name, 0, 0, 1);
-    UI_PrintStringSmallNormal(range, 0, 0, 2);
+    sprintf(lower, "FROM %3u.%05u", preset->lower / 100000u,
+            preset->lower % 100000u);
+    sprintf(upper, "TO   %3u.%05u", preset->upper / 100000u,
+            preset->upper % 100000u);
+    UI_PrintStringSmallNormal(lower, 0, 0, 2);
+    UI_PrintStringSmallNormal(upper, 0, 0, 3);
     sprintf(detail, "%s %s %s %u.%u", preset->modulation == MODULATION_AM ? "AM" :
             (preset->modulation == MODULATION_USB ? "USB" : "FM"),
-            preset->bandwidth == BANDWIDTH_NARROW ? "NARROW" : "WIDE",
+            preset->bandwidth == BANDWIDTH_NARROW ? "NAR" : "WIDE",
             WRX_UI_TEXT_STEP,
             preset->step / 100u, (preset->step / 10u) % 10u);
-    UI_PrintStringSmallNormal(detail, 0, 0, 3);
-    sprintf(detail, "%u/16 UP/DOWN SELECT", sSelection + 1u);
+    UI_PrintStringSmallNormal(detail, 0, 0, 4);
+    sprintf(detail, "%u/%u UP/DN SELECT", sSelection + 1u, RX_BAND_PRESET_COUNT);
     UI_PrintStringSmallNormal(detail, 0, 0, 5);
     UI_PrintStringSmallNormal(WRX_UI_TEXT_PRESET_APPLY, 0, 0, 6);
     UI_PrintStringSmallNormal(WRX_UI_TEXT_PRESET_CANCEL, 0, 0, 7);

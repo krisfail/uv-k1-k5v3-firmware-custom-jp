@@ -43,6 +43,7 @@ target_sources(App INTERFACE
     ui/inputbox.c
     ui/main.c
     ui/menu.c
+    ui/menu_icons.c
     ui/scanner.c
     ui/status.c
     ui/ui.c
@@ -78,6 +79,11 @@ endif()
 if(ENABLE_FONT_GLYPH_TEST)
     target_compile_definitions(App INTERFACE ENABLE_FONT_GLYPH_TEST)
     target_sources(App INTERFACE app/font_glyph_test.c)
+endif()
+
+if(ENABLE_LCD_DEBUG)
+    target_compile_definitions(App INTERFACE ENABLE_LCD_DEBUG)
+    target_sources(App INTERFACE app/lcd_debug.c)
 endif()
 
 

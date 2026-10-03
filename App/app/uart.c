@@ -24,6 +24,9 @@
     #include "app/fm.h"
 #endif
 #include "app/uart.h"
+#ifdef ENABLE_LCD_DEBUG
+    #include "app/lcd_debug.h"
+#endif
 #include "board.h"
 #include "py32f071_ll_dma.h"
 #include "driver/backlight.h"
@@ -222,7 +225,9 @@ typedef union
 
 
 #if defined(ENABLE_UART)
+#ifndef ENABLE_LCD_DEBUG
     static uint32_t UART_Timestamp;
+#endif
     static UART_Command_t UART_Command;
     static uint16_t gUART_WriteIndex;
 #endif
@@ -235,6 +240,7 @@ typedef union
 // static bool     bIsEncrypted = true;
 #define bIsEncrypted true
 
+#ifndef ENABLE_LCD_DEBUG
 #ifdef ENABLE_USB
 static void SendReply_VCP(void *pReply, uint16_t Size)
 {
@@ -747,6 +753,8 @@ static void CMD_0602_WriteBK4819Reg(const uint8_t *pBuffer)
 }
 #endif
 
+#endif /* !ENABLE_LCD_DEBUG */
+
 bool UART_IsCommandAvailable(uint32_t Port)
 {
     uint16_t Index;
@@ -913,6 +921,10 @@ void UART_HandleCommand(uint32_t Port)
         return;
     }
 
+#ifdef ENABLE_LCD_DEBUG
+    if (pUART_Command->Header.ID == LCD_DEBUG_COMMAND_ID)
+        LCD_DEBUG_HandleCommand(Port, pUART_Command->Buffer);
+#else
     switch (pUART_Command->Header.ID)
     {
         case 0x0514:
@@ -981,6 +993,7 @@ void UART_HandleCommand(uint32_t Port)
             break;
 #endif
     } // switch
+#endif
 
     #ifdef ENABLE_FEAT_F4HWN_K5VIEWER
         gUART_LockK5Viewer = 20; // lock the K5Viewer stream

@@ -63,6 +63,7 @@ void SETTINGS_InitEEPROM(void)
         PY25Q16_ReadBuffer(0x00A160, storedVersion, sizeof(storedVersion));
 
         // Compare with current version
+#ifndef ENABLE_LCD_DEBUG
         if (strncmp(storedVersion, VERSION_STRING_2, sizeof(storedVersion)) != 0)
         {
             // Different version: new install or firmware update
@@ -136,6 +137,7 @@ void SETTINGS_InitEEPROM(void)
                 PY25Q16_WriteBuffer(0x00A0B9, buf, 7, false);
             }
         }
+#endif
     }
 
     // 0E70..0E77
@@ -439,11 +441,15 @@ gEeprom.FreqChannel[1]   = IS_FREQ_CHANNEL(Data16[5]) ? Data16[5] : (FREQ_CHANNE
             if (att->__val == 0xFFFF) {
                 att->__val = 0;
                 att->band = 0x7;
-                MR_SetChannelAttributes(i, att);  // ⭐ IMPORTANT: Sauvegarder!
+#ifndef ENABLE_LCD_DEBUG
+                MR_SetChannelAttributes(i, att);
+#endif
             }
             else {
                 att->exclude = 0;
-                MR_SetChannelAttributes(i, att);  // ⭐ IMPORTANT: Sauvegarder!
+#ifndef ENABLE_LCD_DEBUG
+                MR_SetChannelAttributes(i, att);
+#endif
             }
         }
     }
@@ -589,7 +595,9 @@ void SETTINGS_LoadCalibration(void)
             gEeprom.VOLUME_GAIN_BACKUP   = gEeprom.VOLUME_GAIN;
         #endif
 
+#ifndef ENABLE_LCD_DEBUG
         BK4819_WriteRegister(BK4819_REG_3B, 22656 + gEeprom.BK4819_XTAL_FREQ_LOW);
+#endif
 //      BK4819_WriteRegister(BK4819_REG_3C, gEeprom.BK4819_XTAL_FREQ_HIGH);
     }
 }

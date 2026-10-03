@@ -10,8 +10,9 @@ CHIRP template by Dan Smith. See `LICENSE.txt` for the license text.
 
 `wrx_jp_standalone.py` is generated from this driver and embeds the Japanese
 font binary and manifest so that CHIRP can load one module file. The embedded
-font is the Izumi 16-derived bitmap described in `docs/fonts/README.ja.md`;
-its source and redistribution terms are recorded there.
+font contains the Izumi 16 bitmap, the optional 14px bitmap, and the Misaki
+8px bitmap described in `docs/fonts/README.ja.md`; their source and
+redistribution terms are recorded there.
 
 This driver is provided as-is. Keep a complete download from the exact radio
 before uploading, and do not use the driver to enable or configure

@@ -70,7 +70,7 @@ python -m unittest discover -s tests -p "test_*.py" -v
 | プリセット | 周波数モードで`STAR`短押し |
 | FM放送 | `76.0–95.0 MHz` |
 
-RX-onlyメニューは，`RXExt`，`AUTO`，`SCAN`，`INFO`，`REV`，`AUDIO`，`NARROW`，`FAST`など，短く意味を取りやすいASCII表記を使います．日本語チャンネル名は，主画面の設定に応じて外部16×16，8×8縮小，ASCII別名で表示します．
+RX-onlyメニューは，`RXExt`，`AUTO`，`SCAN`，`INFO`，`REV`，`AUDIO`，`NARROW`，`FAST`など，短く意味を取りやすいASCII表記を使います．日本語チャンネル名は，主画面の設定に応じて外部16×16，専用14×14，美咲8×8，ASCII別名で表示します．
 
 `RXExt=OFF`では，プリセット，SINGLE，バンク絞り込み，AUTOスケルチ，AGCガード，一時スキップが停止します．受信専用動作，PTTモニター，外部チャンネル名表示，FM放送帯域制限は維持されます．
 

@@ -279,7 +279,7 @@ class TestWRXJPDriver(unittest.TestCase):
         self.assertIn("memory", events)
 
     def test_external_read_uses_32bit_address_and_128_byte_chunks(self):
-        address = 0x040000
+        address = 0x060000
         payload = bytes(range(130))
         replies = []
         for offset, chunk in ((0, payload[:128]), (128, payload[128:])):
